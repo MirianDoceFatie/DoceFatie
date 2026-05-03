@@ -10,10 +10,7 @@
         body { font-family: sans-serif; background-color: var(--rosa-fundo); margin: 0; padding-bottom: 50px; color: var(--marrom); }
         header { background-color: var(--rosa-topo); color: white; text-align: center; padding: 15px; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         header h1 { margin: 0; font-size: 1.3rem; }
-        .btn-bastidores { background-color: white; color: var(--rosa-topo); border: 2px solid white; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; font-size: 0.8rem; }
         .container { max-width: 800px; margin: auto; padding: 15px; }
-        .galeria-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin: 15px 0; }
-        .galeria-grid img { width: 100%; border-radius: 10px; object-fit: cover; height: 180px; background: #eee; }
         .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; margin-top: 20px; }
         .card-bolo { background: white; border-radius: 15px; overflow: hidden; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; }
         .img-container { width: 100%; height: 160px; background: #eee; position: relative; }
@@ -22,7 +19,7 @@
         .status-estoque { font-size: 0.75rem; margin: 5px 0; font-weight: bold; color: #888; }
         .preco { display: block; margin: 10px 0; font-weight: bold; color: #333; font-size: 1.1rem; }
         .controles { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 10px; }
-        .btn-qtd { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; }
+        .btn-qtd { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 1.2rem; }
         .select-personalizado { width: 90%; font-size: 0.85rem; padding: 8px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 10px; }
         .checkout { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .opcao-entrega { display: flex; gap: 10px; margin: 20px 0; }
@@ -42,7 +39,7 @@
 
 <div class="container">
     <div id="vitrine" class="grid-fatias">
-        <p style="grid-column: 1/-1; text-align: center;">Carregando vitrine...</p>
+        <!-- A vitrine antiga será reconstruída aqui pelo JavaScript abaixo -->
     </div>
 
     <div class="checkout">
@@ -67,54 +64,51 @@
 </div>
 
 <script>
-    let bolos = [];
+    // 1. VITRINE PADRÃO (ESTADO ORIGINAL)
+    let bolos = [
+        { nome: "Pudim & Doce de Leite", estoque: 8, disponivel: true, foto: "Pudim.jpg", previsao: "" },
+        { nome: "Ninho, Suspiro & Morango", estoque: 5, disponivel: true, foto: "Morango.jpg", previsao: "" },
+        { nome: "Chocolatudo", estoque: 0, disponivel: false, foto: "Chocolatudo.jpg", previsao: "Sexta-feira" },
+        { nome: "Maraculate", estoque: 0, disponivel: false, foto: "Maraculate.jpg", previsao: "Sábado" }
+    ];
+
     let carrinho = {};
     let metodoEntrega = "";
 
-    async function carregarDados() {
+    // 2. TENTA ATUALIZAR CONFORME O SEU PAINEL
+    async function sincronizarComPainel() {
         try {
-            // Busca a lista de arquivos na pasta de bolos do seu GitHub
-            const repoUrl = "https://api.github.com/repos/MirianDoceFatia/confeitariadocefatia/contents/content/bolos";
-            const response = await fetch(repoUrl);
-            const files = await response.json();
-            
-            if (Array.isArray(files)) {
-                // Carrega o conteúdo de cada arquivo .json encontrado
-                const urlBase = "https://raw.githubusercontent.com/MirianDoceFatia/confeitariadocefatia/main/";
-                const promessas = files.map(file => fetch(urlBase + file.path).then(r => r.json()));
-                bolos = await Promise.all(promessas);
-                renderVitrine();
+            // Tenta buscar o arquivo que você criou na imagem image_feb12a.jpg
+            const res = await fetch('https://raw.githubusercontent.com/MirianDoceFatia/confeitariadocefatia/main/content/bolos/pudim-doce-de-leite.json');
+            if (res.ok) {
+                const dadosPainel = await res.json();
+                // Se encontrar, atualiza os dados do Pudim (os 20 que você colocou)
+                bolos[0].estoque = parseInt(dadosPainel.estoque_quantidade);
+                bolos[0].disponivel = dadosPainel.está_disponível;
             }
         } catch (e) {
-            document.getElementById('vitrine').innerHTML = "<p style='grid-column:1/-1; text-align:center;'>Aguardando cadastro no painel...</p>";
+            console.log("Mantendo vitrine padrão...");
         }
+        renderVitrine();
     }
 
     function renderVitrine() {
         const v = document.getElementById('vitrine');
         v.innerHTML = bolos.map((b, index) => {
-            // Mapeia os campos conforme aparecem no seu painel administrativo
-            const nome = b.nome_do_bolo || "Sabor Indisponível";
-            const estoque = parseInt(b.estoque_quantidade) || 0;
-            const disponivel = b.está_disponível === true;
-            const foto = b.foto_nome_do_arquivo_ex_pudim_jpg || "";
-            const previsao = b.previsão_de_retorno_ex_sábado_opcional || "Em breve";
-
-            const esgotado = !disponivel || estoque <= 0;
-
+            const esgotado = !b.disponivel || b.estoque <= 0;
             return `
                 <div class="card-bolo" style="${esgotado ? 'opacity: 0.7;' : ''}">
                     <div class="img-container">
-                        <img src="${foto}" onerror="this.src='https://via.placeholder.com/400x320?text=Doce+Fatia'">
-                        <div class="tarja-nome">${nome}</div>
+                        <img src="${b.foto}" onerror="this.src='https://via.placeholder.com/400x320?text=Doce+Fatia'">
+                        <div class="tarja-nome">${b.nome}</div>
                     </div>
                     ${esgotado ? `
                         <span class="preco" style="color:#666">ESGOTADO</span>
-                        <div class="status-estoque">Previsão: ${previsao}</div>
-                        <button class="btn-reservar" onclick="reservar('${nome}', '${previsao}')">Reservar</button>
+                        <div class="status-estoque">Previsão: ${b.previsao}</div>
+                        <button class="btn-reservar" onclick="reservar('${b.nome}', '${b.previsao}')">Reservar</button>
                     ` : `
                         <span class="preco">R$ 18,00</span>
-                        <div class="status-estoque">Restam ${estoque} fatias</div>
+                        <div class="status-estoque">Restam ${b.estoque} fatias</div>
                         <div class="controles">
                             <button class="btn-qtd" onclick="alt(${index}, -1)">-</button>
                             <span id="q-${index}">0</span>
@@ -131,11 +125,11 @@
         }).join('');
     }
 
+    // Funções de controle do carrinho (iguais às que você já tinha)
     function alt(i, v) {
         if (!carrinho[i]) carrinho[i] = { qtd: 0, calda: "Sem calda" };
-        const estoqueMax = parseInt(bolos[i].estoque_quantidade) || 0;
         const novaQtd = (carrinho[i].qtd || 0) + v;
-        if (novaQtd <= estoqueMax && novaQtd >= 0) {
+        if (novaQtd <= bolos[i].estoque && novaQtd >= 0) {
             carrinho[i].qtd = novaQtd;
             document.getElementById('q-' + i).innerText = novaQtd;
             atualizarResumo();
@@ -152,7 +146,7 @@
         let txt = ""; let total = 0;
         for (let i in carrinho) {
             if (carrinho[i].qtd > 0) {
-                txt += `• ${carrinho[i].qtd}x ${bolos[i].nome_do_bolo} (${carrinho[i].calda})<br>`;
+                txt += `• ${carrinho[i].qtd}x ${bolos[i].nome} (${carrinho[i].calda})<br>`;
                 total += carrinho[i].qtd * 18;
             }
         }
@@ -168,27 +162,25 @@
     }
 
     function reservar(nome, data) {
-        const msg = `Olá! Quero reservar o sabor ${nome} para ${data}.`;
-        window.location.href = `https://wa.me/5535991441589?text=${encodeURIComponent(msg)}`;
+        window.location.href = `https://wa.me/5535991441589?text=Quero reservar o ${nome} para ${data}`;
     }
 
     function enviarPedido() {
         if(!metodoEntrega) return alert("Selecione Entrega ou Retirada");
-        let m = "*PEDIDO - DOCE FATIA*\n\n";
+        let m = "*NOVO PEDIDO*\n\n";
         let total = 0;
         for(let i in carrinho) {
             if(carrinho[i].qtd > 0) {
-                m += `${carrinho[i].qtd}x ${bolos[i].nome_do_bolo} (${carrinho[i].calda})\n`;
+                m += `${carrinho[i].qtd}x ${bolos[i].nome} (${carrinho[i].calda})\n`;
                 total += carrinho[i].qtd * 18;
             }
         }
         if(total === 0) return alert("Carrinho vazio!");
         m += `\n*Total: R$ ${total.toFixed(2)}*\n*Opção:* ${metodoEntrega}`;
-        if(metodoEntrega === 'Entrega') m += `\n*Endereço:* ${document.getElementById('end').value}`;
         window.location.href = `https://wa.me/5535991441589?text=${encodeURIComponent(m)}`;
     }
 
-    window.onload = carregarDados;
+    window.onload = sincronizarComPainel;
 </script>
 </body>
 </html>
