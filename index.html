@@ -32,7 +32,7 @@
 
 <div class="container">
     <div id="vitrine" class="grid-fatias">
-        <p style="grid-column: 1/-1; text-align: center;">Carregando sabores...</p>
+        <p style="grid-column: 1/-1; text-align: center;">Carregando seus sabores...</p>
     </div>
 
     <div class="checkout">
@@ -44,7 +44,7 @@
 </div>
 
 <script>
-    // USANDO O CAMINHO EXATO DA SUA IMAGEM DO GITHUB
+    // URL Corrigida para buscar na sua pasta do GitHub
     const API_URL = "https://api.github.com/repos/MirianSene1/DoceFatie/contents/dados/%20bolos";
 
     let listaBolos = [];
@@ -53,10 +53,10 @@
     async function carregarBolos() {
         try {
             const response = await fetch(API_URL);
-            const dados = await response.json();
+            const arquivos = await response.json();
             
-            if (Array.isArray(dados)) {
-                const promessas = dados
+            if (Array.isArray(arquivos)) {
+                const promessas = arquivos
                     .filter(f => f.name.endsWith('.json'))
                     .map(f => fetch(f.download_url).then(r => r.json()));
                 
@@ -64,32 +64,39 @@
                 renderizar();
             }
         } catch (e) {
-            document.getElementById('vitrine').innerHTML = "Erro ao conectar com o painel.";
+            document.getElementById('vitrine').innerHTML = "Erro ao carregar o menu.";
         }
     }
 
     function renderizar() {
         const v = document.getElementById('vitrine');
         if (listaBolos.length === 0) {
-            v.innerHTML = "<p style='grid-column:1/-1;'>Nenhum bolo disponível.</p>";
+            v.innerHTML = "<p style='grid-column:1/-1;'>Nenhum bolo disponível agora.</p>";
             return;
         }
-        v.innerHTML = listaBolos.map((b, i) => `
-            <div class="card-bolo">
-                <div class="img-container">
-                    <img src="${b.foto_nome_do_arquivo_ex_pudim_jpg || 'pudim.jpg'}" onerror="this.src='pudim.jpg'">
-                    <div class="tarja-nome">${b.nome_do_bolo}</div>
-                </div>
-                <div style="padding: 10px;">
-                    <span style="font-weight:bold;">R$ 18,00</span>
-                    <div class="controles">
-                        <button class="btn-qtd" onclick="mudar(6, -1)">-</button>
-                        <span id="q-${i}">0</span>
-                        <button class="btn-qtd" onclick="mudar(${i}, 1)">+</button>
+
+        v.innerHTML = listaBolos.map((bolo, i) => {
+            // AQUI ESTÁ A CORREÇÃO: Pegando os nomes exatamente como aparecem no seu Painel
+            const nome = bolo["NOME DO BOLO"] || bolo.nome_do_bolo || "Sabor";
+            const foto = bolo["FOTO (NOME DO ARQUIVO EX: PUDIM.JPG)"] || bolo.foto_nome_do_arquivo_ex_pudim_jpg || "pudim.jpg";
+
+            return `
+                <div class="card-bolo">
+                    <div class="img-container">
+                        <img src="${foto}" onerror="this.src='pudim.jpg'">
+                        <div class="tarja-nome">${nome}</div>
+                    </div>
+                    <div style="padding: 10px;">
+                        <span style="font-weight:bold;">R$ 18,00</span>
+                        <div class="controles">
+                            <button class="btn-qtd" onclick="mudar(${i}, -1)">-</button>
+                            <span id="q-${i}" style="font-weight:bold;">0</span>
+                            <button class="btn-qtd" onclick="mudar(${i}, 1)">+</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     function mudar(i, v) {
@@ -106,7 +113,8 @@
         let t = 0; let txt = "";
         for (let i in carrinho) {
             if (carrinho[i] > 0) {
-                txt += `${carrinho[i]}x ${listaBolos[i].nome_do_bolo}<br>`;
+                const nomeBolo = listaBolos[i]["NOME DO BOLO"] || listaBolos[i].nome_do_bolo;
+                txt += `${carrinho[i]}x ${nomeBolo}<br>`;
                 t += carrinho[i] * 18;
             }
         }
@@ -115,8 +123,16 @@
     }
 
     function enviarPedido() {
-        let m = "*NOVO PEDIDO*\n";
-        for (let i in carrinho) { if (carrinho[i] > 0) m += `${carrinho[i]}x ${listaBolos[i].nome_do_bolo}\n`; }
+        let m = "*NOVO PEDIDO DOCE FATIA*\n\n";
+        let temItem = false;
+        for (let i in carrinho) {
+            if (carrinho[i] > 0) {
+                const nomeBolo = listaBolos[i]["NOME DO BOLO"] || listaBolos[i].nome_do_bolo;
+                m += `${carrinho[i]}x ${nomeBolo}\n`;
+                temItem = true;
+            }
+        }
+        if(!temItem) return alert("Selecione uma fatia!");
         window.location.href = `https://wa.me/5535991441589?text=${encodeURIComponent(m)}`;
     }
 
