@@ -1,5 +1,5 @@
 ---
-title: Pudim & Doce de Leite
+title: Pudim
 thumbnail: Pudim.jpg
 estoque: 20
 disponivel: true
