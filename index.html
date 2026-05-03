@@ -3,144 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confeitaria Doce Fatia</title>
+    <title>Confeitaria Doce Fatia - Itajubá</title>
     <style>
         :root { --rosa-topo: #ff69b4; --rosa-fundo: #fce4ec; --rosa-botao: #ff4081; --whatsapp: #25d366; --marrom: #4e342e; }
         body { font-family: sans-serif; background-color: var(--rosa-fundo); margin: 0; padding-bottom: 50px; color: var(--marrom); }
-        header { background-color: var(--rosa-topo); color: white; text-align: center; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        header { background-color: var(--rosa-topo); color: white; text-align: center; padding: 15px; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 1.3rem; }
+        .btn-bastidores { background-color: white; color: var(--rosa-topo); border: 2px solid white; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; font-size: 0.8rem; }
         .container { max-width: 800px; margin: auto; padding: 15px; }
-        
-        /* Vitrine */
-        .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin: 20px 0; }
-        .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; }
-        .img-container { width: 100%; height: 160px; background: #eee; position: relative; }
+        .galeria-bastidores { display: none; background: white; margin: 20px 0; padding: 15px; border-radius: 15px; border: 2px solid #fce4ec; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .galeria-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin: 15px 0; }
+        .galeria-grid img, .galeria-grid video { width: 100%; border-radius: 10px; object-fit: cover; height: 180px; background: #eee; }
+        .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; margin-top: 20px; }
+        .card-bolo { background: white; border-radius: 15px; overflow: hidden; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; }
+        .img-container { width: 100%; height: 160px; background: #eee; overflow: hidden; position: relative; }
         .img-container img { width: 100%; height: 100%; object-fit: cover; }
-        .tarja-nome { position: absolute; bottom: 0; background: rgba(0,0,0,0.6); color: white; width: 100%; padding: 8px 0; font-size: 0.9rem; font-weight: bold; }
-        
-        .preco { display: block; margin: 15px 0 5px; font-weight: bold; font-size: 1.1rem; }
-        .status-estoque { font-size: 0.8rem; color: #888; margin-bottom: 10px; }
-        
-        .controles { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; }
-        .btn-qtd { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-weight: bold; }
-        
-        /* Checkout */
-        .checkout { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .btn-whatsapp { background-color: var(--whatsapp); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 15px; }
+        .tarja-nome { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0, 0, 0, 0.5); color: white; padding: 10px 0; font-size: 0.85rem; font-weight: bold; }
+        .preco { display: block; margin: 15px 0 10px; font-weight: bold; color: #333; font-size: 1rem; }
+        .controles { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .btn-qtd { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 1.2rem; font-weight: bold; }
+        .select-personalizado { width: 90%; font-size: 0.85rem; padding: 10px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 10px; background: #fff; }
+        .checkout { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .btn-whatsapp { background-color: var(--whatsapp); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>Confeitaria Doce Fatia</h1>
-    <p style="font-size:0.8rem;">Fatias fresquinhas todos os dias!</p>
+    <p style="margin:5px 0 0; font-size:0.75rem;">Fatias Fresquinhas do Dia — R$ 18,00</p>
+    <button class="btn-bastidores" onclick="toggleBastidores()">✨ Ver Bastidores & Produção</button>
 </header>
 
 <div class="container">
+    <div id="secao-bastidores" class="galeria-bastidores">
+        <h3 style="text-align:center; color: var(--rosa-topo);">Nossa Produção 👩‍🍳</h3>
+        <div class="galeria-grid" id="galeria">
+            <!-- Fotos de bastidores -->
+            <img src="Chocolatudo.jpg">
+            <img src="Maraculate.jpg">
+            <img src="ninho.jpg">
+            <img src="pudim.jpg">
+        </div>
+        <p style="text-align:center; font-size:0.85rem;" onclick="toggleBastidores()">← Voltar para os Bolos</p>
+    </div>
+
     <div id="vitrine" class="grid-fatias">
-        <p style="grid-column: 1/-1; text-align: center;">Buscando sabores no painel...</p>
+        <p style="grid-column: 1/-1; text-align: center;">Carregando seus bolos...</p>
     </div>
 
     <div class="checkout">
-        <h3 style="margin-top:0;">Meu Pedido</h3>
-        <div id="resumo" style="font-size: 0.9rem; margin-bottom: 15px;">Nenhum item selecionado.</div>
-        <div style="font-size: 1.2rem; font-weight: bold; text-align: right;">
-            Total: <span id="total-valor" style="color: var(--rosa-botao);">R$ 0,00</span>
-        </div>
-        <button class="btn-whatsapp" onclick="enviarPedido()">Enviar Pedido pelo WhatsApp</button>
+        <h3 style="margin:0;">Meu Pedido</h3>
+        <div id="resumo" style="margin: 15px 0; font-size: 0.9rem;">Selecione suas fatias acima.</div>
+        <div style="text-align: right; font-weight: bold; font-size: 1.2rem;">Total: <span id="total-valor">R$ 0,00</span></div>
+        <button class="btn-whatsapp" onclick="enviarPedido()">Confirmar Pedido pelo WhatsApp</button>
     </div>
 </div>
 
 <script>
-    // AJUSTADO COM BASE NAS SUAS IMAGENS:
-    const USUARIO_GITHUB = "MirianDoceFatie"; 
-    const REPOSITORIO = "DoceFatie";
-    const PASTA_BOLOS = "dados/ bolos"; // Note o espaço que aparece na sua foto
+    // CORREÇÕES DE ENDEREÇO BASEADAS NAS SUAS IMAGENS:
+    const USUARIO = "MirianSene"; // Nome que aparece no seu Commit
+    const REPO = "DoceFatie";
+    const PASTA = "dados/%20bolos"; // Pasta com o espaço que o Netlify criou
 
     let listaBolos = [];
     let carrinho = {};
 
     async function carregarBolos() {
-        const vitrine = document.getElementById('vitrine');
         try {
-            // 1. Busca a lista de arquivos JSON na pasta do GitHub
-            const response = await fetch(`https://api.github.com/repos/${USUARIO_GITHUB}/${REPOSITORIO}/contents/${PASTA_BOLOS}`);
-            const arquivos = await response.json();
+            const url = `https://api.github.com/repos/${USUARIO}/${REPO}/contents/${PASTA}`;
+            const response = await fetch(url);
+            const files = await response.json();
             
-            if (!Array.isArray(arquivos)) throw new Error();
-
-            // 2. Lê o conteúdo de cada arquivo JSON
-            const promessas = arquivos
-                .filter(arq => arq.name.endsWith('.json'))
-                .map(arq => fetch(arq.download_url).then(r => r.json()));
-            
-            listaBolos = await Promise.all(promessas);
-            renderizar();
+            if (Array.isArray(files)) {
+                const promessas = files
+                    .filter(f => f.name.endsWith('.json'))
+                    .map(f => fetch(f.download_url).then(r => r.json()));
+                listaBolos = await Promise.all(promessas);
+                renderVitrine();
+            }
         } catch (e) {
-            vitrine.innerHTML = "<p style='grid-column:1/-1; text-align:center;'>Nenhum bolo disponível no momento.</p>";
+            document.getElementById('vitrine').innerHTML = "<p style='grid-column:1/-1; text-align:center;'>Erro ao carregar bolos. Verifique a pasta no GitHub.</p>";
         }
     }
 
-    function renderizar() {
+    function renderVitrine() {
         const v = document.getElementById('vitrine');
-        v.innerHTML = listaBolos.map((bolo, i) => {
-            const estoque = bolo.estoque_quantidade || 0;
-            const nome = bolo.nome_do_bolo || "Sabor";
-            const foto = bolo.foto_nome_do_arquivo_ex_pudim_jpg || "pudim.jpg";
-
-            return `
-                <div class="card-bolo">
-                    <div class="img-container">
-                        <img src="${foto}" onerror="this.src='https://via.placeholder.com/200x160?text=Doce+Fatia'">
-                        <div class="tarja-nome">${nome}</div>
-                    </div>
-                    <span class="preco">R$ 18,00</span>
-                    <div class="status-estoque">Disponível: ${estoque}</div>
-                    <div class="controles">
-                        <button class="btn-qtd" onclick="mudarQtd(${i}, -1)">-</button>
-                        <span id="q-${i}" style="font-weight:bold;">0</span>
-                        <button class="btn-qtd" onclick="mudarQtd(${i}, 1)">+</button>
-                    </div>
+        v.innerHTML = listaBolos.map((b, i) => `
+            <div class="card-bolo">
+                <div class="img-container">
+                    <img src="${b.foto_nome_do_arquivo_ex_pudim_jpg || 'pudim.jpg'}" onerror="this.src='pudim.jpg'">
+                    <div class="tarja-nome">${b.nome_do_bolo}</div>
                 </div>
-            `;
-        }).join('');
+                <span class="preco">R$ 18,00</span>
+                <div class="controles">
+                    <button class="btn-qtd" onclick="mudarQtd(${i}, -1)">-</button>
+                    <span id="q-${i}">0</span>
+                    <button class="btn-qtd" onclick="mudarQtd(${i}, 1)">+</button>
+                </div>
+                <select class="select-personalizado" id="c-${i}" onchange="mudarCalda(${i}, this.value)">
+                    <option value="">Escolher Calda</option>
+                    <option value="Chocolate">Chocolate</option>
+                    <option value="Ninho">Ninho</option>
+                </select>
+            </div>
+        `).join('');
     }
 
-    function mudarQtd(index, valor) {
-        if (!carrinho[index]) carrinho[index] = 0;
-        const novoValor = carrinho[index] + valor;
-        const max = listaBolos[index].estoque_quantidade || 0;
-
-        if (novoValor >= 0 && novoValor <= max) {
-            carrinho[index] = novoValor;
-            document.getElementById(`q-${index}`).innerText = novoValor;
+    function mudarQtd(i, v) {
+        if (!carrinho[i]) carrinho[i] = { q: 0, c: "" };
+        const novaQ = carrinho[i].q + v;
+        if (novaQ >= 0) {
+            carrinho[i].q = novaQ;
+            document.getElementById(`q-${i}`).innerText = novaQ;
             atualizarResumo();
         }
     }
 
+    function mudarCalda(i, calda) {
+        if (!carrinho[i]) carrinho[i] = { q: 0, c: "" };
+        carrinho[i].c = calda;
+        atualizarResumo();
+    }
+
     function atualizarResumo() {
-        let resumoTxt = "";
-        let total = 0;
+        let txt = ""; let total = 0;
         for (let i in carrinho) {
-            if (carrinho[i] > 0) {
-                resumoTxt += `• ${carrinho[i]}x ${listaBolos[i].nome_do_bolo}<br>`;
-                total += carrinho[i] * 18;
+            if (carrinho[i].q > 0) {
+                txt += `${carrinho[i].q}x ${listaBolos[i].nome_do_bolo} ${carrinho[i].c ? '('+carrinho[i].c+')' : ''}<br>`;
+                total += carrinho[i].q * 18;
             }
         }
-        document.getElementById('resumo').innerHTML = resumoTxt || "Nenhum item selecionado.";
+        document.getElementById('resumo').innerHTML = txt || "Selecione suas fatias acima.";
         document.getElementById('total-valor').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
     }
 
+    function toggleBastidores() {
+        const s = document.getElementById('secao-bastidores');
+        s.style.display = s.style.display === 'block' ? 'none' : 'block';
+    }
+
     function enviarPedido() {
-        let texto = "*NOVO PEDIDO - DOCE FATIA*\n\n";
-        let temItem = false;
+        let m = "*NOVO PEDIDO DOCE FATIA*\n\n";
         for (let i in carrinho) {
-            if (carrinho[i] > 0) {
-                texto += `${carrinho[i]}x ${listaBolos[i].nome_do_bolo}\n`;
-                temItem = true;
-            }
+            if (carrinho[i].q > 0) m += `${carrinho[i].q}x ${listaBolos[i].nome_do_bolo} ${carrinho[i].c}\n`;
         }
-        if (!temItem) return alert("Selecione pelo menos uma fatia!");
-        window.location.href = `https://wa.me/5535991441589?text=${encodeURIComponent(texto)}`;
+        window.location.href = `https://wa.me/5535991441589?text=${encodeURIComponent(m)}`;
     }
 
     carregarBolos();
