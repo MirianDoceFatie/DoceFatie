@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confeitaria Doce Fatia - Itajubá</title>
+    <!-- Script necessário para o gerenciamento de senha e login -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <style>
         :root { --rosa-topo: #ff69b4; --rosa-fundo: #fce4ec; --rosa-botao: #ff4081; --whatsapp: #25d366; --marrom: #4e342e; }
         body { font-family: sans-serif; background-color: var(--rosa-fundo); margin: 0; padding-bottom: 50px; color: var(--marrom); }
@@ -208,7 +210,6 @@
         document.getElementById('box-retirada').style.display = m === 'Retirada' ? 'block' : 'none';
     }
 
-    // NOVA FUNÇÃO DE RESERVA
     function reservarFatia(nome, data) {
         const mensagem = `Olá! Vi no site que o sabor ${nome} está esgotado no momento. Gostaria de deixar uma *reserva* para quando estiver disponível (${data})!`;
         window.location.href = `https://wa.me/5535991441589?text=${encodeURIComponent(mensagem)}`;
@@ -231,7 +232,20 @@
         window.location.href = `https://wa.me/5535991441589?text=${encodeURIComponent(m)}`;
     }
 
-    window.onload = () => { renderVitrine(); renderBastidores(); };
+    window.onload = () => { 
+        renderVitrine(); 
+        renderBastidores();
+        // Verifica se o usuário veio de um link de recuperação
+        if (window.netlifyIdentity) {
+            window.netlifyIdentity.on("init", user => {
+                if (!user) {
+                    window.netlifyIdentity.on("login", () => {
+                        document.location.href = "/admin/";
+                    });
+                }
+            });
+        }
+    };
 </script>
 </body>
 </html>
