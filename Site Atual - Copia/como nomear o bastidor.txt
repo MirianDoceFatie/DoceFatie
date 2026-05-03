@@ -1,5 +1,0 @@
-Fotos: De Bastidor1.jpg até Bastidor15.jpg.
-
-Vídeos: De Video1.mp4 até Video15.mp4. Primeira maiuscula
-
-Dica de Itajubense: Lembre-se de que o Windows às vezes diferencia .jpg de .JPG (maiúsculo). Salve sempre em minúsculo para garantir que o código encontre o arquivo certinho!
