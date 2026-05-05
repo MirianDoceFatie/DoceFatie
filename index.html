@@ -3,56 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fatia QueroMais - Estoque Online</title>
+    <title>Fatia QueroMais - Itajubá</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --rosa: #ff69b4; --fundo: #fce4ec; --marrom: #4e342e; --whats: #25d366; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--fundo); color: var(--marrom); margin: 0; text-align: center; }
-        header { background: var(--rosa); color: white; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .container { max-width: 800px; margin: auto; padding: 20px; }
-        .vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); padding-bottom: 15px; }
-        .img-fatia { width: 100%; height: 160px; object-fit: cover; background: #eee; }
-        .btn-whats { background: var(--whats); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 90%; margin-top: 10px; text-decoration: none; display: inline-block; }
+        :root { --rosa: #ff69b4; --fundo: #fff5f8; --marrom: #5d4037; --whats: #25d366; }
+        body { font-family: 'Poppins', sans-serif; background: var(--fundo); color: var(--marrom); margin: 0; }
+        header { background: var(--rosa); color: white; padding: 30px 20px; text-align: center; border-radius: 0 0 30px 30px; box-shadow: 0 4px 15px rgba(255,105,180,0.3); }
+        .container { max-width: 1000px; margin: auto; padding: 20px; }
+        .vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; margin-top: 20px; }
+        .card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.08); transition: 0.3s; border: 1px solid #ffe0ea; }
+        .card:hover { transform: translateY(-5px); }
+        .img-fatia { width: 100%; height: 200px; object-fit: cover; }
+        .info { padding: 15px; text-align: center; }
+        .info h3 { margin: 10px 0; font-size: 1.2rem; color: var(--marrom); }
+        .qtd { background: #fff0f5; color: var(--rosa); padding: 5px 15px; border-radius: 20px; font-weight: bold; display: inline-block; margin-bottom: 15px; }
+        .btn-whats { background: var(--whats); color: white; text-decoration: none; padding: 12px; border-radius: 12px; display: block; font-weight: bold; box-shadow: 0 4px 10px rgba(37,211,102,0.3); }
     </style>
 </head>
 <body>
 
 <header>
     <h1>🍰 Fatia QueroMais</h1>
-    <p>Estoque em Tempo Real - Itajubá</p>
+    <p>Bolos Artesanais em Itajubá</p>
 </header>
 
 <div class="container">
-    <div id="vitrine" class="vitrine">Carregando estoque...</div>
+    <div id="vitrine" class="vitrine">Carregando fatias deliciosas...</div>
 </div>
 
 <script>
-    // Conexão direta com sua conta Mi
     const supabaseClient = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
 
     async function carregarEstoque() {
-        // Buscando da tabela 'estoque' que você arrumou
         const { data, error } = await supabaseClient.from('estoque').select('*');
         const vitrine = document.getElementById('vitrine');
 
         if (error) {
-            console.error(error);
-            vitrine.innerHTML = "<p>Erro ao conectar. Verifique as colunas no Supabase.</p>";
-            return;
-        }
-
-        if (data.length === 0) {
-            vitrine.innerHTML = "<p>Nenhuma fatia cadastrada ainda.</p>";
+            vitrine.innerHTML = "<p>Estamos atualizando o estoque, volte em instantes!</p>";
             return;
         }
 
         vitrine.innerHTML = data.map(item => `
             <div class="card">
-                <img src="${item.foto}" class="img-fatia" onerror="this.src='https://via.placeholder.com/180x160?text=Bolo'">
-                <h3>${item.nome}</h3>
-                <p>Disponível: <strong>${item.quantidade}</strong></p>
-                <a href="https://wa.me/5535991441589?text=Oi Mi! Quero a fatia de ${item.nome}" class="btn-whats">Pedir no WhatsApp</a>
+                <img src="${item.foto}" class="img-fatia" alt="${item.nome}">
+                <div class="info">
+                    <h3>${item.nome}</h3>
+                    <div class="qtd">Disponível: ${item.quantidade || 0} fatias</div>
+                    <a href="https://wa.me/5535991441589?text=Oi Mi! Quero a fatia de ${item.nome}" class="btn-whats">Pedir no WhatsApp</a>
+                </div>
             </div>
         `).join('');
     }
