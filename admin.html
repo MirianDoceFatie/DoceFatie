@@ -15,10 +15,28 @@
         .card-estoque img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
         th, td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; }
+        
+        /* Novas Cores de Status */
+        .linha-venda { background-color: #e8f5e9 !important; } /* Fundo verde para pedidos pagos */
         .status-venda { color: #2cc149; font-weight: bold; }
         .status-cancelado { color: #f44336; font-weight: bold; }
+        .status-pendente { color: #666; font-style: italic; }
+        
         .btn-salvar { background: #f858a5; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
-        .btn-acao { border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; color: white; }
+        .btn-acao { border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; color: white; margin-right: 2px; }
+        
+        /* Barra de Ação em Lote */
+        #container-lote { 
+            margin-top: 15px; 
+            padding: 10px 20px; 
+            background: #f858a5; 
+            color: white; 
+            border-radius: 10px; 
+            display: none; 
+            justify-content: space-between; 
+            align-items: center;
+        }
+        .btn-lote { background: white; color: #f858a5; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -36,10 +54,19 @@
     </div>
 
     <div id="tab-relatorio" class="section" style="display:none;">
-        <h3>Relatório de Cliques (Vendas)</h3>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <h3>Relatório de Vendas</h3>
+            <!-- Barra que aparece ao selecionar pedidos -->
+            <div id="container-lote">
+                <span id="txt-selecionados">0 selecionados</span>
+                <button class="btn-lote" onclick="enviarLoteWhatsApp()">📲 Enviar p/ WhatsApp</button>
+            </div>
+        </div>
+
         <table>
             <thead>
                 <tr>
+                    <th><input type="checkbox" id="check-all" onclick="selecionarTodos(this)"></th>
                     <th>Data</th>
                     <th>Itens</th>
                     <th>Telefone</th>
@@ -53,7 +80,9 @@
     </div>
 
 <script>
+    // Configurações do seu Supabase
     const supabaseClient = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
+    let pedidosLocais = [];
 
     function showTab(tab) {
         document.getElementById('tab-estoque').style.display = tab === 'estoque' ? 'block' : 'none';
@@ -88,25 +117,66 @@
 
     async function carregarRelatorio() {
         const { data } = await supabaseClient.from('pedidos').select('*').order('created_at', { ascending: false });
+        pedidosLocais = data;
         const lista = document.getElementById('lista-pedidos');
-        lista.innerHTML = data.map(p => `
-            <tr>
+        
+        lista.innerHTML = data.map(p => {
+            const statusLower = (p.status || 'pendente').toLowerCase();
+            const isVenda = statusLower === 'venda';
+            return `
+            <tr class="${isVenda ? 'linha-venda' : ''}">
+                <td><input type="checkbox" class="check-pedido" value="${p.id}" onchange="atualizarContadorLote()"></td>
                 <td>${new Date(p.created_at).toLocaleDateString()}</td>
                 <td style="font-size:0.75rem;">${p.itens}</td>
                 <td><a href="https://wa.me/55${p.telefone.replace(/\D/g,'')}" target="_blank" style="color:#2cc149; font-weight:bold;">${p.telefone}</a></td>
                 <td>R$ ${p.valor.toFixed(2)}</td>
-                <td class="status-${p.status.toLowerCase()}">${p.status}</td>
+                <td class="status-${statusLower}">${p.status || 'Pendente'}</td>
                 <td>
                     <button class="btn-acao" style="background:#2cc149" onclick="setStatus(${p.id}, 'Venda')">✅</button>
                     <button class="btn-acao" style="background:#f44336" onclick="setStatus(${p.id}, 'Cancelado')">❌</button>
                 </td>
             </tr>
-        `).join('');
+        `}).join('');
+        atualizarContadorLote();
+    }
+
+    function atualizarContadorLote() {
+        const selecionados = document.querySelectorAll('.check-pedido:checked').length;
+        const bar = document.getElementById('container-lote');
+        document.getElementById('txt-selecionados').innerText = `${selecionados} pedidos selecionados`;
+        bar.style.display = selecionados > 0 ? 'flex' : 'none';
+    }
+
+    function selecionarTodos(master) {
+        document.querySelectorAll('.check-pedido').forEach(cb => cb.checked = master.checked);
+        atualizarContadorLote();
     }
 
     async function setStatus(id, st) {
         await supabaseClient.from('pedidos').update({ status: st }).eq('id', id);
         carregarRelatorio();
+    }
+
+    async function enviarLoteWhatsApp() {
+        const selecionadosIds = Array.from(document.querySelectorAll('.check-pedido:checked')).map(cb => parseInt(cb.value));
+        const pedidosParaEnviar = pedidosLocais.filter(p => selecionadosIds.includes(p.id));
+
+        let msg = "*🧁 LISTA DE PRODUÇÃO - MII CAKES*\n\n";
+        pedidosParaEnviar.forEach((p, index) => {
+            msg += `*PRODUÇÃO #${index + 1}*\n`;
+            msg += `📝 ${p.itens}\n`;
+            msg += `--------------------------\n`;
+        });
+
+        // Abre WhatsApp para escolher o contato livremente
+        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+
+        if(confirm("Marcar esses pedidos como pagos (Verde) agora?")) {
+            for(let id of selecionadosIds) {
+                await supabaseClient.from('pedidos').update({ status: 'Venda' }).eq('id', id);
+            }
+            carregarRelatorio();
+        }
     }
 
     window.onload = carregarEstoque;
