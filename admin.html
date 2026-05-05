@@ -16,8 +16,7 @@
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
         th, td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; }
         
-        /* Novas Cores de Status */
-        .linha-venda { background-color: #e8f5e9 !important; } /* Fundo verde para pedidos pagos */
+        .linha-venda { background-color: #e8f5e9 !important; } 
         .status-venda { color: #2cc149; font-weight: bold; }
         .status-cancelado { color: #f44336; font-weight: bold; }
         .status-pendente { color: #666; font-style: italic; }
@@ -25,7 +24,6 @@
         .btn-salvar { background: #f858a5; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
         .btn-acao { border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; color: white; margin-right: 2px; }
         
-        /* Barra de Ação em Lote */
         #container-lote { 
             margin-top: 15px; 
             padding: 10px 20px; 
@@ -37,6 +35,7 @@
             align-items: center;
         }
         .btn-lote { background: white; color: #f858a5; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .badge-reserva { background: #ff9800; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -46,6 +45,7 @@
     <div class="tabs">
         <button class="tab-btn active" id="btn-tab-est" onclick="showTab('estoque')">📦 Estoque</button>
         <button class="tab-btn" id="btn-tab-rel" onclick="showTab('relatorio')">📊 Relatório</button>
+        <button class="tab-btn" id="btn-tab-res" onclick="showTab('reservas')">📅 Reservas Sábado</button>
     </div>
 
     <div id="tab-estoque" class="section">
@@ -55,18 +55,16 @@
 
     <div id="tab-relatorio" class="section" style="display:none;">
         <div style="display: flex; flex-direction: column; gap: 10px;">
-            <h3>Relatório de Vendas</h3>
-            <!-- Barra que aparece ao selecionar pedidos -->
+            <h3>Relatório Geral</h3>
             <div id="container-lote">
                 <span id="txt-selecionados">0 selecionados</span>
                 <button class="btn-lote" onclick="enviarLoteWhatsApp()">📲 Enviar p/ WhatsApp</button>
             </div>
         </div>
-
         <table>
             <thead>
                 <tr>
-                    <th><input type="checkbox" id="check-all" onclick="selecionarTodos(this)"></th>
+                    <th><input type="checkbox" onclick="selecionarTodos(this)"></th>
                     <th>Data</th>
                     <th>Itens</th>
                     <th>Telefone</th>
@@ -79,17 +77,37 @@
         </table>
     </div>
 
+    <!-- NOVA SEÇÃO DE RESERVAS -->
+    <div id="tab-reservas" class="section" style="display:none;">
+        <h3>📌 Reservas para Sábado</h3>
+        <p style="font-size: 0.8rem; color: #666;">Lista de itens marcados como [RESERVA] no sistema.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Itens Reservados</th>
+                    <th>Telefone</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="lista-reservas-sabado"></tbody>
+        </table>
+    </div>
+
 <script>
-    // Configurações do seu Supabase
     const supabaseClient = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
     let pedidosLocais = [];
 
     function showTab(tab) {
         document.getElementById('tab-estoque').style.display = tab === 'estoque' ? 'block' : 'none';
         document.getElementById('tab-relatorio').style.display = tab === 'relatorio' ? 'block' : 'none';
+        document.getElementById('tab-reservas').style.display = tab === 'reservas' ? 'block' : 'none';
+        
         document.getElementById('btn-tab-est').classList.toggle('active', tab === 'estoque');
         document.getElementById('btn-tab-rel').classList.toggle('active', tab === 'relatorio');
-        if(tab === 'relatorio') carregarRelatorio();
+        document.getElementById('btn-tab-res').classList.toggle('active', tab === 'reservas');
+        
+        if(tab === 'relatorio' || tab === 'reservas') carregarRelatorio();
     }
 
     async function carregarEstoque() {
@@ -118,9 +136,10 @@
     async function carregarRelatorio() {
         const { data } = await supabaseClient.from('pedidos').select('*').order('created_at', { ascending: false });
         pedidosLocais = data;
-        const lista = document.getElementById('lista-pedidos');
         
-        lista.innerHTML = data.map(p => {
+        // Renderiza Relatório Geral
+        const listaGeral = document.getElementById('lista-pedidos');
+        listaGeral.innerHTML = data.map(p => {
             const statusLower = (p.status || 'pendente').toLowerCase();
             const isVenda = statusLower === 'venda';
             return `
@@ -137,13 +156,27 @@
                 </td>
             </tr>
         `}).join('');
+
+        // Renderiza apenas Reservas
+        const listaReservas = document.getElementById('lista-reservas-sabado');
+        const reservas = data.filter(p => p.itens.includes('[RESERVA]'));
+        
+        listaReservas.innerHTML = reservas.map(r => `
+            <tr>
+                <td><b>Cliente</b></td>
+                <td style="font-size:0.75rem;"><span class="badge-reserva">SÁBADO</span> ${r.itens}</td>
+                <td><a href="https://wa.me/55${r.telefone.replace(/\D/g,'')}" target="_blank" style="color:#2cc149;">${r.telefone}</a></td>
+                <td>${r.status}</td>
+            </tr>
+        `).join('') || '<tr><td colspan="4">Nenhuma reserva encontrada.</td></tr>';
+
         atualizarContadorLote();
     }
 
     function atualizarContadorLote() {
         const selecionados = document.querySelectorAll('.check-pedido:checked').length;
         const bar = document.getElementById('container-lote');
-        document.getElementById('txt-selecionados').innerText = `${selecionados} pedidos selecionados`;
+        document.getElementById('txt-selecionados').innerText = `${selecionados} selecionados`;
         bar.style.display = selecionados > 0 ? 'flex' : 'none';
     }
 
@@ -163,15 +196,12 @@
 
         let msg = "*🧁 LISTA DE PRODUÇÃO - MII CAKES*\n\n";
         pedidosParaEnviar.forEach((p, index) => {
-            msg += `*PRODUÇÃO #${index + 1}*\n`;
-            msg += `📝 ${p.itens}\n`;
-            msg += `--------------------------\n`;
+            msg += `*PRODUÇÃO #${index + 1}*\n📝 ${p.itens}\n--------------------------\n`;
         });
 
-        // Abre WhatsApp para escolher o contato livremente
         window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
 
-        if(confirm("Marcar esses pedidos como pagos (Verde) agora?")) {
+        if(confirm("Marcar esses pedidos como finalizados (Verde)?")) {
             for(let id of selecionadosIds) {
                 await supabaseClient.from('pedidos').update({ status: 'Venda' }).eq('id', id);
             }
