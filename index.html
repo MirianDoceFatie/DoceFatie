@@ -3,192 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mii Cakes - Vitrine</title>
+    <title>Mii Cakes - Fatias Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fdf2f7; margin: 0; padding: 0; color: #333; }
-        .header { background: #f858a5; color: white; padding: 25px; text-align: center; border-radius: 0 0 30px 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .container { padding: 15px; max-width: 500px; margin: auto; }
-        .card { background: white; border-radius: 20px; padding: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .card img { width: 90px; height: 90px; border-radius: 15px; object-fit: cover; }
-        .info { flex: 1; }
-        .info h3 { margin: 0; font-size: 1.1rem; color: #d03078; }
-        .info p { margin: 5px 0; font-size: 0.9rem; color: #666; }
-        .preco { font-weight: bold; color: #f858a5; font-size: 1.1rem; }
+        :root { --rosa-topo: #ff69b4; --rosa-fundo: #fff0f5; --rosa-botao: #ff4081; --marrom: #5d4037; }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--rosa-fundo); margin: 0; padding-bottom: 50px; color: var(--marrom); }
         
-        .controls { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-        .btn-count { background: #f858a5; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
-        .count { font-weight: bold; font-size: 1rem; width: 20px; text-align: center; }
+        header { background-color: var(--rosa-topo); color: white; text-align: center; padding: 30px 10px; }
+        header h1 { margin: 0; font-family: 'Great Vibes', cursive; font-size: 3.5rem; font-weight: normal; }
+        .subtitulo { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 3px; margin-top: 5px; opacity: 0.9; }
+        .preco-tag { font-weight: 600; font-size: 1rem; display: block; margin: 10px auto; background: rgba(0,0,0,0.1); padding: 5px 20px; border-radius: 20px; width: fit-content; }
+        .btn-bastidores { background: white; color: var(--rosa-topo); border: none; padding: 8px 15px; border-radius: 15px; font-weight: 600; font-size: 0.65rem; text-transform: uppercase; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+
+        .container { max-width: 1000px; margin: auto; padding: 20px; }
         
-        select { width: 100%; padding: 8px; border-radius: 10px; border: 1px solid #ddd; margin-top: 5px; background: #fffafc; }
+        .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; }
+        .img-container { width: 90%; height: 180px; margin: 10px auto; border-radius: 10px; overflow: hidden; position: relative; }
+        .img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .badge-reserva { position: absolute; top: 8px; left: 8px; background: rgba(136, 14, 79, 0.7); color: white; padding: 4px 10px; border-radius: 10px; font-size: 0.55rem; font-weight: 600; text-transform: uppercase; }
+
+        .nome-produto { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 10px 5px; height: 30px; display: flex; align-items: center; justify-content: center; }
+        .info-fornada { font-size: 0.6rem; color: #888; margin-bottom: 10px; }
         
-        .carrinho-fixo { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px; border-radius: 30px 30px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        .btn-whatsapp { background: #2cc149; color: white; border: none; width: 100%; padding: 15px; border-radius: 15px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px; }
-        .btn-whatsapp:disabled { background: #ccc; }
-        
-        .badge-reserva { background: #ff9800; color: white; padding: 3px 8px; border-radius: 5px; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; display: inline-block; }
-        input[type="text"], input[type="tel"] { width: 93%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; margin-top: 8px; }
+        .controles { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .btn-circular { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; }
+        .select-calda { width: 85%; padding: 6px; border-radius: 8px; border: 1px solid #eee; font-size: 0.7rem; color: #666; background: #fafafa; }
+
+        .checkout-box { background: white; border-radius: 15px; padding: 25px; max-width: 700px; margin: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .checkout-box h3 { text-align: center; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 0; }
+        .resumo-texto { border-left: 3px solid var(--rosa-topo); padding-left: 15px; color: #888; font-size: 0.8rem; margin: 15px 0; min-height: 20px; }
+
+        .input-padrao { width: 100%; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 12px; font-family: 'Montserrat'; box-sizing: border-box; background: #fafafa; font-size: 0.85rem; }
+
+        .botoes-metodo { display: flex; gap: 10px; margin-bottom: 15px; }
+        .btn-opcao { flex: 1; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; text-align: center; cursor: pointer; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #aaa; }
+        .btn-opcao.ativo { border-color: var(--rosa-topo); color: var(--rosa-topo); background: #fff5f8; }
+
+        .form-entrega-grid { display: flex; gap: 10px; margin-bottom: 15px; }
+        .aviso-retirada { background: #fff9c4; padding: 15px; border-radius: 8px; border: 1px solid #fbc02d; margin-bottom: 15px; font-size: 0.85rem; text-align: left; }
+
+        .pagamento-grid { display: flex; gap: 8px; margin-bottom: 20px; }
+        .btn-pag { flex: 1; padding: 10px; border: 1px solid #f0f0f0; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; background: white; text-align: center; }
+        .btn-pag.selecionado { background: var(--rosa-topo); color: white; border-color: var(--rosa-topo); }
+
+        .total-display { text-align: center; font-weight: bold; font-size: 1.2rem; margin: 20px 0; border-top: 1px dashed #eee; padding-top: 15px; }
+        .btn-finalizar { background: var(--marrom); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; text-transform: uppercase; cursor: pointer; letter-spacing: 1px; }
+        .msg-frete-alerta { font-size: 0.65rem; color: #d81b60; display: none; margin-top: 5px; font-style: italic; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h1 style="margin:0;">Mii Cakes 🍰</h1>
-    <p style="margin:5px 0 0;">Fatias Premium & Gourmet</p>
-</div>
+<header>
+    <h1>Mii Cakes</h1>
+    <div class="subtitulo">Fatias Fresquinhas</div>
+    <span class="preco-tag">R$ 18,00</span>
+    <a href="#" class="btn-bastidores">✨ Ver Bastidores</a>
+</header>
 
-<div class="container" id="lista-bolos" style="margin-bottom: 300px;">
-    <!-- Itens carregados via JS -->
-</div>
+<div class="container">
+    <div id="vitrine" class="grid-fatias"></div>
 
-<div class="carrinho-fixo">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <span style="font-weight: bold; color: #666;">Total do Pedido:</span>
-        <span id="total-valor" style="font-size: 1.4rem; font-weight: bold; color: #f858a5;">R$ 0,00</span>
+    <div class="checkout-box">
+        <h3>Resumo do Pedido</h3>
+        <div id="resumo-lista" class="resumo-texto">Escolha suas delícias acima.</div>
+
+        <input type="text" id="nome-cliente" class="input-padrao" placeholder="Seu Nome Completo">
+        <input type="tel" id="whatsapp" class="input-padrao" placeholder="Seu WhatsApp (Ex: 35 99999-9999)" maxlength="15">
+
+        <div class="botoes-metodo">
+            <div id="opt-entrega" class="btn-opcao" onclick="mudarMetodo('Entrega')">Entrega</div>
+            <div id="opt-retirada" class="btn-opcao" onclick="mudarMetodo('Retirar')">Retirar</div>
+        </div>
+
+        <div id="campos-entrega" style="display:none;">
+            <div class="form-entrega-grid">
+                <input type="text" id="rua" class="input-padrao" style="flex: 2; margin-bottom: 0;" placeholder="Rua e número">
+                <input type="text" id="bairro" class="input-padrao" style="flex: 1; margin-bottom: 0;" placeholder="Bairro">
+            </div>
+        </div>
+
+        <div id="campos-retirada" class="aviso-retirada" style="display:none;">
+            <strong>Local de Retirada:</strong><br>
+            Rua Maria Rodrigues Munis, nº 50, Bairro Rebourgeon
+        </div>
+
+        <div class="pagamento-grid">
+            <div class="btn-pag" id="pag-pix" onclick="escolherPag('Pix')">Pix</div>
+            <div class="btn-pag" id="pag-cartao" onclick="escolherPag('Cartão')">Cartão</div>
+            <div id="pag-link" class="btn-pag" onclick="escolherPag('Link de Pagamento')">Link de Pagamento</div>
+        </div>
+
+        <div class="total-display">
+            TOTAL: <span id="total-val" style="color:var(--rosa-botao)">R$ 0,00</span>
+            <span id="alerta-frete" class="msg-frete-alerta">Envie o pedido para consultar taxa de entrega</span>
+        </div>
+
+        <button class="btn-finalizar" onclick="gerarWhatsApp()">Finalizar Pedido</button>
     </div>
-
-    <input type="tel" id="cli-tel" placeholder="Seu WhatsApp (Ex: 35 99999-9999)" oninput="this.value = this.value.replace(/\D/g,'')">
-    
-    <div style="display: flex; gap: 5px; margin-top: 10px;">
-        <button onclick="setMetodo('Retirada')" id="btn-ret" style="flex:1; padding: 10px; border-radius: 10px; border: 1px solid #ddd; background: white; cursor: pointer;">Retirada</button>
-        <button onclick="setMetodo('Entrega')" id="btn-ent" style="flex:1; padding: 10px; border-radius: 10px; border: 1px solid #ddd; background: white; cursor: pointer;">Entrega</button>
-    </div>
-
-    <div id="campos-entrega" style="display:none;">
-        <input type="text" id="end-rua" placeholder="Rua e Número">
-        <input type="text" id="end-bairro" placeholder="Bairro">
-    </div>
-
-    <select id="pagamento" onchange="pg = this.value" style="margin-top: 10px;">
-        <option value="Pix">Pagar no Pix</option>
-        <option value="Cartão">Cartão de Crédito/Débito</option>
-        <option value="Dinheiro">Dinheiro (Espécie)</option>
-    </select>
-
-    <button class="btn-whatsapp" onclick="enviarPedido()">Fazer Pedido</button>
 </div>
 
 <script>
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
-    let bolos = [];
-    let carrinho = {};
-    let mtd = "";
-    let pg = "Pix";
-    let valorTotalGlobal = 0;
+    let listaBolos = [];
+    let meuCarrinho = {};
+    let modoEntrega = "";
+    let modoPagamento = "";
 
-    async function carregar() {
-        const { data } = await _supa.from('estoque').select('*').order('nome');
-        bolos = data;
-        render();
-    }
-
-    function render() {
-        document.getElementById('lista-bolos').innerHTML = bolos.map((b, i) => {
-            const esgotado = b.Quantidade <= 0;
-            return `
-            <div class="card" style="${esgotado ? 'opacity: 0.8;' : ''}">
-                <img src="${b.foto}">
-                <div class="info">
-                    ${esgotado ? `<span class="badge-reserva">RESERVA PARA ${b.proxima_data || 'Sábado'}</span>` : ''}
-                    <h3>${b.nome}</h3>
-                    <p>${b.descricao || 'Fatia artesanal premium.'}</p>
-                    <div class="preco">R$ ${b.Preco.toFixed(2)}</div>
-                    
-                    <select onchange="updateCalda(${i}, this.value)">
-                        <option value="Sem Calda">Sem Calda Extra</option>
-                        <option value="Ninho">Calda de Ninho</option>
-                        <option value="Chocolate">Calda de Chocolate</option>
-                    </select>
-
-                    <div class="controls">
-                        <button class="btn-count" onclick="update(${i}, -1)">-</button>
-                        <span class="count" id="count-${i}">0</span>
-                        <button class="btn-count" onclick="update(${i}, 1)">+</button>
-                    </div>
+    async function carregarDados() {
+        const { data } = await _supa.from('estoque').select('*');
+        listaBolos = data || [];
+        document.getElementById('vitrine').innerHTML = listaBolos.map((b, i) => `
+            <div class="card-bolo">
+                <div class="img-container">
+                    <div class="badge-reserva">Reserve Agora</div>
+                    <img src="${b.foto}">
                 </div>
+                <div class="nome-produto">${b.nome}</div>
+                <div class="info-fornada">🧁 Próxima fornada: <b>Sábado</b></div>
+                <div class="controles">
+                    <button class="btn-circular" onclick="ajustar(${i},-1)">-</button>
+                    <span id="qtd-${i}" style="font-weight:bold;">0</span>
+                    <button class="btn-circular" onclick="ajustar(${i},1)">+</button>
+                </div>
+                <!-- AJUSTE: Texto visível e opção sem calda -->
+                <select id="calda-${i}" class="select-calda" onchange="atualizarInterface()">
+                    <option value="" disabled selected>Selecionar Calda</option>
+                    <option value="Sem calda">Sem calda</option>
+                    <option value="Chocolate">Chocolate</option>
+                    <option value="Ninho">Ninho</option>
+                </select>
             </div>
-        `}).join('');
+        `).join('');
     }
 
-    function update(i, v) {
-        if(!carrinho[i]) carrinho[i] = { q: 0, calda: "Sem Calda" };
-        carrinho[i].q = Math.max(0, carrinho[i].q + v);
-        document.getElementById(`count-${i}`).innerText = carrinho[i].q;
-        calc();
+    function ajustar(i, v) {
+        if(!meuCarrinho[i]) meuCarrinho[i] = 0;
+        let novo = meuCarrinho[i] + v;
+        if(novo >= 0) {
+            meuCarrinho[i] = novo;
+            document.getElementById(`qtd-${i}`).innerText = novo;
+            atualizarInterface();
+        }
     }
 
-    function updateCalda(i, calda) {
-        if(!carrinho[i]) carrinho[i] = { q: 0, calda: "Sem Calda" };
-        carrinho[i].calda = calda;
-    }
-
-    function calc() {
-        let total = 0;
-        for(let i in carrinho) total += carrinho[i].q * bolos[i].Preco;
-        valorTotalGlobal = total;
-        document.getElementById('total-valor').innerText = `R$ ${total.toFixed(2)}`;
-    }
-
-    function setMetodo(m) {
-        mtd = m;
-        document.getElementById('campos-entrega').style.display = m === 'Entrega' ? 'block' : 'none';
-        document.getElementById('btn-ent').style.background = m === 'Entrega' ? '#f858a5' : 'white';
-        document.getElementById('btn-ent').style.color = m === 'Entrega' ? 'white' : '#333';
-        document.getElementById('btn-ret').style.background = m === 'Retirada' ? '#f858a5' : 'white';
-        document.getElementById('btn-ret').style.color = m === 'Retirada' ? 'white' : '#333';
-    }
-
-    async function enviarPedido() {
-        const telCliente = document.getElementById('cli-tel').value;
-        if(telCliente.length < 10 || !mtd) return alert("Informe seu WhatsApp e escolha Entrega ou Retirada.");
-        
-        let itensMsg = ""; 
-        let itensRelatorio = ""; 
-        let tem = false;
-
-        for(let i in carrinho) {
-            if(carrinho[i].q > 0) {
-                tem = true;
-                let tipoItem = bolos[i].Quantidade <= 0 ? "[RESERVA]" : "[PRONTA]";
-                itensMsg += `${carrinho[i].q}x ${bolos[i].nome} (${carrinho[i].calda}) ${tipoItem}\n`;
-                itensRelatorio += `${carrinho[i].q}x ${bolos[i].nome} (${carrinho[i].calda}) ${tipoItem}; `;
+    function atualizarInterface() {
+        let soma = 0; let lista = "";
+        listaBolos.forEach((b, i) => {
+            if(meuCarrinho[i] > 0) {
+                const caldaElement = document.getElementById(`calda-${i}`);
+                const calda = caldaElement.value || "Sem calda selecionada";
+                soma += meuCarrinho[i] * 18;
+                lista += `• ${meuCarrinho[i]}x ${b.nome} (${calda})<br>`;
             }
-        }
-        
-        if(!tem) return alert("Seu carrinho está vazio!");
-
-        const btn = document.querySelector('.btn-whatsapp');
-        btn.innerText = "Registrando...";
-        btn.disabled = true;
-
-        try {
-            // SALVA NO BANCO ANTES DE ABRIR WHATSAPP
-            await _supa.from('pedidos').insert([
-                { 
-                    itens: itensRelatorio, 
-                    valor: valorTotalGlobal, 
-                    telefone: telCliente,
-                    status: 'Pendente'
-                }
-            ]);
-        } catch (e) { console.error(e); }
-
-        let msg = `*NOVO PEDIDO MII CAKES*\n\n${itensMsg}\n*Total:* ${document.getElementById('total-valor').innerText}\n*Pagamento:* ${pg}\n*WhatsApp Cliente:* ${telCliente}\n\n*Opção:* ${mtd}`;
-        
-        if(mtd === 'Entrega') {
-            msg += `\n*Endereço:* ${document.getElementById('end-rua').value} - ${document.getElementById('end-bairro').value}`;
-        } else {
-            msg += `\n*Local Retirada:* Rua Maria Rodrigues Munis, 50 - Rebourgeon`;
-        }
-
-        setTimeout(() => {
-            btn.innerText = "Fazer Pedido";
-            btn.disabled = false;
-            window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msg)}`);
-        }, 600);
+        });
+        document.getElementById('resumo-lista').innerHTML = lista || "Escolha suas delícias acima.";
+        document.getElementById('total-val').innerText = `R$ ${soma.toFixed(2).replace('.', ',')}`;
     }
 
-    window.onload = carregar;
+    function mudarMetodo(m) {
+        modoEntrega = m;
+        document.getElementById('opt-entrega').classList.toggle('ativo', m === 'Entrega');
+        document.getElementById('opt-retirada').classList.toggle('ativo', m === 'Retirar');
+        document.getElementById('campos-entrega').style.display = m === 'Entrega' ? 'block' : 'none';
+        document.getElementById('campos-retirada').style.display = m === 'Retirar' ? 'block' : 'none';
+        document.getElementById('alerta-frete').style.display = m === 'Entrega' ? 'block' : 'none';
+    }
+
+    function escolherPag(p) {
+        modoPagamento = p;
+        document.getElementById('pag-pix').classList.toggle('selecionado', p === 'Pix');
+        document.getElementById('pag-cartao').classList.toggle('selecionado', p === 'Cartão');
+        document.getElementById('pag-link').classList.toggle('selecionado', p === 'Link de Pagamento');
+    }
+
+    function gerarWhatsApp() {
+        const nome = document.getElementById('nome-cliente').value;
+        const whats = document.getElementById('whatsapp').value;
+        if(!nome || !whats) return alert("Por favor, preencha seu nome e WhatsApp.");
+        if(!modoEntrega || !modoPagamento) return alert("Selecione a forma de entrega e pagamento.");
+        
+        let m = `*PEDIDO MII CAKES*\n`;
+        m += `*Cliente:* ${nome}\n\n`;
+        listaBolos.forEach((b, i) => {
+            if(meuCarrinho[i] > 0) {
+                const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
+                m += `${meuCarrinho[i]}x ${b.nome} (${calda})\n`;
+            }
+        });
+        m += `\n*Forma:* ${modoEntrega}\n*Pagamento:* ${modoPagamento}`;
+        if(modoEntrega === 'Entrega') m += `\n*Endereço:* ${document.getElementById('rua').value}, ${document.getElementById('bairro').value}`;
+        
+        window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(m)}`);
+    }
+
+    window.onload = carregarDados;
 </script>
 </body>
 </html>
