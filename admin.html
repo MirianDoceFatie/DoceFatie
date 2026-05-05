@@ -1,1 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle - Doce Fatia</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; background: #fdf2f7; padding: 20px; color: #333; }
+        .header { text-align: center; margin-bottom: 30px; color: #f858a5; }
+        .card-admin { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px; }
+        .card-admin img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; }
+        .info { flex: 1; }
+        .info h3 { margin: 0 0 10px; font-size: 1rem; }
+        .campos { display: flex; gap: 10px; flex-wrap: wrap; }
+        input { padding: 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 0.9rem; }
+        .btn-salvar { background: #2cc149; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .loading { text-align: center; font-style: italic; color: #888; }
+    </style>
+</head>
+<body>
 
+<div class="header">
+    <h1>Painel de Estoque 🍰</h1>
+    <p>Atualize as fatias e datas de retorno</p>
+</div>
+
+<div id="lista-admin">
+    <div class="loading">Carregando estoque...</div>
+</div>
+
+<script>
+    const supabaseClient = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
+    
+    async function carregarAdmin() {
+        const { data } = await supabaseClient.from('estoque').select('*').order('nome');
+        const container = document.getElementById('lista-admin');
+        
+        container.innerHTML = data.map(bolo => `
+            <div class="card-admin">
+                <img src="${bolo.foto}">
+                <div class="info">
+                    <h3>${bolo.nome}</h3>
+                    <div class="campos">
+                        <div>
+                            <small>Qtd:</small><br>
+                            <input type="number" id="qtd-${bolo.id}" value="${bolo.Quantidade}" style="width: 50px;">
+                        </div>
+                        <div>
+                            <small>Próxima Remessa (ex: Sexta):</small><br>
+                            <input type="text" id="data-${bolo.id}" value="${bolo.proxima_data || ''}" placeholder="Data ou dia">
+                        </div>
+                        <button class="btn-salvar" onclick="salvar(${bolo.id})">Salvar</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function salvar(id) {
+        const novaQtd = document.getElementById(`qtd-${id}`).value;
+        const novaData = document.getElementById(`data-${id}`).value;
+
+        const { error } = await supabaseClient
+            .from('estoque')
+            .update({ 
+                Quantidade: novaQtd,
+                proxima_data: novaData 
+            })
+            .eq('id', id);
+
+        if (error) {
+            alert("Erro ao salvar: " + error.message);
+        } else {
+            alert("Atualizado com sucesso!");
+            carregarAdmin();
+        }
+    }
+
+    window.onload = carregarAdmin;
+</script>
+</body>
+</html>
