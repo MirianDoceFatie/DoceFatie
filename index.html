@@ -1,174 +1,34 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confeitaria Doce Fatia</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root { --rosa-fundo: #fdf2f7; --rosa-header: #f858a5; --rosa-botao: #ff69b4; --whatsapp: #2cc149; }
-        body { font-family: sans-serif; background-color: var(--rosa-fundo); margin: 0; padding-bottom: 50px; }
-        header { background-color: var(--rosa-header); color: white; text-align: center; padding: 40px 15px; }
-        .btn-bastidores { background: white; color: var(--rosa-header); padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; }
-        .container { max-width: 1000px; margin: -20px auto 0; padding: 0 15px; }
-        .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; margin-top: 20px; }
-        .card-bolo { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; padding-bottom: 20px; position: relative; }
-        .img-container { width: 100%; height: 180px; position: relative; }
-        .img-container img { width: 100%; height: 100%; object-fit: cover; }
-        .tarja-nome { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.6); color: white; padding: 8px; font-size: 0.85rem; font-weight: bold; }
-        .status-estoque { font-size: 0.75rem; font-weight: bold; margin-top: 10px; color: var(--rosa-header); }
-        .proxima-data { font-size: 0.7rem; color: #888; margin-bottom: 10px; }
-        .controles { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 10px 0; }
-        .btn-qtd { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 1.2rem; }
-        .checkout { background: white; border-radius: 20px; padding: 30px; margin-top: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .btn-opcao { flex: 1; padding: 15px; border: 2px solid #f0f0f0; border-radius: 15px; text-align: center; cursor: pointer; font-weight: bold; color: #999; }
-        .btn-opcao.ativo { border-color: var(--rosa-botao); background: #fff5f9; color: var(--rosa-botao); }
-        .box-total { border: 1px dashed var(--rosa-botao); border-radius: 15px; padding: 20px; text-align: right; margin-bottom: 25px; }
-        .btn-whatsapp { background-color: var(--whatsapp); color: white; border: none; width: 100%; padding: 20px; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
-        .btn-pg { padding: 12px; border: 1px solid #eee; border-radius: 10px; text-align: center; cursor: pointer; font-size: 0.8rem; }
-        .btn-pg.ativo { background: var(--rosa-botao); color: white; }
-        /* Bloqueio visual para itens sem estoque */
-        .esgotado { opacity: 0.6; filter: grayscale(0.5); }
-    </style>
-</head>
-<body>
-
-<header>
-    <h1>Confeitaria Doce Fatia</h1>
-    <p>Fatias Fresquinhas do Dia — R$ 18,00</p>
-    <a href="https://www.instagram.com/fatiaqueromais/" target="_blank" class="btn-bastidores">✨ Ver Bastidores & Produção</a>
-</header>
-
-<div class="container">
-    <div id="vitrine" class="grid-fatias">Carregando...</div>
-
-    <div class="checkout">
-        <h2>Reservar meu Pedido</h2>
-        <div id="resumo" style="color:#888; margin-bottom:15px;">Selecione suas fatias.</div>
-        
-        <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <div id="btn-entrega" class="btn-opcao" onclick="setMetodo('Entrega')">Entrega</div>
-            <div id="btn-retirada" class="btn-opcao" onclick="setMetodo('Retirar')">Retirar</div>
-        </div>
-
-        <div id="campos-end" style="display:none; margin-bottom:20px;">
-            <input type="text" id="rua" placeholder="Rua e número" style="margin-bottom:10px;">
-            <input type="text" id="bairro" placeholder="Bairro">
-        </div>
-
-        <div class="box-total">
-            <div style="font-weight:bold; font-size:1.2rem;">Total: <span id="total-valor">R$ 0,00</span></div>
-            <div id="aviso-taxa" style="display:none; color:red; font-size:0.75rem;">Consulte a taxa de entrega pelo WhatsApp</div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:20px;">
-            <div class="btn-pg ativo" onclick="setPg('Pix', this)">Pix</div>
-            <div class="btn-pg" onclick="setPg('Cartão', this)">Cartão</div>
-            <div class="btn-pg" onclick="setPg('Link', this)">Link</div>
-        </div>
-
-        <button class="btn-whatsapp" onclick="confirmarReserva()">Reservar pelo WhatsApp</button>
-    </div>
-</div>
-
 <script>
-    const supabaseClient = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
-    let lista = []; let pedido = {}; let mtd = ""; let pg = "Pix";
-
-    async function load() {
-        const { data } = await supabaseClient.from('estoque').select('*');
-        lista = data;
-        render();
-    }
-
-    function render() {
-        document.getElementById('vitrine').innerHTML = lista.map((b, i) => {
-            const semEstoque = b.Quantidade <= 0;
-            return `
-            <div class="card-bolo ${semEstoque ? 'esgotado' : ''}">
-                <div class="img-container">
-                    <img src="${b.foto}">
-                    <div class="tarja-nome">${b.nome}</div>
-                </div>
-                <div class="status-estoque">${semEstoque ? 'ESGOTADO' : 'Disponível: ' + b.Quantidade}</div>
-                <div class="proxima-data">${semEstoque && b.proxima_data ? 'Próxima remessa: ' + b.proxima_data : ''}</div>
-                
-                <div class="controles">
-                    <button class="btn-qtd" onclick="qtd(${i}, -1)" ${semEstoque ? 'disabled' : ''}>-</button>
-                    <span id="q-${i}">0</span>
-                    <button class="btn-qtd" onclick="qtd(${i}, 1)" ${semEstoque ? 'disabled' : ''}>+</button>
-                </div>
-                <select id="c-${i}" style="width:80%; padding:5px; border-radius:10px;" onchange="calda(${i}, this.value)">
-                    <option value="Sem calda">Sem Calda</option>
-                    <option value="Chocolate">Chocolate</option>
-                    <option value="Ninho">Ninho</option>
-                </select>
-            </div>`;
-        }).join('');
-    }
-
-    function qtd(i, v) {
-        if (!pedido[i]) pedido[i] = { q: 0, calda: "Sem calda" };
-        let nq = pedido[i].q + v;
-        if (nq >= 0 && nq <= lista[i].Quantidade) {
-            pedido[i].q = nq;
-            document.getElementById(`q-${i}`).innerText = nq;
-            calc();
-        }
-    }
-
-    function calda(i, s) {
-        if (!pedido[i]) pedido[i] = { q: 0, calda: "Sem calda" };
-        pedido[i].calda = s;
-        if (pedido[i].q === 0 && s !== "Sem calda") qtd(i, 1);
-    }
-
-    function setMetodo(m) {
-        mtd = m;
-        document.getElementById('btn-entrega').classList.toggle('ativo', m === 'Entrega');
-        document.getElementById('btn-retirada').classList.toggle('ativo', m === 'Retirar');
-        document.getElementById('campos-end').style.display = m === 'Entrega' ? 'block' : 'none';
-        document.getElementById('aviso-taxa').style.display = m === 'Entrega' ? 'block' : 'none';
-    }
-
-    function setPg(p, el) {
-        pg = p;
-        document.querySelectorAll('.btn-pg').forEach(b => b.classList.remove('ativo'));
-        el.classList.add('ativo');
-    }
-
-    function calc() {
-        let t = 0; let res = "";
-        for (let i in pedido) {
-            if (pedido[i].q > 0) {
-                t += pedido[i].q * 18;
-                res += `• ${pedido[i].q}x ${lista[i].nome} (${pedido[i].calda})<br>`;
-            }
-        }
-        document.getElementById('resumo').innerHTML = res || "Selecione suas fatias.";
-        document.getElementById('total-valor').innerText = `R$ ${t.toFixed(2).replace('.', ',')}`;
-    }
+    // ... (mantenha as outras funções de carregar e renderizar que já funcionam)
 
     async function confirmarReserva() {
         if (!mtd) return alert("Escolha Entrega ou Retirada!");
         
-        // BAIXA AUTOMÁTICA NO SUPABASE
+        let resumoItens = "";
+        let total = 0;
+
+        // Prepara os dados e dá baixa no estoque
         for (let i in pedido) {
             if (pedido[i].q > 0) {
                 const novaQtd = lista[i].Quantidade - pedido[i].q;
+                resumoItens += `${pedido[i].q}x ${lista[i].nome} (${pedido[i].calda}); `;
+                total += pedido[i].q * 18;
+                
                 await supabaseClient.from('estoque').update({ Quantidade: novaQtd }).eq('id', lista[i].id);
             }
         }
 
-        let msg = `*RESERVA CONFIRMADA*\n\n`;
-        for (let i in pedido) { if (pedido[i].q > 0) msg += `✅ ${pedido[i].q}x ${lista[i].nome}\n`; }
-        msg += `\n*Total:* ${document.getElementById('total-valor').innerText}\n*Pagamento:* ${pg}`;
-        
-        window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msg)}`);
-        location.reload(); // Recarrega para mostrar estoque atualizado
-    }
+        // REGISTRA O CLIQUE NO BANCO DE DADOS PARA O RELATÓRIO
+        const { data, error } = await supabaseClient.from('pedidos').insert([
+            { 
+                itens: resumoItens, 
+                valor: total, 
+                status: 'Pendente' // Começa como pendente para você confirmar no Admin
+            }
+        ]);
 
-    window.onload = load;
+        let msg = `*NOVO PEDIDO CONFIRMADO*\n\n${resumoItens.replace(/; /g, '\n')}\n*Total:* R$ ${total}\n*Pagamento:* ${pg}`;
+        window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msg)}`);
+        location.reload();
+    }
 </script>
-</body>
-</html>
