@@ -44,6 +44,10 @@
         .btn-salvar { background: var(--marrom); color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; margin-top: 15px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         
         .btn-delete { color: var(--vermelho); cursor: pointer; font-weight: bold; font-size: 1.1rem; }
+        
+        /* Destaque para detalhes de entrega/pagamento */
+        .detalhes-logistica { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #ddd; font-size: 0.85rem; }
+        .titulo-detalhe { color: var(--rosa); font-weight: bold; display: block; margin-bottom: 3px; }
     </style>
 </head>
 <body>
@@ -67,7 +71,7 @@
     <div id="secao-estoque" class="secao">
         <h3>🍰 Gerenciar Vitrine</h3>
         <table id="tabela-estoque">
-            <thead><tr><th>Sabor</th><th width="70">Qtd</th><th>Data</th></tr></thead>
+            <thead><tr><th>Sabor</th><th width="70">Qtd</th><th>Próxima Data</th></tr></thead>
             <tbody id="corpo-estoque"></tbody>
         </table>
         <button class="btn-salvar" onclick="salvarEstoque()">Salvar Alterações</button>
@@ -116,14 +120,21 @@
         
         if(id === 'pedidos' || id === 'historico' || id === 'desistencias') carregarPedidos();
         if(id === 'reservas') carregarReservasClientes();
+        if(id === 'estoque') carregarEstoque();
     }
 
     async function carregarPedidos() {
         const { data } = await supa.from('pedidos').select('*').order('created_at', { ascending: false });
-        
+        if(!data) return;
+
         const ativos = data.filter(p => p.status !== 'Finalizado' && p.status !== 'Desistiu');
         const desistencias = data.filter(p => p.status === 'Desistiu');
         const historico = data.filter(p => p.status === 'Finalizado');
+
+        const formatarItens = (texto) => {
+            return texto.replace(/\n/g, '<br>')
+                        .replace('--- DETALHES ---', '<div class="detalhes-logistica"><span class="titulo-detalhe">📌 Logística e Pagamento:</span>');
+        };
 
         // Renderizar Pedidos Ativos
         document.getElementById('lista-pedidos').innerHTML = ativos.map(p => `
@@ -133,10 +144,13 @@
                     <span class="btn-delete" onclick="confirmarDesistencia('${p.id}')">✖</span>
                 </div>
                 <small>📱 ${p.telefone}</small><br>
-                <div style="margin:8px 0; font-size:0.85rem;">${p.itens}</div>
+                <div style="margin:8px 0; font-size:0.85rem;">
+                    ${formatarItens(p.itens)}
+                    ${p.itens.includes('--- DETALHES ---') ? '</div>' : ''}
+                </div>
                 <div class="acoes-pedido">
-                    <button class="btn-acao btn-whats" onclick="enviarWhatsApp('${p.id}', '${p.nome}', '${p.telefone}', '${p.itens}')">WhatsApp</button>
-                    <button class="btn-acao btn-finalizar" onclick="finalizarPedido('${p.id}', '${p.itens}')">Finalizar</button>
+                    <button class="btn-acao btn-whats" onclick="enviarWhatsApp('${p.id}', '${p.nome}', '${p.telefone}', \`${p.itens}\`)">WhatsApp</button>
+                    <button class="btn-acao btn-finalizar" onclick="finalizarPedido('${p.id}', \`${p.itens}\`)">Finalizar</button>
                 </div>
             </div>
         `).join('') || "Sem pedidos novos.";
@@ -145,7 +159,7 @@
         document.getElementById('lista-desistencias').innerHTML = desistencias.map(p => `
             <div class="card-pedido" style="border-left: 5px solid var(--vermelho);">
                 <strong>👤 ${p.nome}</strong> | <small>${p.telefone}</small><br>
-                <div style="font-size:0.8rem; color:gray">${p.itens}</div>
+                <div style="font-size:0.8rem; color:gray">${formatarItens(p.itens)}</div>
                 <button class="btn-acao btn-reativar" onclick="mudarStatus('${p.id}', 'Novo')">Reativar Pedido</button>
             </div>
         `).join('') || "Sem registros de desistência.";
@@ -154,7 +168,7 @@
         document.getElementById('lista-historico').innerHTML = historico.map(p => `
             <div class="card-pedido" style="opacity:0.7">
                 <small>${new Date(p.created_at).toLocaleDateString()}</small> | <strong>${p.nome}</strong><br>
-                ${p.itens}
+                ${formatarItens(p.itens)}
             </div>
         `).join('') || "Vazio.";
     }
@@ -168,7 +182,7 @@
             const match = linha.match(/(\d+)x\s+(.+)/);
             if (match) {
                 const qtdVendida = parseInt(match[1]);
-                const sabor = match[2].split('(')[0].trim(); // Pega o nome ignorando observações
+                const sabor = match[2].split('(')[0].trim();
 
                 const { data: itemEstoque } = await supa.from('estoque').select('*').eq('nome', sabor).single();
                 
@@ -205,6 +219,7 @@
 
     async function carregarEstoque() {
         const { data } = await supa.from('estoque').select('*').order('nome');
+        if(!data) return;
         dadosEstoque = data;
         document.getElementById('corpo-estoque').innerHTML = data.map((item, i) => `
             <tr>
@@ -224,24 +239,30 @@
 
     async function carregarReservasClientes() {
         const { data } = await supa.from('pedidos').select('*').filter('itens', 'ilike', '%[RESERVA]%').neq('status', 'Finalizado');
+        if(!data) return;
         let html = `<table><thead><tr><th>Cliente</th><th>Itens</th></tr></thead><tbody>`;
-        html += data.map(r => `<tr><td><strong>${r.nome}</strong><br><small>${r.telefone}</small></td><td>${r.itens}</td></tr>`).join('');
+        html += data.map(r => `<tr><td><strong>${r.nome}</strong><br><small>${r.telefone}</small></td><td>${r.itens.replace(/\n/g, '<br>')}</td></tr>`).join('');
         html += `</tbody></table>`;
         document.getElementById('lista-reservas-clientes').innerHTML = html;
     }
 
     async function carregarFestival() {
-        const { data } = await supa.from('config').select('*').single();
+        const { data } = await supa.from('config').select('*').eq('id', 1).single();
         if(data) {
-            document.getElementById('f-nome').value = data.festival_nome;
-            document.getElementById('f-local').value = data.festival_local;
-            document.getElementById('f-data').value = data.festival_data;
-            document.getElementById('f-hora').value = data.festival_hora;
+            document.getElementById('f-nome').value = data.festival_nome || '';
+            document.getElementById('f-local').value = data.festival_local || '';
+            document.getElementById('f-data').value = data.festival_data || '';
+            document.getElementById('f-hora').value = data.festival_hora || '';
         }
     }
 
     async function salvarFestival() {
-        const dados = { festival_nome: document.getElementById('f-nome').value, festival_local: document.getElementById('f-local').value, festival_data: document.getElementById('f-data').value, festival_hora: document.getElementById('f-hora').value };
+        const dados = { 
+            festival_nome: document.getElementById('f-nome').value, 
+            festival_local: document.getElementById('f-local').value, 
+            festival_data: document.getElementById('f-data').value, 
+            festival_hora: document.getElementById('f-hora').value 
+        };
         await supa.from('config').update(dados).eq('id', 1);
         alert("Informações do Festival salvas!");
     }
