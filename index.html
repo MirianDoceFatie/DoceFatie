@@ -3,121 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mii Cakes - Fatias Premium</title>
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Mii Cakes - Vitrine</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
-        :root { --rosa-topo: #ff69b4; --rosa-fundo: #fff0f5; --rosa-botao: #ff4081; --whatsapp: #25d366; --marrom: #5d4037; }
-        body { font-family: 'Montserrat', sans-serif; background-color: var(--rosa-fundo); margin: 0; padding-bottom: 50px; color: var(--marrom); }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fdf2f7; margin: 0; padding: 0; color: #333; }
+        .header { background: #f858a5; color: white; padding: 25px; text-align: center; border-radius: 0 0 30px 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { padding: 15px; max-width: 500px; margin: auto; }
+        .card { background: white; border-radius: 20px; padding: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .card img { width: 90px; height: 90px; border-radius: 15px; object-fit: cover; }
+        .info { flex: 1; }
+        .info h3 { margin: 0; font-size: 1.1rem; color: #d03078; }
+        .info p { margin: 5px 0; font-size: 0.9rem; color: #666; }
+        .preco { font-weight: bold; color: #f858a5; font-size: 1.1rem; }
         
-        header { background-color: var(--rosa-topo); color: white; text-align: center; padding: 30px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        header h1 { margin: 0; font-family: 'Great Vibes', cursive; font-size: 3.8rem; font-weight: normal; line-height: 1; }
-        .subtitulo-elegante { font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 4px; margin-top: 10px; opacity: 0.9; }
-        .preco-destaque { font-weight: 600; font-size: 1.1rem; display: block; margin-top: 12px; color: #fff; background: rgba(0,0,0,0.1); padding: 5px 15px; border-radius: 20px; width: fit-content; margin-left: auto; margin-right: auto; }
-
-        .btn-bastidores { background-color: white; color: var(--rosa-topo); border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; }
+        .controls { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        .btn-count { background: #f858a5; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
+        .count { font-weight: bold; font-size: 1rem; width: 20px; text-align: center; }
         
-        .container { max-width: 1000px; margin: auto; padding: 15px; }
+        select { width: 100%; padding: 8px; border-radius: 10px; border: 1px solid #ddd; margin-top: 5px; background: #fffafc; }
         
-        .galeria-bastidores { display: none; background: white; margin: 20px 0; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .galeria-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin: 15px 0; }
-        .galeria-grid img, .galeria-grid video { width: 100%; border-radius: 10px; object-fit: cover; height: 180px; background: #eee; }
-
-        .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; margin-top: 30px; }
-        .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.05); text-align: center; padding-bottom: 20px; position: relative; }
-        .img-container { width: 100%; height: 200px; overflow: hidden; position: relative; }
-        .img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .carrinho-fixo { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px; border-radius: 30px 30px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        .btn-whatsapp { background: #2cc149; color: white; border: none; width: 100%; padding: 15px; border-radius: 15px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px; }
+        .btn-whatsapp:disabled { background: #ccc; }
         
-        .esgotado .img-container img { filter: grayscale(100%); opacity: 0.6; }
-        .badge-esgotado { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; }
-
-        .nome-produto { font-size: 1.1rem; font-weight: 600; text-transform: uppercase; padding: 15px 10px; color: var(--marrom); min-height: 45px; display: flex; align-items: center; justify-content: center; }
-        .info-disponibilidade { font-size: 0.75rem; font-weight: 600; margin-bottom: 12px; }
-        .texto-reserva { color: #d81b60; }
-        .texto-estoque { color: var(--rosa-topo); }
-
-        .controles { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .btn-qtd { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 1.4rem; font-weight: bold; }
-        .qtd-numero { font-weight: 600; font-size: 1.4rem; min-width: 25px; }
-        
-        .select-personalizado { width: 90%; font-size: 1rem; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Montserrat'; color: var(--marrom); }
-
-        .checkout { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-top: 40px; text-align: center; }
-        
-        .titulo-secao { text-transform: uppercase; font-size: 1.1rem; letter-spacing: 1px; font-weight: 600; margin-bottom: 15px; }
-        #resumo { font-size: 1.1rem; color: #444; margin-bottom: 25px; line-height: 1.6; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto; border-left: 4px solid var(--rosa-topo); padding-left: 15px; }
-
-        .btn-opcao { flex: 1; padding: 12px; border: 1px solid #eee; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
-        .btn-opcao.ativo { border-color: var(--rosa-topo); background: #fff5f8; color: var(--rosa-topo); }
-        .box-retirada { background: #fff9c4; padding: 15px; border-radius: 10px; border: 1px solid #fbc02d; color: #5f4339; font-size: 0.9rem; margin-top: 15px; text-align: left; display: none; }
-
-        .pagamento-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0; }
-        .btn-pg { padding: 10px; border: 1px solid #ddd; border-radius: 10px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
-        .btn-pg.ativo { background: var(--marrom); color: white; border-color: var(--marrom); }
-
-        input { width: 100%; padding: 12px; margin-top: 8px; border-radius: 10px; border: 1px solid #eee; box-sizing: border-box; font-family: 'Montserrat'; font-size: 1rem; }
-        .valor-total-container { margin: 20px 0; padding: 15px; border-top: 1px dashed var(--rosa-topo); text-align: right; font-weight: 600; }
-        
-        .btn-whatsapp { background-color: var(--whatsapp); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: 600; cursor: pointer; font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; font-family: 'Montserrat'; display: inline-block; box-shadow: 0 4px 15px rgba(37,211,102,0.3); transition: 0.3s; }
-        .btn-whatsapp:hover { transform: scale(1.02); }
+        .badge-reserva { background: #ff9800; color: white; padding: 3px 8px; border-radius: 5px; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; display: inline-block; }
+        input[type="text"], input[type="tel"] { width: 93%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; margin-top: 8px; }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>Mii Cakes</h1>
-    <div class="subtitulo-elegante">Fatias Fresquinhas</div>
-    <span class="preco-destaque">R$ 18,00</span>
-    <button class="btn-bastidores" onclick="toggleBastidores()" id="btn-bas-txt">✨ Ver Bastidores</button>
-</header>
+<div class="header">
+    <h1 style="margin:0;">Mii Cakes 🍰</h1>
+    <p style="margin:5px 0 0;">Fatias Premium & Gourmet</p>
+</div>
 
-<div class="container">
-    <div id="secao-bastidores" class="galeria-bastidores">
-        <h3 style="text-align:center; font-size: 0.9rem;">NOSSA PRODUÇÃO 👩‍🍳</h3>
-        <div class="galeria-grid">
-            <img src="Bastidor1.jpg" onerror="this.style.display='none'">
-            <video src="Video1.mp4" controls muted onerror="this.style.display='none'"></video>
-        </div>
-        <span style="cursor:pointer; color:var(--rosa-topo); font-weight:bold; font-size:0.8rem;" onclick="toggleBastidores()">← Voltar para as Fatias</span>
+<div class="container" id="lista-bolos" style="margin-bottom: 300px;">
+    <!-- Itens carregados via JS -->
+</div>
+
+<div class="carrinho-fixo">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <span style="font-weight: bold; color: #666;">Total do Pedido:</span>
+        <span id="total-valor" style="font-size: 1.4rem; font-weight: bold; color: #f858a5;">R$ 0,00</span>
     </div>
 
-    <div id="vitrine" class="grid-fatias">Carregando cardápio...</div>
-
-    <div class="checkout">
-        <h3 class="titulo-secao">Resumo do Pedido</h3>
-        <div id="resumo">Escolha suas delícias acima.</div>
-        
-        <input type="tel" id="cli-tel" placeholder="Seu WhatsApp" maxlength="15" oninput="mascaraTelefone(this)">
-
-        <div style="display:flex; gap:10px; margin: 15px 0;">
-            <div id="btn-entrega" class="btn-opcao" onclick="setMetodo('Entrega')">Entrega</div>
-            <div id="btn-retirada" class="btn-opcao" onclick="setMetodo('Retirada')">Retirar</div>
-        </div>
-
-        <div id="form-endereco" style="display:none;">
-            <input type="text" id="end-rua" placeholder="Rua e número">
-            <input type="text" id="end-bairro" placeholder="Bairro">
-            <p style="color:var(--rosa-topo); font-size:0.75rem; font-weight:600;">🌸 Envie o pedido para consultar a taxa de entrega</p>
-        </div>
-
-        <div id="box-retirada" class="box-retirada">
-            <strong>📍 Local para Retirada:</strong><br>
-            Rua Maria Rodrigues Munis, nº 50, Bairro Rebourgeon.
-        </div>
-
-        <div class="pagamento-grid">
-            <div class="btn-pg ativo" onclick="setPg('Pix', this)">Pix</div>
-            <div class="btn-pg" onclick="setPg('Cartão', this)">Cartão</div>
-            <div class="btn-pg" onclick="setPg('Link de Pagamento', this)">Link de Pagamento</div>
-        </div>
-
-        <div class="valor-total-container">
-            TOTAL: <span id="total-valor" style="color:var(--rosa-botao); font-size: 1.6rem;">R$ 0,00</span>
-        </div>
-
-        <button class="btn-whatsapp" onclick="enviarPedido()">Fazer Pedido</button>
+    <input type="tel" id="cli-tel" placeholder="Seu WhatsApp (Ex: 35 99999-9999)" oninput="this.value = this.value.replace(/\D/g,'')">
+    
+    <div style="display: flex; gap: 5px; margin-top: 10px;">
+        <button onclick="setMetodo('Retirada')" id="btn-ret" style="flex:1; padding: 10px; border-radius: 10px; border: 1px solid #ddd; background: white; cursor: pointer;">Retirada</button>
+        <button onclick="setMetodo('Entrega')" id="btn-ent" style="flex:1; padding: 10px; border-radius: 10px; border: 1px solid #ddd; background: white; cursor: pointer;">Entrega</button>
     </div>
+
+    <div id="campos-entrega" style="display:none;">
+        <input type="text" id="end-rua" placeholder="Rua e Número">
+        <input type="text" id="end-bairro" placeholder="Bairro">
+    </div>
+
+    <select id="pagamento" onchange="pg = this.value" style="margin-top: 10px;">
+        <option value="Pix">Pagar no Pix</option>
+        <option value="Cartão">Cartão de Crédito/Débito</option>
+        <option value="Dinheiro">Dinheiro (Espécie)</option>
+    </select>
+
+    <button class="btn-whatsapp" onclick="enviarPedido()">Fazer Pedido</button>
 </div>
 
 <script>
@@ -128,137 +76,102 @@
     let pg = "Pix";
     let valorTotalGlobal = 0;
 
-    function mascaraTelefone(i) {
-        let v = i.value.replace(/\D/g, "");
-        if (v.length > 11) v = v.slice(0, 11);
-        v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
-        v = v.replace(/(\d{5})(\d)/, "$1-$2");
-        i.value = v;
-    }
-
     async function carregar() {
-        const { data } = await _supa.from('estoque').select('*');
-        bolos = data.sort((a, b) => (b.Quantidade > 0) - (a.Quantidade > 0));
+        const { data } = await _supa.from('estoque').select('*').order('nome');
+        bolos = data;
         render();
     }
 
     function render() {
-        document.getElementById('vitrine').innerHTML = bolos.map((b, i) => {
+        document.getElementById('lista-bolos').innerHTML = bolos.map((b, i) => {
             const esgotado = b.Quantidade <= 0;
             return `
-            <div class="card-bolo ${esgotado ? 'esgotado' : ''}">
-                <div class="img-container">
-                    ${esgotado ? '<div class="badge-esgotado">Esgotado</div>' : ''}
-                    <img src="${b.foto}">
+            <div class="card" style="${esgotado ? 'opacity: 0.8;' : ''}">
+                <img src="${b.foto}">
+                <div class="info">
+                    ${esgotado ? `<span class="badge-reserva">RESERVA PARA ${b.proxima_data || 'Sábado'}</span>` : ''}
+                    <h3>${b.nome}</h3>
+                    <p>${b.descricao || 'Fatia artesanal premium.'}</p>
+                    <div class="preco">R$ ${b.Preco.toFixed(2)}</div>
+                    
+                    <select onchange="updateCalda(${i}, this.value)">
+                        <option value="Sem Calda">Sem Calda Extra</option>
+                        <option value="Ninho">Calda de Ninho</option>
+                        <option value="Chocolate">Calda de Chocolate</option>
+                    </select>
+
+                    <div class="controls">
+                        <button class="btn-count" onclick="update(${i}, -1)">-</button>
+                        <span class="count" id="count-${i}">0</span>
+                        <button class="btn-count" onclick="update(${i}, 1)">+</button>
+                    </div>
                 </div>
-                <div class="nome-produto">${b.nome}</div>
-                <div class="info-disponibilidade">
-                    ${esgotado ? 
-                        `<span class="texto-reserva">Reserve, Fatia disponível: ${b.proxima_data || 'Em breve'}</span>` : 
-                        `<span class="texto-estoque">Disponíveis: ${b.Quantidade}</span>`}
-                </div>
-                <div class="controles">
-                    <button class="btn-qtd" onclick="alt(${i}, -1)">-</button>
-                    <span id="q-${i}" class="qtd-numero">0</span>
-                    <button class="btn-qtd" onclick="alt(${i}, 1)">+</button>
-                </div>
-                <select id="calda-${i}" class="select-personalizado" onchange="updateCalda(${i}, this.value)">
-                    <option value="Sem calda">Escolher Calda</option>
-                    <option value="Sem calda">Sem Calda</option>
-                    <option value="Chocolate">Calda Chocolate</option>
-                    <option value="Ninho">Calda Ninho</option>
-                </select>
-            </div>`;
-        }).join('');
+            </div>
+        `}).join('');
     }
 
-    function toggleBastidores() {
-        const sec = document.getElementById('secao-bastidores');
-        const vit = document.getElementById('vitrine');
-        const isAberto = sec.style.display === 'block';
-        sec.style.display = isAberto ? 'none' : 'block';
-        vit.style.display = isAberto ? 'grid' : 'none';
-        document.getElementById('btn-bas-txt').innerText = isAberto ? "✨ Ver Bastidores" : "❌ Fechar";
+    function update(i, v) {
+        if(!carrinho[i]) carrinho[i] = { q: 0, calda: "Sem Calda" };
+        carrinho[i].q = Math.max(0, carrinho[i].q + v);
+        document.getElementById(`count-${i}`).innerText = carrinho[i].q;
+        calc();
+    }
+
+    function updateCalda(i, calda) {
+        if(!carrinho[i]) carrinho[i] = { q: 0, calda: "Sem Calda" };
+        carrinho[i].calda = calda;
+    }
+
+    function calc() {
+        let total = 0;
+        for(let i in carrinho) total += carrinho[i].q * bolos[i].Preco;
+        valorTotalGlobal = total;
+        document.getElementById('total-valor').innerText = `R$ ${total.toFixed(2)}`;
     }
 
     function setMetodo(m) {
         mtd = m;
-        document.getElementById('btn-entrega').classList.toggle('ativo', m === 'Entrega');
-        document.getElementById('btn-retirada').classList.toggle('ativo', m === 'Retirada');
-        document.getElementById('form-endereco').style.display = m === 'Entrega' ? 'block' : 'none';
-        document.getElementById('box-retirada').style.display = m === 'Retirada' ? 'block' : 'none';
-    }
-
-    function setPg(tipo, el) {
-        pg = tipo;
-        document.querySelectorAll('.btn-pg').forEach(b => b.classList.remove('ativo'));
-        el.classList.add('ativo');
-    }
-
-    function alt(i, v) {
-        if (!carrinho[i]) carrinho[i] = { q: 0, calda: "Sem calda" };
-        let n = carrinho[i].q + v;
-        if (n >= 0) { 
-            carrinho[i].q = n;
-            document.getElementById(`q-${i}`).innerText = n;
-            atualizar();
-        }
-    }
-
-    function updateCalda(i, c) {
-        if (!carrinho[i]) carrinho[i] = { q: 0 };
-        carrinho[i].calda = c;
-        atualizar();
-    }
-
-    function atualizar() {
-        let total = 0; let res = "";
-        for (let i in carrinho) {
-            if (carrinho[i].q > 0) {
-                total += carrinho[i].q * 18;
-                res += `<div style="margin-bottom:10px;">• <b>${carrinho[i].q}x</b> ${bolos[i].nome}<br><small style="margin-left:20px; color:#888;">(${carrinho[i].calda})</small></div>`;
-            }
-        }
-        valorTotalGlobal = total;
-        document.getElementById('resumo').innerHTML = res || "Escolha suas delícias acima.";
-        document.getElementById('total-valor').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
-    }
-
-    // FUNÇÃO PARA SALVAR NO RELATÓRIO DO SUPABASE
-    async function salvarVenda(itensString, telefone) {
-        try {
-            await _supa.from('pedidos').insert([
-                { 
-                    itens: itensString, 
-                    valor: valorTotalGlobal, 
-                    telefone: telefone,
-                    status: 'Pendente',
-                    created_at: new Date().toISOString()
-                }
-            ]);
-            console.log("Pedido salvo com sucesso!");
-        } catch (error) {
-            console.error("Erro ao salvar:", error);
-        }
+        document.getElementById('campos-entrega').style.display = m === 'Entrega' ? 'block' : 'none';
+        document.getElementById('btn-ent').style.background = m === 'Entrega' ? '#f858a5' : 'white';
+        document.getElementById('btn-ent').style.color = m === 'Entrega' ? 'white' : '#333';
+        document.getElementById('btn-ret').style.background = m === 'Retirada' ? '#f858a5' : 'white';
+        document.getElementById('btn-ret').style.color = m === 'Retirada' ? 'white' : '#333';
     }
 
     async function enviarPedido() {
         const telCliente = document.getElementById('cli-tel').value;
-        if(telCliente.length < 14 || !mtd) return alert("Informe seu WhatsApp e escolha Entrega ou Retirada.");
+        if(telCliente.length < 10 || !mtd) return alert("Informe seu WhatsApp e escolha Entrega ou Retirada.");
         
-        let itensMsg = ""; let itensRelatorio = ""; let tem = false;
+        let itensMsg = ""; 
+        let itensRelatorio = ""; 
+        let tem = false;
+
         for(let i in carrinho) {
             if(carrinho[i].q > 0) {
                 tem = true;
-                let status = bolos[i].Quantidade <= 0 ? "[RESERVA]" : "[PRONTA]";
-                itensMsg += `${carrinho[i].q}x ${bolos[i].nome} (${carrinho[i].calda}) ${status}\n`;
-                itensRelatorio += `${carrinho[i].q}x ${bolos[i].nome} (${carrinho[i].calda}); `;
+                let tipoItem = bolos[i].Quantidade <= 0 ? "[RESERVA]" : "[PRONTA]";
+                itensMsg += `${carrinho[i].q}x ${bolos[i].nome} (${carrinho[i].calda}) ${tipoItem}\n`;
+                itensRelatorio += `${carrinho[i].q}x ${bolos[i].nome} (${carrinho[i].calda}) ${tipoItem}; `;
             }
         }
+        
         if(!tem) return alert("Seu carrinho está vazio!");
 
-        // SALVA NO BANCO ANTES DE IR PRO WHATSAPP
-        await salvarVenda(itensRelatorio, telCliente);
+        const btn = document.querySelector('.btn-whatsapp');
+        btn.innerText = "Registrando...";
+        btn.disabled = true;
+
+        try {
+            // SALVA NO BANCO ANTES DE ABRIR WHATSAPP
+            await _supa.from('pedidos').insert([
+                { 
+                    itens: itensRelatorio, 
+                    valor: valorTotalGlobal, 
+                    telefone: telCliente,
+                    status: 'Pendente'
+                }
+            ]);
+        } catch (e) { console.error(e); }
 
         let msg = `*NOVO PEDIDO MII CAKES*\n\n${itensMsg}\n*Total:* ${document.getElementById('total-valor').innerText}\n*Pagamento:* ${pg}\n*WhatsApp Cliente:* ${telCliente}\n\n*Opção:* ${mtd}`;
         
@@ -268,7 +181,11 @@
             msg += `\n*Local Retirada:* Rua Maria Rodrigues Munis, 50 - Rebourgeon`;
         }
 
-        window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msg)}`);
+        setTimeout(() => {
+            btn.innerText = "Fazer Pedido";
+            btn.disabled = false;
+            window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msg)}`);
+        }, 600);
     }
 
     window.onload = carregar;
