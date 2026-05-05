@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fatia QueroMais - Estoque Online</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --rosa: #ff69b4; --fundo: #fce4ec; --marrom: #4e342e; --whats: #25d366; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--fundo); color: var(--marrom); margin: 0; text-align: center; }
+        header { background: var(--rosa); color: white; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .container { max-width: 800px; margin: auto; padding: 20px; }
+        .vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); padding-bottom: 15px; }
+        .img-fatia { width: 100%; height: 160px; object-fit: cover; }
+        .btn-whats { background: var(--whats); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 90%; margin-top: 10px; text-decoration: none; display: inline-block; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🍰 Fatia QueroMais</h1>
+    <p>Estoque em Tempo Real</p>
+</header>
+
+<div class="container">
+    <div id="vitrine" class="vitrine">Carregando estoque...</div>
+</div>
+
+<script>
+    // Conexão com o seu Supabase de Itajubá
+    const supabase = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
+
+    async function carregarEstoque() {
+        const { data, error } = await supabase.from('estoque').select('*');
+        const vitrine = document.getElementById('vitrine');
+
+        if (error) {
+            vitrine.innerHTML = "<p>Erro ao carregar estoque. Verifique o Supabase.</p>";
+            return;
+        }
+
+        vitrine.innerHTML = data.map(item => `
+            <div class="card">
+                <img src="${item.foto}" class="img-fatia" onerror="this.src='https://via.placeholder.com/180x160?text=Bolo'">
+                <h3>${item.nome}</h3>
+                <p>Disponível: <strong>${item.quantidade}</strong></p>
+                <a href="https://wa.me/5535991441589?text=Oi Mi! Quero a ${item.nome}" class="btn-whats">Pedir no WhatsApp</a>
+            </div>
+        `).join('');
+    }
+
+    window.onload = carregarEstoque;
+</script>
+</body>
+</html>
