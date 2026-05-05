@@ -102,6 +102,7 @@
 
     function renderVitrine() {
         const v = document.getElementById('vitrine');
+        // Adicionado b.Quantidade com Q maiúsculo para exibir a disponibilidade correta
         v.innerHTML = dadosBolos.map((b, index) => `
             <div class="card-bolo">
                 <div class="img-container">
@@ -109,7 +110,7 @@
                     <div class="tarja-nome">${b.nome}</div>
                 </div>
                 <span class="preco">R$ 18,00</span>
-                <span class="disponivel">Disponível: ${b.quantidade}</span>
+                <span class="disponivel">Disponível: ${b.Quantidade}</span>
                 <div class="controles">
                     <button class="btn-qtd" onclick="alt(${index}, -1)">-</button>
                     <span id="q-${index}" style="font-weight:bold;">0</span>
@@ -126,7 +127,9 @@
 
     function alt(i, v) {
         if (!carrinho[i]) carrinho[i] = { qtd: 0, calda: "Sem calda" };
-        carrinho[i].qtd = Math.max(0, Math.min(dadosBolos[i].quantidade, (carrinho[i].qtd || 0) + v));
+        // Ajustado para b.Quantidade com Q maiúsculo para limitar o pedido ao estoque real
+        let limiteDisponivel = parseInt(dadosBolos[i].Quantidade) || 0;
+        carrinho[i].qtd = Math.max(0, Math.min(limiteDisponivel, (carrinho[i].qtd || 0) + v));
         document.getElementById('q-' + i).innerText = carrinho[i].qtd;
         atualizarResumo();
     }
