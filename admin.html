@@ -3,81 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Controle - Doce Fatia</title>
+    <title>Admin - Doce Fatia</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; background: #fdf2f7; padding: 20px; color: #333; }
-        .header { text-align: center; margin-bottom: 30px; color: #f858a5; }
-        .card-admin { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px; }
-        .card-admin img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; }
-        .info { flex: 1; }
-        .info h3 { margin: 0 0 10px; font-size: 1rem; }
-        .campos { display: flex; gap: 10px; flex-wrap: wrap; }
-        input { padding: 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 0.9rem; }
-        .btn-salvar { background: #2cc149; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .loading { text-align: center; font-style: italic; color: #888; }
+        body { font-family: sans-serif; background: #fdf2f7; padding: 20px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { padding: 10px; border: none; border-radius: 8px; cursor: pointer; background: #ddd; font-weight: bold; }
+        .tab-btn.active { background: #f858a5; color: white; }
+        .section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+        th, td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; }
+        .status-venda { color: green; font-weight: bold; }
+        .status-cancelado { color: red; font-weight: bold; }
+        .btn-check { border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.7rem; color: white; margin-right: 5px; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>Painel de Estoque 🍰</h1>
-    <p>Atualize as fatias e datas de retorno</p>
-</div>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('estoque')">Estoque</button>
+        <button class="tab-btn" onclick="showTab('relatorio')">Relatório de Cliques</button>
+    </div>
 
-<div id="lista-admin">
-    <div class="loading">Carregando estoque...</div>
-</div>
+    <div id="tab-estoque" class="section">
+        <h3>Controle de Fatias</h3>
+        <div id="lista-estoque">Carregando...</div>
+    </div>
+
+    <div id="tab-relatorio" class="section" style="display:none;">
+        <h3>Relatório de Vendas (Cliques no Site)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Itens</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="lista-pedidos"></tbody>
+        </table>
+    </div>
 
 <script>
     const supabaseClient = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
-    
-    async function carregarAdmin() {
-        const { data } = await supabaseClient.from('estoque').select('*').order('nome');
-        const container = document.getElementById('lista-admin');
-        
-        container.innerHTML = data.map(bolo => `
-            <div class="card-admin">
-                <img src="${bolo.foto}">
-                <div class="info">
-                    <h3>${bolo.nome}</h3>
-                    <div class="campos">
-                        <div>
-                            <small>Qtd:</small><br>
-                            <input type="number" id="qtd-${bolo.id}" value="${bolo.Quantidade}" style="width: 50px;">
-                        </div>
-                        <div>
-                            <small>Próxima Remessa (ex: Sexta):</small><br>
-                            <input type="text" id="data-${bolo.id}" value="${bolo.proxima_data || ''}" placeholder="Data ou dia">
-                        </div>
-                        <button class="btn-salvar" onclick="salvar(${bolo.id})">Salvar</button>
-                    </div>
-                </div>
+
+    function showTab(tab) {
+        document.getElementById('tab-estoque').style.display = tab === 'estoque' ? 'block' : 'none';
+        document.getElementById('tab-relatorio').style.display = tab === 'relatorio' ? 'block' : 'none';
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(tab)));
+        if(tab === 'relatorio') carregarRelatorio();
+    }
+
+    async function carregarRelatorio() {
+        const { data } = await supabaseClient.from('pedidos').select('*').order('created_at', { ascending: false });
+        const lista = document.getElementById('lista-pedidos');
+        lista.innerHTML = data.map(p => `
+            <tr>
+                <td>${new Date(p.created_at).toLocaleDateString()}</td>
+                <td>${p.itens}</td>
+                <td>R$ ${p.valor}</td>
+                <td class="status-${p.status.toLowerCase()}">${p.status}</td>
+                <td>
+                    <button class="btn-check" style="background:#2cc149" onclick="setVenda(${p.id}, 'Venda')">✅</button>
+                    <button class="btn-check" style="background:#f44336" onclick="setVenda(${p.id}, 'Cancelado')">❌</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function setVenda(id, status) {
+        await supabaseClient.from('pedidos').update({ status: status }).eq('id', id);
+        carregarRelatorio();
+    }
+
+    // Carregamento inicial do estoque (mesma lógica do seu admin anterior)
+    async function carregarEstoque() {
+        const { data } = await supabaseClient.from('estoque').select('*');
+        document.getElementById('lista-estoque').innerHTML = data.map(b => `
+            <div style="margin-bottom:10px; border-bottom:1px solid #eee; padding:5px;">
+                <b>${b.nome}</b> | Qtd: <input type="number" id="q-${b.id}" value="${b.Quantidade}" style="width:40px">
+                Data: <input type="text" id="d-${b.id}" value="${b.proxima_data||''}" placeholder="Próxima remessa">
+                <button onclick="salvarEstoque(${b.id})">Salvar</button>
             </div>
         `).join('');
     }
 
-    async function salvar(id) {
-        const novaQtd = document.getElementById(`qtd-${id}`).value;
-        const novaData = document.getElementById(`data-${id}`).value;
-
-        const { error } = await supabaseClient
-            .from('estoque')
-            .update({ 
-                Quantidade: novaQtd,
-                proxima_data: novaData 
-            })
-            .eq('id', id);
-
-        if (error) {
-            alert("Erro ao salvar: " + error.message);
-        } else {
-            alert("Atualizado com sucesso!");
-            carregarAdmin();
-        }
+    async function salvarEstoque(id) {
+        const q = document.getElementById(`q-${id}`).value;
+        const d = document.getElementById(`d-${id}`).value;
+        await supabaseClient.from('estoque').update({ Quantidade: q, proxima_data: d }).eq('id', id);
+        alert("Salvo!");
     }
 
-    window.onload = carregarAdmin;
+    window.onload = carregarEstoque;
 </script>
 </body>
 </html>
