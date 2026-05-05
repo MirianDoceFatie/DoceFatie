@@ -126,6 +126,7 @@
     let carrinho = {};
     let mtd = "";
     let pg = "Pix";
+    let valorTotalGlobal = 0;
 
     function mascaraTelefone(i) {
         let v = i.value.replace(/\D/g, "");
@@ -137,7 +138,6 @@
 
     async function carregar() {
         const { data } = await _supa.from('estoque').select('*');
-        // Organiza para que esgotados fiquem no fim
         bolos = data.sort((a, b) => (b.Quantidade > 0) - (a.Quantidade > 0));
         render();
     }
@@ -219,25 +219,48 @@
                 res += `<div style="margin-bottom:10px;">• <b>${carrinho[i].q}x</b> ${bolos[i].nome}<br><small style="margin-left:20px; color:#888;">(${carrinho[i].calda})</small></div>`;
             }
         }
+        valorTotalGlobal = total;
         document.getElementById('resumo').innerHTML = res || "Escolha suas delícias acima.";
         document.getElementById('total-valor').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    }
+
+    // FUNÇÃO PARA SALVAR NO RELATÓRIO DO SUPABASE
+    async function salvarVenda(itensString, telefone) {
+        try {
+            await _supa.from('pedidos').insert([
+                { 
+                    itens: itensString, 
+                    valor: valorTotalGlobal, 
+                    telefone: telefone,
+                    status: 'Pendente',
+                    created_at: new Date().toISOString()
+                }
+            ]);
+            console.log("Pedido salvo com sucesso!");
+        } catch (error) {
+            console.error("Erro ao salvar:", error);
+        }
     }
 
     async function enviarPedido() {
         const telCliente = document.getElementById('cli-tel').value;
         if(telCliente.length < 14 || !mtd) return alert("Informe seu WhatsApp e escolha Entrega ou Retirada.");
         
-        let itens = ""; let tem = false;
+        let itensMsg = ""; let itensRelatorio = ""; let tem = false;
         for(let i in carrinho) {
             if(carrinho[i].q > 0) {
                 tem = true;
                 let status = bolos[i].Quantidade <= 0 ? "[RESERVA]" : "[PRONTA]";
-                itens += `${carrinho[i].q}x ${bolos[i].nome} (${carrinho[i].calda}) ${status}\n`;
+                itensMsg += `${carrinho[i].q}x ${bolos[i].nome} (${carrinho[i].calda}) ${status}\n`;
+                itensRelatorio += `${carrinho[i].q}x ${bolos[i].nome} (${carrinho[i].calda}); `;
             }
         }
         if(!tem) return alert("Seu carrinho está vazio!");
 
-        let msg = `*NOVO PEDIDO MII CAKES*\n\n${itens}\n*Total:* ${document.getElementById('total-valor').innerText}\n*Pagamento:* ${pg}\n*WhatsApp Cliente:* ${telCliente}\n\n*Opção:* ${mtd}`;
+        // SALVA NO BANCO ANTES DE IR PRO WHATSAPP
+        await salvarVenda(itensRelatorio, telCliente);
+
+        let msg = `*NOVO PEDIDO MII CAKES*\n\n${itensMsg}\n*Total:* ${document.getElementById('total-valor').innerText}\n*Pagamento:* ${pg}\n*WhatsApp Cliente:* ${telCliente}\n\n*Opção:* ${mtd}`;
         
         if(mtd === 'Entrega') {
             msg += `\n*Endereço:* ${document.getElementById('end-rua').value} - ${document.getElementById('end-bairro').value}`;
