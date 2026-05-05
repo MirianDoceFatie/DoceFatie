@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mii Cakes - Fatias & Bolos</title>
+    <title>Mii Cakes - Fatias Premium</title>
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -11,25 +11,12 @@
         :root { --rosa-topo: #ff69b4; --rosa-fundo: #fff0f5; --rosa-botao: #ff4081; --whatsapp: #25d366; --marrom: #5d4037; }
         body { font-family: 'Montserrat', sans-serif; background-color: var(--rosa-fundo); margin: 0; padding-bottom: 50px; color: var(--marrom); }
         
-        header { 
-            background-color: var(--rosa-topo); 
-            color: white; 
-            text-align: center; 
-            padding: 30px 10px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
-        }
-        /* Título maior para destaque principal */
+        header { background-color: var(--rosa-topo); color: white; text-align: center; padding: 30px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         header h1 { margin: 0; font-family: 'Great Vibes', cursive; font-size: 3.8rem; font-weight: normal; line-height: 1; }
         .subtitulo-elegante { font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 4px; margin-top: 10px; opacity: 0.9; }
-        
-        /* Preço ajustado para não competir com o título */
         .preco-destaque { font-weight: 600; font-size: 1.1rem; display: block; margin-top: 12px; color: #fff; background: rgba(0,0,0,0.1); padding: 5px 15px; border-radius: 20px; width: fit-content; margin-left: auto; margin-right: auto; }
 
-        .btn-bastidores {
-            background-color: white; color: var(--rosa-topo); border: none;
-            padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer;
-            margin-top: 20px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;
-        }
+        .btn-bastidores { background-color: white; color: var(--rosa-topo); border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; }
         
         .container { max-width: 1000px; margin: auto; padding: 15px; }
         
@@ -37,41 +24,43 @@
         .galeria-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin: 15px 0; }
         .galeria-grid img, .galeria-grid video { width: 100%; border-radius: 10px; object-fit: cover; height: 180px; background: #eee; }
 
-        .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 25px; margin-top: 30px; }
-        .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; position: relative; }
+        .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; margin-top: 30px; }
+        .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.05); text-align: center; padding-bottom: 20px; position: relative; }
         .img-container { width: 100%; height: 200px; overflow: hidden; position: relative; }
         .img-container img { width: 100%; height: 100%; object-fit: cover; }
         
         .esgotado .img-container img { filter: grayscale(100%); opacity: 0.6; }
         .badge-esgotado { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; }
 
-        .nome-produto { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; padding: 12px 8px; color: var(--marrom); min-height: 40px; display: flex; align-items: center; justify-content: center; }
-        .info-disponibilidade { font-size: 0.7rem; font-weight: 600; margin-bottom: 10px; }
+        .nome-produto { font-size: 1.1rem; font-weight: 600; text-transform: uppercase; padding: 15px 10px; color: var(--marrom); min-height: 45px; display: flex; align-items: center; justify-content: center; }
+        .info-disponibilidade { font-size: 0.75rem; font-weight: 600; margin-bottom: 12px; }
         .texto-reserva { color: #d81b60; }
         .texto-estoque { color: var(--rosa-topo); }
 
-        .controles { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 10px; }
-        .btn-qtd { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 1.2rem; }
-        .select-personalizado { width: 90%; font-size: 0.75rem; padding: 8px; border-radius: 5px; border: 1px solid #ddd; }
+        .controles { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .btn-qtd { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 1.4rem; font-weight: bold; }
+        .qtd-numero { font-weight: 600; font-size: 1.4rem; min-width: 25px; }
+        
+        .select-personalizado { width: 90%; font-size: 1rem; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Montserrat'; color: var(--marrom); }
 
         .checkout { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-top: 40px; text-align: center; }
-        .btn-opcao { flex: 1; padding: 12px; border: 1px solid #eee; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
-        .btn-opcao.ativo { border-color: var(--rosa-topo); background: #fff5f8; color: var(--rosa-topo); }
         
-        .box-retirada { background: #fff9c4; padding: 15px; border-radius: 10px; border: 1px solid #fbc02d; color: #5f4339; font-size: 0.85rem; margin-top: 15px; text-align: left; display: none; }
+        .titulo-secao { text-transform: uppercase; font-size: 1.1rem; letter-spacing: 1px; font-weight: 600; margin-bottom: 15px; }
+        #resumo { font-size: 1.1rem; color: #444; margin-bottom: 25px; line-height: 1.6; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto; border-left: 4px solid var(--rosa-topo); padding-left: 15px; }
+
+        .btn-opcao { flex: 1; padding: 12px; border: 1px solid #eee; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+        .btn-opcao.ativo { border-color: var(--rosa-topo); background: #fff5f8; color: var(--rosa-topo); }
+        .box-retirada { background: #fff9c4; padding: 15px; border-radius: 10px; border: 1px solid #fbc02d; color: #5f4339; font-size: 0.9rem; margin-top: 15px; text-align: left; display: none; }
 
         .pagamento-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0; }
-        .btn-pg { padding: 10px; border: 1px solid #ddd; border-radius: 10px; font-size: 0.7rem; font-weight: 600; cursor: pointer; }
+        .btn-pg { padding: 10px; border: 1px solid #ddd; border-radius: 10px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
         .btn-pg.ativo { background: var(--marrom); color: white; border-color: var(--marrom); }
 
-        input { width: 100%; padding: 12px; margin-top: 8px; border-radius: 10px; border: 1px solid #eee; box-sizing: border-box; font-family: 'Montserrat'; }
+        input { width: 100%; padding: 12px; margin-top: 8px; border-radius: 10px; border: 1px solid #eee; box-sizing: border-box; font-family: 'Montserrat'; font-size: 1rem; }
         .valor-total-container { margin: 20px 0; padding: 15px; border-top: 1px dashed var(--rosa-topo); text-align: right; font-weight: 600; }
         
-        .btn-whatsapp { 
-            background-color: var(--whatsapp); color: white; border: none; padding: 12px 35px; border-radius: 25px; 
-            font-weight: 400; cursor: pointer; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; 
-            font-family: 'Montserrat'; display: inline-block; box-shadow: 0 4px 10px rgba(37,211,102,0.2);
-        }
+        .btn-whatsapp { background-color: var(--whatsapp); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: 600; cursor: pointer; font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; font-family: 'Montserrat'; display: inline-block; box-shadow: 0 4px 15px rgba(37,211,102,0.3); transition: 0.3s; }
+        .btn-whatsapp:hover { transform: scale(1.02); }
     </style>
 </head>
 <body>
@@ -88,7 +77,6 @@
         <h3 style="text-align:center; font-size: 0.9rem;">NOSSA PRODUÇÃO 👩‍🍳</h3>
         <div class="galeria-grid">
             <img src="Bastidor1.jpg" onerror="this.style.display='none'">
-            <img src="Bastidor2.jpg" onerror="this.style.display='none'">
             <video src="Video1.mp4" controls muted onerror="this.style.display='none'"></video>
         </div>
         <span style="cursor:pointer; color:var(--rosa-topo); font-weight:bold; font-size:0.8rem;" onclick="toggleBastidores()">← Voltar para as Fatias</span>
@@ -97,10 +85,10 @@
     <div id="vitrine" class="grid-fatias">Carregando cardápio...</div>
 
     <div class="checkout">
-        <h3 style="text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px;">Resumo do Pedido</h3>
-        <div id="resumo" style="font-size: 0.8rem; color: #666; margin-bottom: 20px;">Escolha suas delícias acima.</div>
+        <h3 class="titulo-secao">Resumo do Pedido</h3>
+        <div id="resumo">Escolha suas delícias acima.</div>
         
-        <input type="tel" id="cli-tel" placeholder="Seu WhatsApp">
+        <input type="tel" id="cli-tel" placeholder="Seu WhatsApp" maxlength="15" oninput="mascaraTelefone(this)">
 
         <div style="display:flex; gap:10px; margin: 15px 0;">
             <div id="btn-entrega" class="btn-opcao" onclick="setMetodo('Entrega')">Entrega</div>
@@ -110,7 +98,7 @@
         <div id="form-endereco" style="display:none;">
             <input type="text" id="end-rua" placeholder="Rua e número">
             <input type="text" id="end-bairro" placeholder="Bairro">
-            <p style="color:var(--rosa-topo); font-size:0.7rem; font-weight:600;">🌸 Envie o pedido para consultar a taxa de entrega</p>
+            <p style="color:var(--rosa-topo); font-size:0.75rem; font-weight:600;">🌸 Envie o pedido para consultar a taxa de entrega</p>
         </div>
 
         <div id="box-retirada" class="box-retirada">
@@ -125,10 +113,10 @@
         </div>
 
         <div class="valor-total-container">
-            TOTAL: <span id="total-valor" style="color:var(--rosa-botao); font-size: 1.5rem;">R$ 0,00</span>
+            TOTAL: <span id="total-valor" style="color:var(--rosa-botao); font-size: 1.6rem;">R$ 0,00</span>
         </div>
 
-        <button class="btn-whatsapp" onclick="enviarPedido()">Confirmar pelo WhatsApp</button>
+        <button class="btn-whatsapp" onclick="enviarPedido()">Fazer Pedido</button>
     </div>
 </div>
 
@@ -139,9 +127,18 @@
     let mtd = "";
     let pg = "Pix";
 
+    function mascaraTelefone(i) {
+        let v = i.value.replace(/\D/g, "");
+        if (v.length > 11) v = v.slice(0, 11);
+        v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+        v = v.replace(/(\d{5})(\d)/, "$1-$2");
+        i.value = v;
+    }
+
     async function carregar() {
-        const { data } = await _supa.from('estoque').select('*').order('nome');
-        bolos = data;
+        const { data } = await _supa.from('estoque').select('*');
+        // Organiza para que esgotados fiquem no fim
+        bolos = data.sort((a, b) => (b.Quantidade > 0) - (a.Quantidade > 0));
         render();
     }
 
@@ -157,15 +154,16 @@
                 <div class="nome-produto">${b.nome}</div>
                 <div class="info-disponibilidade">
                     ${esgotado ? 
-                        `<span class="texto-reserva">Disponível para Reserva: ${b.proxima_data || 'Em breve'}</span>` : 
+                        `<span class="texto-reserva">Reserve, Fatia disponível: ${b.proxima_data || 'Em breve'}</span>` : 
                         `<span class="texto-estoque">Disponíveis: ${b.Quantidade}</span>`}
                 </div>
                 <div class="controles">
                     <button class="btn-qtd" onclick="alt(${i}, -1)">-</button>
-                    <span id="q-${i}" style="font-weight:600;">0</span>
+                    <span id="q-${i}" class="qtd-numero">0</span>
                     <button class="btn-qtd" onclick="alt(${i}, 1)">+</button>
                 </div>
                 <select id="calda-${i}" class="select-personalizado" onchange="updateCalda(${i}, this.value)">
+                    <option value="Sem calda">Escolher Calda</option>
                     <option value="Sem calda">Sem Calda</option>
                     <option value="Chocolate">Calda Chocolate</option>
                     <option value="Ninho">Calda Ninho</option>
@@ -218,7 +216,7 @@
         for (let i in carrinho) {
             if (carrinho[i].q > 0) {
                 total += carrinho[i].q * 18;
-                res += `• ${carrinho[i].q}x ${bolos[i].nome} (${carrinho[i].calda})<br>`;
+                res += `<div style="margin-bottom:10px;">• <b>${carrinho[i].q}x</b> ${bolos[i].nome}<br><small style="margin-left:20px; color:#888;">(${carrinho[i].calda})</small></div>`;
             }
         }
         document.getElementById('resumo').innerHTML = res || "Escolha suas delícias acima.";
@@ -226,8 +224,8 @@
     }
 
     async function enviarPedido() {
-        const tel = document.getElementById('cli-tel').value;
-        if(!tel || !mtd) return alert("Informe seu WhatsApp e escolha Entrega ou Retirada.");
+        const telCliente = document.getElementById('cli-tel').value;
+        if(telCliente.length < 14 || !mtd) return alert("Informe seu WhatsApp e escolha Entrega ou Retirada.");
         
         let itens = ""; let tem = false;
         for(let i in carrinho) {
@@ -239,7 +237,7 @@
         }
         if(!tem) return alert("Seu carrinho está vazio!");
 
-        let msg = `*PEDIDO MII CAKES*\n\n${itens}\n*Total:* ${document.getElementById('total-valor').innerText}\n*Pagamento:* ${pg}\n*WhatsApp:* ${tel}\n\n*Opção:* ${mtd}`;
+        let msg = `*NOVO PEDIDO MII CAKES*\n\n${itens}\n*Total:* ${document.getElementById('total-valor').innerText}\n*Pagamento:* ${pg}\n*WhatsApp Cliente:* ${telCliente}\n\n*Opção:* ${mtd}`;
         
         if(mtd === 'Entrega') {
             msg += `\n*Endereço:* ${document.getElementById('end-rua').value} - ${document.getElementById('end-bairro').value}`;
