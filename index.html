@@ -15,10 +15,10 @@
         header h1 { margin: 0; font-family: 'Great Vibes', cursive; font-size: 3.5rem; font-weight: normal; }
         .subtitulo { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 3px; margin-top: 5px; opacity: 0.9; }
         .preco-tag { font-weight: 600; font-size: 1rem; display: block; margin: 10px auto; background: rgba(0,0,0,0.1); padding: 5px 20px; border-radius: 20px; width: fit-content; }
-        .btn-bastidores { background: white; color: var(--rosa-topo); border: none; padding: 8px 15px; border-radius: 15px; font-weight: 600; font-size: 0.65rem; text-transform: uppercase; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        /* Ajuste do Link de Bastidores */
+        .btn-bastidores { background: white; color: var(--rosa-topo); border: none; padding: 8px 15px; border-radius: 15px; font-weight: 600; font-size: 0.65rem; text-transform: uppercase; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); cursor: pointer; }
 
         .container { max-width: 1000px; margin: auto; padding: 20px; }
-        
         .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; }
         .img-container { width: 90%; height: 180px; margin: 10px auto; border-radius: 10px; overflow: hidden; position: relative; }
@@ -60,7 +60,8 @@
     <h1>Mii Cakes</h1>
     <div class="subtitulo">Fatias Fresquinhas</div>
     <span class="preco-tag">R$ 18,00</span>
-    <a href="#" class="btn-bastidores">✨ Ver Bastidores</a>
+    <!-- Link atualizado para o Instagram -->
+    <a href="https://www.instagram.com/fatiaqueromais" target="_blank" class="btn-bastidores">✨ Ver Bastidores</a>
 </header>
 
 <div class="container">
@@ -71,7 +72,7 @@
         <div id="resumo-lista" class="resumo-texto">Escolha suas delícias acima.</div>
 
         <input type="text" id="nome-cliente" class="input-padrao" placeholder="Seu Nome Completo">
-        <input type="tel" id="whatsapp" class="input-padrao" placeholder="Seu WhatsApp (Ex: 35 99999-9999)" maxlength="15">
+        <input type="tel" id="whatsapp-input" class="input-padrao" placeholder="Seu WhatsApp (Ex: 35 99999-9999)" maxlength="15">
 
         <div class="botoes-metodo">
             <div id="opt-entrega" class="btn-opcao" onclick="mudarMetodo('Entrega')">Entrega</div>
@@ -106,15 +107,23 @@
 </div>
 
 <script>
+    // Configuração Supabase
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
+    
     let listaBolos = [];
     let meuCarrinho = {};
     let modoEntrega = "";
     let modoPagamento = "";
 
     async function carregarDados() {
-        const { data } = await _supa.from('estoque').select('*');
-        listaBolos = data || [];
+        const { data, error } = await _supa.from('estoque').select('*').order('nome');
+        if (data) {
+            listaBolos = data;
+            renderizarVitrine();
+        }
+    }
+
+    function renderizarVitrine() {
         document.getElementById('vitrine').innerHTML = listaBolos.map((b, i) => `
             <div class="card-bolo">
                 <div class="img-container">
@@ -125,10 +134,9 @@
                 <div class="info-fornada">🧁 Próxima fornada: <b>Sábado</b></div>
                 <div class="controles">
                     <button class="btn-circular" onclick="ajustar(${i},-1)">-</button>
-                    <span id="qtd-${i}" style="font-weight:bold;">0</span>
+                    <span id="qtd-${i}" style="font-weight:bold;">${meuCarrinho[i] || 0}</span>
                     <button class="btn-circular" onclick="ajustar(${i},1)">+</button>
                 </div>
-                <!-- AJUSTE: Texto visível e opção sem calda -->
                 <select id="calda-${i}" class="select-calda" onchange="atualizarInterface()">
                     <option value="" disabled selected>Selecionar Calda</option>
                     <option value="Sem calda">Sem calda</option>
@@ -138,6 +146,17 @@
             </div>
         `).join('');
     }
+
+    // Escuta mudanças no Admin em Tempo Real
+    _supa.channel('estoque_realtime')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'estoque' }, payload => {
+          const index = listaBolos.findIndex(item => item.id === payload.new.id);
+          if (index !== -1) {
+              listaBolos[index] = payload.new;
+              renderizarVitrine(); // Redesenha a vitrine sem perder os botões
+          }
+      })
+      .subscribe();
 
     function ajustar(i, v) {
         if(!meuCarrinho[i]) meuCarrinho[i] = 0;
@@ -153,8 +172,7 @@
         let soma = 0; let lista = "";
         listaBolos.forEach((b, i) => {
             if(meuCarrinho[i] > 0) {
-                const caldaElement = document.getElementById(`calda-${i}`);
-                const calda = caldaElement.value || "Sem calda selecionada";
+                const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
                 soma += meuCarrinho[i] * 18;
                 lista += `• ${meuCarrinho[i]}x ${b.nome} (${calda})<br>`;
             }
@@ -181,8 +199,7 @@
 
     function gerarWhatsApp() {
         const nome = document.getElementById('nome-cliente').value;
-        const whats = document.getElementById('whatsapp').value;
-        if(!nome || !whats) return alert("Por favor, preencha seu nome e WhatsApp.");
+        if(!nome) return alert("Por favor, preencha seu nome.");
         if(!modoEntrega || !modoPagamento) return alert("Selecione a forma de entrega e pagamento.");
         
         let m = `*PEDIDO MII CAKES*\n`;
