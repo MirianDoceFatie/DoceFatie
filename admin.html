@@ -1,33 +1,115 @@
-<table>
-    <thead>
-        <tr>
-            <th>Data</th>
-            <th>Itens</th>
-            <th>Telefone</th>
-            <th>Valor</th>
-            <th>Status</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody id="lista-pedidos"></tbody>
-</table>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Doce Fatia</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; background: #fdf2f7; padding: 20px; color: #333; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; background: #ddd; font-weight: bold; }
+        .tab-btn.active { background: #f858a5; color: white; }
+        .section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .card-estoque { display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid #eee; }
+        .card-estoque img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
+        th, td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; }
+        .status-venda { color: #2cc149; font-weight: bold; }
+        .status-cancelado { color: #f44336; font-weight: bold; }
+        .btn-salvar { background: #f858a5; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+        .btn-acao { border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; color: white; }
+    </style>
+</head>
+<body>
+
+    <h2 style="color: #f858a5; text-align: center;">Gerenciamento Doce Fatia 🍰</h2>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="btn-tab-est" onclick="showTab('estoque')">📦 Estoque</button>
+        <button class="tab-btn" id="btn-tab-rel" onclick="showTab('relatorio')">📊 Relatório</button>
+    </div>
+
+    <div id="tab-estoque" class="section">
+        <h3>Controle de Fatias</h3>
+        <div id="lista-estoque">Carregando...</div>
+    </div>
+
+    <div id="tab-relatorio" class="section" style="display:none;">
+        <h3>Relatório de Cliques (Vendas)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Itens</th>
+                    <th>Telefone</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="lista-pedidos"></tbody>
+        </table>
+    </div>
 
 <script>
+    const supabaseClient = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
+
+    function showTab(tab) {
+        document.getElementById('tab-estoque').style.display = tab === 'estoque' ? 'block' : 'none';
+        document.getElementById('tab-relatorio').style.display = tab === 'relatorio' ? 'block' : 'none';
+        document.getElementById('btn-tab-est').classList.toggle('active', tab === 'estoque');
+        document.getElementById('btn-tab-rel').classList.toggle('active', tab === 'relatorio');
+        if(tab === 'relatorio') carregarRelatorio();
+    }
+
+    async function carregarEstoque() {
+        const { data } = await supabaseClient.from('estoque').select('*').order('nome');
+        document.getElementById('lista-estoque').innerHTML = data.map(b => `
+            <div class="card-estoque">
+                <img src="${b.foto}">
+                <div style="flex:1">
+                    <b style="font-size:0.9rem;">${b.nome}</b><br>
+                    <small>Qtd: </small><input type="number" id="q-${b.id}" value="${b.Quantidade}" style="width:45px; padding:4px;">
+                    <small> Volta em: </small><input type="text" id="d-${b.id}" value="${b.proxima_data||''}" placeholder="Ex: Sábado" style="width:80px; padding:4px;">
+                </div>
+                <button class="btn-salvar" onclick="salvarEstoque(${b.id})">OK</button>
+            </div>
+        `).join('');
+    }
+
+    async function salvarEstoque(id) {
+        const q = document.getElementById(`q-${id}`).value;
+        const d = document.getElementById(`d-${id}`).value;
+        await supabaseClient.from('estoque').update({ Quantidade: q, proxima_data: d }).eq('id', id);
+        alert("Estoque atualizado!");
+        carregarEstoque();
+    }
+
     async function carregarRelatorio() {
         const { data } = await supabaseClient.from('pedidos').select('*').order('created_at', { ascending: false });
         const lista = document.getElementById('lista-pedidos');
         lista.innerHTML = data.map(p => `
             <tr>
                 <td>${new Date(p.created_at).toLocaleDateString()}</td>
-                <td>${p.itens}</td>
-                <td><a href="https://wa.me/55${p.telefone.replace(/\D/g,'')}" target="_blank">${p.telefone}</a></td>
+                <td style="font-size:0.75rem;">${p.itens}</td>
+                <td><a href="https://wa.me/55${p.telefone.replace(/\D/g,'')}" target="_blank" style="color:#2cc149; font-weight:bold;">${p.telefone}</a></td>
                 <td>R$ ${p.valor.toFixed(2)}</td>
                 <td class="status-${p.status.toLowerCase()}">${p.status}</td>
                 <td>
-                    <button class="btn-check" style="background:#2cc149" onclick="setVenda(${p.id}, 'Venda')">✅</button>
-                    <button class="btn-check" style="background:#f44336" onclick="setVenda(${p.id}, 'Cancelado')">❌</button>
+                    <button class="btn-acao" style="background:#2cc149" onclick="setStatus(${p.id}, 'Venda')">✅</button>
+                    <button class="btn-acao" style="background:#f44336" onclick="setStatus(${p.id}, 'Cancelado')">❌</button>
                 </td>
             </tr>
         `).join('');
     }
+
+    async function setStatus(id, st) {
+        await supabaseClient.from('pedidos').update({ status: st }).eq('id', id);
+        carregarRelatorio();
+    }
+
+    window.onload = carregarEstoque;
 </script>
+</body>
+</html>
