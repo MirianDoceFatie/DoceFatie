@@ -3,187 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confeitaria Doce Fatia - Itajubá</title>
+    <title>Confeitaria Doce Fatia</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --rosa-topo: #ff69b4; --rosa-fundo: #fce4ec; --rosa-botao: #ff4081; --whatsapp: #25d366; --marrom: #4e342e; }
         body { font-family: sans-serif; background-color: var(--rosa-fundo); margin: 0; padding-bottom: 50px; color: var(--marrom); }
-        header { background-color: var(--rosa-topo); color: white; text-align: center; padding: 15px; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        header { background-color: var(--rosa-topo); color: white; text-align: center; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         header h1 { margin: 0; font-size: 1.3rem; }
-        .btn-bastidores { background-color: white; color: var(--rosa-topo); border: 2px solid white; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; font-size: 0.8rem; }
         .container { max-width: 800px; margin: auto; padding: 15px; }
-        .galeria-bastidores { display: none; background: white; margin: 20px 0; padding: 15px; border-radius: 15px; border: 2px solid #fce4ec; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .galeria-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin: 15px 0; }
-        .galeria-grid img, .galeria-grid video { width: 100%; border-radius: 10px; object-fit: cover; height: 180px; background: #eee; }
-        .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; margin-top: 20px; }
-        .card-bolo { background: white; border-radius: 15px; overflow: hidden; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; }
-        .img-container { width: 100%; height: 160px; background: #eee; overflow: hidden; position: relative; }
+        .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
+        .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; }
+        .img-container { width: 100%; height: 160px; background: #eee; position: relative; }
         .img-container img { width: 100%; height: 100%; object-fit: cover; }
-        .tarja-nome { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0, 0, 0, 0.5); color: white; padding: 10px 0; font-size: 0.85rem; font-weight: bold; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-left: 5px; padding-right: 5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
-        .preco { display: block; margin: 15px 0 5px; font-weight: bold; color: #333; font-size: 1rem; }
-        .disponivel { font-size: 0.75rem; color: var(--rosa-topo); margin-bottom: 10px; display: block; font-weight: bold; }
-        .controles { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 10px; }
-        .btn-qtd { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 1.2rem; font-weight: bold; }
-        .select-personalizado { width: 90%; font-size: 0.85rem; padding: 10px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 10px; background: #fff; }
-        .checkout { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .opcao-entrega { display: flex; gap: 10px; margin: 20px 0; }
-        .btn-opcao { flex: 1; padding: 15px; border: 2px solid #eee; border-radius: 12px; background: #f9f9f9; cursor: pointer; font-weight: bold; text-align: center; }
-        .btn-opcao.ativo { border-color: var(--rosa-topo); background: #fff5f8; color: var(--rosa-topo); }
-        #form-endereco, #box-retirada { display: none; margin-top: 15px; }
-        .info-retirada { background: #fff9c4; padding: 15px; border-radius: 10px; border: 1px solid #fbc02d; color: #5f4339; font-size: 0.95rem; }
-        input { width: 100%; padding: 15px; margin-top: 8px; border-radius: 12px; border: 1px solid #ccc; box-sizing: border-box; }
-        .valor-total-container { margin: 20px 0; padding: 15px; background-color: #fff5f8; border-radius: 10px; border: 1px dashed var(--rosa-topo); text-align: right; }
-        .pagamento-grid { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 8px; margin-bottom: 15px; }
-        .btn-pg { padding: 10px 4px; border: 1px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-weight: 600; font-size: 0.75rem; text-align: center; }
-        .btn-pg.ativo { background-color: var(--rosa-topo); color: white; border-color: var(--rosa-topo); }
-        .btn-whatsapp { background-color: var(--whatsapp); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .tarja-nome { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0, 0, 0, 0.6); color: white; padding: 8px 5px; font-size: 0.85rem; font-weight: bold; box-sizing: border-box; }
+        .preco { display: block; margin: 10px 0 2px; font-weight: bold; color: #333; }
+        .disponivel { font-size: 0.7rem; color: var(--rosa-topo); margin-bottom: 10px; display: block; }
+        .controles { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; }
+        .btn-qtd { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-weight: bold; }
+        .select-calda { width: 90%; padding: 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 0.8rem; margin-bottom: 10px; }
+        .checkout { background: white; padding: 20px; border-radius: 15px; margin-top: 30px; }
+        .btn-whatsapp { background-color: var(--whatsapp); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 15px; }
+        .aviso-taxa { background: #e3f2fd; color: #0d47a1; padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 10px; font-weight: bold; border: 1px solid #bbdefb; display: none; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>Confeitaria Doce Fatia</h1>
-    <p style="margin:5px 0 0; font-size:0.75rem;">Fatias Fresquinhas do Dia — R$ 18,00</p>
-    <button id="btn-bastidores-texto" class="btn-bastidores" onclick="toggleBastidores()">✨ Ver Bastidores & Produção</button>
+    <p style="font-size:0.8rem; margin:5px 0;">O sabor que transforma o seu dia! 🍰✨</p>
 </header>
 
 <div class="container">
-    <div id="secao-bastidores" class="galeria-bastidores">
-        <h3 style="text-align:center; color: var(--rosa-topo); margin-top:0;">Nossa Produção 👩‍🍳</h3>
-        <div class="galeria-grid">
-            <img src="Bastidor1.jpg" onerror="this.style.display='none'">
-            <img src="Bastidor2.jpg" onerror="this.style.display='none'">
-            <video src="Video1.mp4" controls muted onerror="this.style.display='none'"></video>
-        </div>
-        <span class="btn-voltar-vitrine" onclick="toggleBastidores()" style="cursor:pointer; color:var(--rosa-topo); display:block; text-align:center;">← Voltar para os Bolos</span>
-    </div>
-
-    <div id="vitrine" class="grid-fatias">Carregando estoque...</div>
+    <div id="vitrine" class="grid-fatias">Carregando fatias...</div>
 
     <div class="checkout">
-        <h3>Meu Pedido</h3>
-        <div id="resumo" style="font-size: 0.9rem; color: #666; margin: 15px 0; border-left: 3px solid var(--rosa-topo); padding-left: 10px;">Selecione suas fatias acima.</div>
-        <div class="opcao-entrega">
-            <div id="btn-entrega" class="btn-opcao" onclick="selecionarMetodo('Entrega')">Entrega</div>
-            <div id="btn-retirada" class="btn-opcao" onclick="selecionarMetodo('Retirada')">Retirar</div>
+        <h3>Finalizar Pedido</h3>
+        <div id="resumo" style="font-size: 0.9rem; margin-bottom: 15px; color: #555;">Nenhuma fatia selecionada.</div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; margin-bottom: 5px; font-weight: bold;">Como prefere?</label>
+            <select id="metodo" style="width:100%; padding: 10px; border-radius: 8px;" onchange="ajustarCampos()">
+                <option value="">Escolha uma opção...</option>
+                <option value="Entrega">Entrega (Itajubá)</option>
+                <option value="Retirada">Retirar no Rebourgeon</option>
+            </select>
         </div>
-        <div id="form-endereco">
-            <input type="text" id="end" placeholder="Rua e número">
-            <input type="text" id="bairro" placeholder="Bairro">
+
+        <!-- NOVO AVISO DE TAXA -->
+        <div id="aviso-taxa" class="aviso-taxa">
+            🚀 Envie o pedido para consultar taxa de entrega
         </div>
-        <div id="box-retirada" class="info-retirada">
-            <strong>Local:</strong> Rua Maria Rodrigues Munis, nº 50, Rebourgeon
+
+        <div id="campo-endereco" style="display:none;">
+            <input type="text" id="rua" placeholder="Rua e número" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ccc; box-sizing: border-box;">
+            <input type="text" id="bairro" placeholder="Bairro" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing: border-box;">
         </div>
-        <div class="valor-total-container">
-            <span>Total:</span> <span id="total-valor" style="font-size: 1.3rem; font-weight: bold; color: var(--rosa-botao);">R$ 0,00</span>
+
+        <div id="info-retirada" style="display:none; background:#fff9c4; padding:10px; border-radius:8px; font-size:0.85rem;">
+            📍 Retirada: Rua Maria Rodrigues Munis, 50 - Rebourgeon.
         </div>
-        <div class="pagamento-grid">
-            <div class="btn-pg ativo" onclick="selecionarPg('Pix', this)">Pix</div>
-            <div class="btn-pg" onclick="selecionarPg('Cartão', this)">Cartão</div>
+
+        <div style="margin: 15px 0; font-weight: bold; text-align: right; font-size: 1.1rem;">
+            Total: <span id="total-valor" style="color: var(--rosa-botao);">R$ 0,00</span>
         </div>
-        <button class="btn-whatsapp" onclick="enviarPedido()">Confirmar pelo WhatsApp</button>
+
+        <button class="btn-whatsapp" onclick="enviarWhatsApp()">Enviar Pedido para a Mi</button>
     </div>
 </div>
 
 <script>
     const supabaseClient = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
-    let dadosBolos = [];
-    let carrinho = {};
-    let pgSelecionado = "Pix";
-    let metodoEntrega = ""; 
-    const PRECO_FATIA = 18.00;
+    
+    let listaBolos = [];
+    let pedido = {};
+    const VALOR_FATIA = 18.00;
 
-    async function carregarEstoque() {
+    async function buscarEstoque() {
         const { data, error } = await supabaseClient.from('estoque').select('*');
-        if (error) return document.getElementById('vitrine').innerHTML = "Erro ao carregar estoque.";
-        dadosBolos = data;
-        renderVitrine();
+        if (error) {
+            document.getElementById('vitrine').innerHTML = "Erro ao carregar.";
+            return;
+        }
+        listaBolos = data;
+        renderizarBolos();
     }
 
-    function renderVitrine() {
-        const v = document.getElementById('vitrine');
-        // Adicionado b.Quantidade com Q maiúsculo para exibir a disponibilidade correta
-        v.innerHTML = dadosBolos.map((b, index) => `
+    function renderizarBolos() {
+        const vitrine = document.getElementById('vitrine');
+        vitrine.innerHTML = listaBolos.map((bolo, i) => `
             <div class="card-bolo">
                 <div class="img-container">
-                    <img src="${b.foto}" onerror="this.src='https://via.placeholder.com/180x160?text=Doce+Fatia'">
-                    <div class="tarja-nome">${b.nome}</div>
+                    <img src="${bolo.foto || 'https://via.placeholder.com/180x160?text=Doce+Fatia'}">
+                    <div class="tarja-nome">${bolo.nome}</div>
                 </div>
                 <span class="preco">R$ 18,00</span>
-                <span class="disponivel">Disponível: ${b.Quantidade}</span>
+                <span class="disponivel">Estoque: ${bolo.Quantidade}</span>
                 <div class="controles">
-                    <button class="btn-qtd" onclick="alt(${index}, -1)">-</button>
-                    <span id="q-${index}" style="font-weight:bold;">0</span>
-                    <button class="btn-qtd" onclick="alt(${index}, 1)">+</button>
+                    <button class="btn-qtd" onclick="mudarQtd(${i}, -1)">-</button>
+                    <span id="qtd-display-${i}" style="font-weight:bold;">0</span>
+                    <button class="btn-qtd" onclick="mudarQtd(${i}, 1)">+</button>
                 </div>
-                <select id="calda-${index}" class="select-personalizado" onchange="updateCalda(${index}, this.value)">
-                    <option value="Sem calda">Selecionar Calda</option>
-                    <option value="Chocolate">Calda de Chocolate</option>
-                    <option value="Ninho">Calda de Ninho</option>
+                <select id="calda-${i}" class="select-calda" onchange="mudarCalda(${i}, this.value)">
+                    <option value="Sem calda">Escolher calda...</option>
+                    <option value="Chocolate">Chocolate</option>
+                    <option value="Ninho">Ninho</option>
                 </select>
             </div>
         `).join('');
     }
 
-    function alt(i, v) {
-        if (!carrinho[i]) carrinho[i] = { qtd: 0, calda: "Sem calda" };
-        // Ajustado para b.Quantidade com Q maiúsculo para limitar o pedido ao estoque real
-        let limiteDisponivel = parseInt(dadosBolos[i].Quantidade) || 0;
-        carrinho[i].qtd = Math.max(0, Math.min(limiteDisponivel, (carrinho[i].qtd || 0) + v));
-        document.getElementById('q-' + i).innerText = carrinho[i].qtd;
+    function mudarQtd(index, valor) {
+        if (!pedido[index]) pedido[index] = { qtd: 0, calda: "Sem calda" };
+        let disponivel = parseInt(listaBolos[index].Quantidade) || 0;
+        let novaQtd = pedido[index].qtd + valor;
+        if (novaQtd >= 0 && novaQtd <= disponivel) {
+            pedido[index].qtd = novaQtd;
+            document.getElementById(`qtd-display-${index}`).innerText = novaQtd;
+            atualizarResumo();
+        }
+    }
+
+    function mudarCalda(index, sabor) {
+        if (!pedido[index]) pedido[index] = { qtd: 0, calda: "Sem calda" };
+        pedido[index].calda = sabor;
+        if (pedido[index].qtd === 0 && sabor !== "Sem calda") mudarQtd(index, 1);
         atualizarResumo();
-    }
-
-    function updateCalda(i, c) {
-        if (!carrinho[i]) carrinho[i] = { qtd: 0, calda: "Sem calda" };
-        carrinho[i].calda = c;
-        if (carrinho[i].qtd === 0 && c !== "Sem calda") { carrinho[i].qtd = 1; document.getElementById('q-' + i).innerText = "1"; }
-        atualizarResumo();
-    }
-
-    function selecionarMetodo(m) {
-        metodoEntrega = m;
-        document.getElementById('btn-entrega').classList.toggle('ativo', m === 'Entrega');
-        document.getElementById('btn-retirada').classList.toggle('ativo', m === 'Retirada');
-        document.getElementById('form-endereco').style.display = m === 'Entrega' ? 'block' : 'none';
-        document.getElementById('box-retirada').style.display = m === 'Retirada' ? 'block' : 'none';
-    }
-
-    function selecionarPg(t, e) {
-        pgSelecionado = t;
-        document.querySelectorAll('.btn-pg').forEach(b => b.classList.remove('ativo'));
-        e.classList.add('ativo');
     }
 
     function atualizarResumo() {
-        let txt = ""; let total = 0;
-        for (let i in carrinho) {
-            if (carrinho[i].qtd > 0) {
-                txt += `• ${carrinho[i].qtd}x ${dadosBolos[i].nome} (${carrinho[i].calda})<br>`;
-                total += carrinho[i].qtd * PRECO_FATIA;
+        let texto = ""; let total = 0;
+        for (let i in pedido) {
+            if (pedido[i].qtd > 0) {
+                texto += `• ${pedido[i].qtd}x ${listaBolos[i].nome} (${pedido[i].calda})<br>`;
+                total += pedido[i].qtd * VALOR_FATIA;
             }
         }
-        document.getElementById('resumo').innerHTML = txt || "Selecione suas fatias acima.";
+        document.getElementById('resumo').innerHTML = texto || "Nenhuma fatia selecionada.";
         document.getElementById('total-valor').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
     }
 
-    function enviarPedido() {
-        if(!metodoEntrega) return alert("Selecione Entrega ou Retirada!");
-        let m = "*NOVO PEDIDO - CONFEITARIA DOCE FATIA*\n\n";
-        let totalGeral = 0;
-        for(let i in carrinho) { if(carrinho[i].qtd > 0) { m += `${carrinho[i].qtd}x ${dadosBolos[i].nome} (${carrinho[i].calda})\n`; totalGeral += carrinho[i].qtd * PRECO_FATIA; } }
-        m += `\n*Total: R$ ${totalGeral.toFixed(2).replace('.', ',')}*\n*Opção:* ${metodoEntrega}\n*Pagamento:* ${pgSelecionado}`;
-        window.location.href = `https://wa.me/5535991441589?text=${encodeURIComponent(m)}`;
+    function ajustarCampos() {
+        const m = document.getElementById('metodo').value;
+        document.getElementById('campo-endereco').style.display = m === 'Entrega' ? 'block' : 'none';
+        document.getElementById('info-retirada').style.display = m === 'Retirada' ? 'block' : 'none';
+        
+        // MOSTRAR OU ESCONDER AVISO DE TAXA
+        document.getElementById('aviso-taxa').style.display = m === 'Entrega' ? 'block' : 'none';
     }
 
-    function toggleBastidores() {
-        const s = document.getElementById('secao-bastidores');
-        const v = document.getElementById('vitrine');
-        s.style.display = s.style.display === 'block' ? 'none' : 'block';
-        v.style.display = s.style.display === 'block' ? 'none' : 'grid';
+    function enviarWhatsApp() {
+        const metodo = document.getElementById('metodo').value;
+        if (!metodo) return alert("Escolha Entrega ou Retirada.");
+        let mensagem = `*NOVO PEDIDO - DOCE FATIA*\n\n`;
+        let temItens = false;
+        for (let i in pedido) {
+            if (pedido[i].qtd > 0) {
+                mensagem += `✅ ${pedido[i].qtd}x ${listaBolos[i].nome}\n   Calda: ${pedido[i].calda}\n\n`;
+                temItens = true;
+            }
+        }
+        if (!temItens) return alert("Selecione um item!");
+        mensagem += `*Total:* ${document.getElementById('total-valor').innerText}\n*Opção:* ${metodo}`;
+        if (metodo === 'Entrega') {
+            const r = document.getElementById('rua').value;
+            const b = document.getElementById('bairro').value;
+            if (!r || !b) return alert("Preencha o endereço.");
+            mensagem += `\n*Endereço:* ${r}, ${b}\n_(Favor consultar taxa de entrega)_`;
+        }
+        window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(mensagem)}`);
     }
 
-    window.onload = carregarEstoque;
+    window.onload = buscarEstoque;
 </script>
 </body>
 </html>
