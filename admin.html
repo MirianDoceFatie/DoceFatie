@@ -3,175 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin - Doce Fatia</title>
+    <title>Admin - Mii Cakes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; background: #fdf2f7; padding: 20px; color: #333; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; background: #ddd; font-weight: bold; }
-        .tab-btn.active { background: #f858a5; color: white; }
-        .section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .card-estoque { display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid #eee; }
-        .card-estoque img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
-        th, td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; }
-        .linha-venda { background-color: #e8f5e9 !important; } 
-        .status-venda { color: #2cc149; font-weight: bold; }
-        .status-pendente { color: #666; font-style: italic; }
-        .btn-salvar { background: #f858a5; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
-        .badge-reserva { background: #ff9800; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
-        #container-lote { margin-top: 15px; padding: 10px 20px; background: #f858a5; color: white; border-radius: 10px; display: none; justify-content: space-between; align-items: center; }
-        .btn-lote { background: white; color: #f858a5; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        :root { --rosa: #ff69b4; --marrom: #5d4037; --fundo: #fdf2f5; }
+        body { font-family: 'Montserrat', sans-serif; background: var(--fundo); margin: 0; padding: 20px; color: var(--marrom); }
+        .container { max-width: 900px; margin: auto; }
+        
+        h1 { text-align: center; color: var(--rosa); text-transform: uppercase; letter-spacing: 2px; }
+        
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        h3 { margin-top: 0; border-bottom: 2px solid var(--fundo); padding-bottom: 10px; font-size: 1rem; text-transform: uppercase; }
+
+        /* Estilo Tabela de Estoque */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; font-size: 0.8rem; color: #888; padding: 10px; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        input[type="number"], input[type="text"] { padding: 8px; border: 1px solid #ddd; border-radius: 5px; width: 100%; box-sizing: border-box; }
+
+        /* Estilo Pedidos */
+        .pedido-item { border-left: 5px solid var(--rosa); padding: 10px; margin-bottom: 10px; background: #fff; border-radius: 5px; font-size: 0.9rem; position: relative; }
+        .btn-check { position: absolute; right: 10px; top: 10px; background: #25d366; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+
+        /* Estilo Festival */
+        .grid-fest { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-primario { background: var(--marrom); color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; text-transform: uppercase; margin-top: 15px; transition: 0.3s; }
+        .btn-primario:hover { background: #3e2723; }
+        
+        .btn-atualizar { background: var(--rosa); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        
+        .status-badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: #eee; }
     </style>
 </head>
 <body>
 
-    <h2 style="color: #f858a5; text-align: center;">Gerenciamento Mii Cakes 🍰</h2>
+<div class="container">
+    <h1>Painel de Controle</h1>
 
-    <div class="tabs">
-        <button class="tab-btn active" id="btn-tab-est" onclick="showTab('estoque')">📦 Estoque</button>
-        <button class="tab-btn" id="btn-tab-rel" onclick="showTab('relatorio')">📊 Relatório</button>
-        <button class="tab-btn" id="btn-tab-res" onclick="showTab('reservas')">📅 Reservas Sábado</button>
-    </div>
-
-    <div id="tab-estoque" class="section">
-        <h3>Controle de Fatias</h3>
-        <div id="lista-estoque">Carregando...</div>
-    </div>
-
-    <div id="tab-relatorio" class="section" style="display:none;">
-        <div id="container-lote">
-            <span id="txt-selecionados">0 selecionados</span>
-            <button class="btn-lote" onclick="enviarLoteWhatsApp()">📲 Enviar p/ WhatsApp</button>
+    <!-- CONFIGURAÇÃO DO FESTIVAL -->
+    <div class="card">
+        <h3>🎡 Configurar Festival de Fatias</h3>
+        <div style="margin-bottom: 15px;">
+            <label style="font-size: 0.8rem;">Nome do Evento:</label>
+            <input type="text" id="f-nome" placeholder="Ex: Festival de Fatias da Mi">
         </div>
-        <table>
+        <div style="margin-bottom: 15px;">
+            <label style="font-size: 0.8rem;">Local:</label>
+            <input type="text" id="f-local" placeholder="Ex: Rua Maria Rodrigues Munis, 50">
+        </div>
+        <div class="grid-fest">
+            <div>
+                <label style="font-size: 0.8rem;">Data:</label>
+                <input type="text" id="f-data" placeholder="Ex: Sábado, 20/05">
+            </div>
+            <div>
+                <label style="font-size: 0.8rem;">Horário:</label>
+                <input type="text" id="f-hora" placeholder="Ex: 14h às 18h">
+            </div>
+        </div>
+        <button class="btn-primario" onclick="salvarFestival()">Atualizar Banner na Vitrine</button>
+    </div>
+
+    <!-- GESTÃO DE ESTOQUE -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>🍰 Estoque de Fatias</h3>
+            <button class="btn-atualizar" onclick="salvarEstoque()">Salvar Alterações</button>
+        </div>
+        <table id="tabela-estoque">
             <thead>
                 <tr>
-                    <th><input type="checkbox" onclick="selecionarTodos(this)"></th>
-                    <th>Data</th>
-                    <th>Itens</th>
-                    <th>WhatsApp</th>
-                    <th>Valor</th>
-                    <th>Ações</th>
+                    <th>Sabor</th>
+                    <th width="80">Qtd</th>
+                    <th>Próxima Data (Reserva)</th>
                 </tr>
             </thead>
-            <tbody id="lista-pedidos"></tbody>
+            <tbody id="corpo-estoque">
+                <!-- Preenchido via JS -->
+            </tbody>
         </table>
     </div>
 
-    <div id="tab-reservas" class="section" style="display:none;">
-        <h3>📌 Reservas Ativas</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>WhatsApp</th>
-                    <th>Itens Reservados</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="lista-reservas-sabado"></tbody>
-        </table>
+    <!-- PEDIDOS RECEBIDOS -->
+    <div class="card">
+        <h3>📥 Pedidos Recentes</h3>
+        <div id="lista-pedidos">Carregando pedidos...</div>
     </div>
+</div>
 
 <script>
+    // CONFIGURAÇÃO SUPABASE
     const supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
-    let pedCache = [];
 
-    function showTab(tab) {
-        localStorage.setItem('mii_cakes_aba', tab); // SALVA A ABA NA MEMÓRIA
+    let dadosEstoque = [];
 
-        document.getElementById('tab-estoque').style.display = tab === 'estoque' ? 'block' : 'none';
-        document.getElementById('tab-relatorio').style.display = tab === 'relatorio' ? 'block' : 'none';
-        document.getElementById('tab-reservas').style.display = tab === 'reservas' ? 'block' : 'none';
-        
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        if(tab === 'estoque') document.getElementById('btn-tab-est').classList.add('active');
-        if(tab === 'relatorio') document.getElementById('btn-tab-rel').classList.add('active');
-        if(tab === 'reservas') document.getElementById('btn-tab-res').classList.add('active');
-        
-        if(tab !== 'estoque') carregarRelatorio();
+    // 1. CARREGAR TUDO AO INICIAR
+    async function iniciar() {
+        carregarEstoque();
+        carregarFestival();
+        carregarPedidos();
     }
 
+    // 2. GESTÃO DO FESTIVAL
+    async function carregarFestival() {
+        const { data } = await supa.from('config').select('*').single();
+        if (data) {
+            document.getElementById('f-nome').value = data.festival_nome || "";
+            document.getElementById('f-local').value = data.festival_local || "";
+            document.getElementById('f-data').value = data.festival_data || "";
+            document.getElementById('f-hora').value = data.festival_hora || "";
+        }
+    }
+
+    async function salvarFestival() {
+        const dados = {
+            festival_nome: document.getElementById('f-nome').value,
+            festival_local: document.getElementById('f-local').value,
+            festival_data: document.getElementById('f-data').value,
+            festival_hora: document.getElementById('f-hora').value
+        };
+        const { error } = await supa.from('config').update(dados).eq('id', 1);
+        if (error) alert("Erro ao salvar festival");
+        else alert("Banner do festival atualizado!");
+    }
+
+    // 3. GESTÃO DE ESTOQUE
     async function carregarEstoque() {
         const { data } = await supa.from('estoque').select('*').order('nome');
-        document.getElementById('lista-estoque').innerHTML = data.map(b => `
-            <div class="card-estoque">
-                <img src="${b.foto}">
-                <div style="flex:1">
-                    <b>${b.nome}</b><br>
-                    Qtd: <input type="number" id="q-${b.id}" value="${b.Quantidade}" style="width:40px;">
-                    Volta: <input type="text" id="d-${b.id}" value="${b.proxima_data||''}" placeholder="Ex: Sábado" style="width:70px;">
-                </div>
-                <button class="btn-salvar" onclick="salvarEstoque(${b.id})">OK</button>
+        dadosEstoque = data;
+        const html = data.map((item, i) => `
+            <tr>
+                <td><small>${item.nome}</small></td>
+                <td><input type="number" value="${item.Quantidade}" onchange="atualizarLocal(${i}, 'Quantidade', this.value)"></td>
+                <td><input type="text" value="${item.proxima_data || ''}" placeholder="Ex: Sábado" onchange="atualizarLocal(${i}, 'proxima_data', this.value)"></td>
+            </tr>
+        `).join('');
+        document.getElementById('corpo-estoque').innerHTML = html;
+    }
+
+    function atualizarLocal(index, campo, valor) {
+        dadosEstoque[index][campo] = valor;
+    }
+
+    async function salvarEstoque() {
+        for (const item of dadosEstoque) {
+            await supa.from('estoque').update({ 
+                Quantidade: item.Quantidade, 
+                proxima_data: item.proxima_data 
+            }).eq('id', item.id);
+        }
+        alert("Estoque atualizado com sucesso!");
+        carregarEstoque();
+    }
+
+    // 4. GESTÃO DE PEDIDOS
+    async function carregarPedidos() {
+        const { data } = await supa.from('pedidos').select('*').order('created_at', { ascending: false }).limit(10);
+        if (!data || data.length === 0) {
+            document.getElementById('lista-pedidos').innerText = "Nenhum pedido recebido.";
+            return;
+        }
+        const html = data.map(p => `
+            <div class="pedido-item" style="opacity: ${p.status === 'Concluído' ? '0.5' : '1'}">
+                <strong>${p.telefone}</strong> <span class="status-badge">${p.status}</span><br>
+                <small>${p.itens}</small><br>
+                <span style="color:var(--rosa)">R$ ${p.valor}</span>
+                ${p.status !== 'Concluído' ? `<button class="btn-check" onclick="concluirPedido('${p.id}')">✓</button>` : ''}
             </div>
         `).join('');
+        document.getElementById('lista-pedidos').innerHTML = html;
     }
 
-    async function salvarEstoque(id) {
-        const q = document.getElementById(`q-${id}`).value;
-        const d = document.getElementById(`d-${id}`).value;
-        await supa.from('estoque').update({ Quantidade: q, proxima_data: d }).eq('id', id);
-        alert("Atualizado!");
-        carregarEstoque();
+    async function concluirPedido(id) {
+        await supa.from('pedidos').update({ status: 'Concluído' }).eq('id', id);
+        carregarPedidos();
     }
 
-    async function carregarRelatorio() {
-        const { data } = await supa.from('pedidos').select('*').order('created_at', { ascending: false });
-        pedCache = data;
-        
-        document.getElementById('lista-pedidos').innerHTML = data.map(p => `
-            <tr class="${p.status === 'Venda' ? 'linha-venda' : ''}">
-                <td><input type="checkbox" class="check-p" value="${p.id}" onchange="atualizarLote()"></td>
-                <td>${new Date(p.created_at).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'})}</td>
-                <td>${p.itens}</td>
-                <td><a href="https://wa.me/55${p.telefone.replace(/\D/g,'')}" target="_blank">Enviar WA</a></td>
-                <td>R$ ${p.valor.toFixed(2)}</td>
-                <td>
-                    <button onclick="setStatus(${p.id}, 'Venda')">✅</button>
-                    <button onclick="setStatus(${p.id}, 'Cancelado')">❌</button>
-                </td>
-            </tr>
-        `).join('');
-
-        const reservas = data.filter(p => p.itens.includes('[RESERVA]'));
-        document.getElementById('lista-reservas-sabado').innerHTML = reservas.map(r => `
-            <tr>
-                <td>${r.telefone}</td>
-                <td><span class="badge-reserva">SÁBADO</span> ${r.itens}</td>
-                <td>${r.status}</td>
-            </tr>
-        `).join('') || '<tr><td colspan="3">Sem reservas.</td></tr>';
-    }
-
-    async function setStatus(id, s) {
-        await supa.from('pedidos').update({ status: s }).eq('id', id);
-        carregarRelatorio();
-    }
-
-    function selecionarTodos(m) {
-        document.querySelectorAll('.check-p').forEach(c => c.checked = m.checked);
-        atualizarLote();
-    }
-
-    function atualizarLote() {
-        const n = document.querySelectorAll('.check-p:checked').length;
-        document.getElementById('txt-selecionados').innerText = `${n} selecionados`;
-        document.getElementById('container-lote').style.display = n > 0 ? 'flex' : 'none';
-    }
-
-    async function enviarLoteWhatsApp() {
-        const ids = Array.from(document.querySelectorAll('.check-p:checked')).map(c => parseInt(c.value));
-        const selecionados = pedCache.filter(p => ids.includes(p.id));
-        let msg = "*🧁 LISTA DE PRODUÇÃO*\n\n";
-        selecionados.forEach((p, i) => msg += `*PEDI #${i+1}*\n${p.itens}\n---\n`);
-        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
-    }
-
-    window.onload = () => {
-        carregarEstoque();
-        const aba = localStorage.getItem('mii_cakes_aba') || 'estoque';
-        showTab(aba);
-    };
+    window.onload = iniciar;
 </script>
+
 </body>
 </html>
