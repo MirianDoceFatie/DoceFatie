@@ -12,7 +12,7 @@
         .container { max-width: 800px; margin: auto; padding: 20px; }
         .vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
         .card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); padding-bottom: 15px; }
-        .img-fatia { width: 100%; height: 160px; object-fit: cover; }
+        .img-fatia { width: 100%; height: 160px; object-fit: cover; background: #eee; }
         .btn-whats { background: var(--whats); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 90%; margin-top: 10px; text-decoration: none; display: inline-block; }
     </style>
 </head>
@@ -20,7 +20,7 @@
 
 <header>
     <h1>🍰 Fatia QueroMais</h1>
-    <p>Estoque em Tempo Real</p>
+    <p>Estoque em Tempo Real - Itajubá</p>
 </header>
 
 <div class="container">
@@ -28,15 +28,22 @@
 </div>
 
 <script>
-    // Conexão com o seu Supabase de Itajubá
-    const supabase = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
+    // Conexão direta com sua conta Mi
+    const supabaseClient = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
 
     async function carregarEstoque() {
-        const { data, error } = await supabase.from('estoque').select('*');
+        // Buscando da tabela 'estoque' que você arrumou
+        const { data, error } = await supabaseClient.from('estoque').select('*');
         const vitrine = document.getElementById('vitrine');
 
         if (error) {
-            vitrine.innerHTML = "<p>Erro ao carregar estoque. Verifique o Supabase.</p>";
+            console.error(error);
+            vitrine.innerHTML = "<p>Erro ao conectar. Verifique as colunas no Supabase.</p>";
+            return;
+        }
+
+        if (data.length === 0) {
+            vitrine.innerHTML = "<p>Nenhuma fatia cadastrada ainda.</p>";
             return;
         }
 
@@ -45,7 +52,7 @@
                 <img src="${item.foto}" class="img-fatia" onerror="this.src='https://via.placeholder.com/180x160?text=Bolo'">
                 <h3>${item.nome}</h3>
                 <p>Disponível: <strong>${item.quantidade}</strong></p>
-                <a href="https://wa.me/5535991441589?text=Oi Mi! Quero a ${item.nome}" class="btn-whats">Pedir no WhatsApp</a>
+                <a href="https://wa.me/5535991441589?text=Oi Mi! Quero a fatia de ${item.nome}" class="btn-whats">Pedir no WhatsApp</a>
             </div>
         `).join('');
     }
