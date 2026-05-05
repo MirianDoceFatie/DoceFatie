@@ -21,9 +21,24 @@
         .controles { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; }
         .btn-qtd { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-weight: bold; }
         .select-calda { width: 90%; padding: 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 0.8rem; margin-bottom: 10px; }
-        .checkout { background: white; padding: 20px; border-radius: 15px; margin-top: 30px; }
-        .btn-whatsapp { background-color: var(--whatsapp); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 15px; }
-        .aviso-taxa { background: #e3f2fd; color: #0d47a1; padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 10px; font-weight: bold; border: 1px solid #bbdefb; display: none; }
+        
+        /* Estilo Checkout Original da Imagem */
+        .checkout { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .opcao-entrega { display: flex; gap: 10px; margin: 20px 0; }
+        .btn-opcao { flex: 1; padding: 15px; border: 2px solid #eee; border-radius: 12px; background: #f9f9f9; cursor: pointer; font-weight: bold; text-align: center; color: #888; }
+        .btn-opcao.ativo { border-color: var(--rosa-topo); background: #fff5f8; color: var(--rosa-topo); }
+        .grid-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .campo-grupo label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; }
+        input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box; }
+        
+        .valor-total-container { margin: 20px 0; padding: 15px; background-color: #fff5f8; border-radius: 10px; border: 1px dashed var(--rosa-topo); text-align: right; }
+        .taxa-aviso { color: var(--rosa-botao); font-size: 0.75rem; font-style: italic; display: none; margin-top: 5px; }
+        
+        .pagamento-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        .btn-pg { padding: 12px; border: 1px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-weight: bold; text-align: center; font-size: 0.8rem; }
+        .btn-pg.ativo { background-color: var(--rosa-topo); color: white; border-color: var(--rosa-topo); }
+        
+        .btn-whatsapp { background-color: var(--whatsapp); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
     </style>
 </head>
 <body>
@@ -37,37 +52,43 @@
     <div id="vitrine" class="grid-fatias">Carregando fatias...</div>
 
     <div class="checkout">
-        <h3>Finalizar Pedido</h3>
-        <div id="resumo" style="font-size: 0.9rem; margin-bottom: 15px; color: #555;">Nenhuma fatia selecionada.</div>
+        <h3>Meu Pedido</h3>
+        <div id="resumo" style="font-size: 0.9rem; color: #666; margin: 15px 0; border-left: 3px solid var(--rosa-topo); padding-left: 10px;">Selecione suas fatias acima.</div>
         
-        <div style="margin-bottom: 15px;">
-            <label style="display:block; margin-bottom: 5px; font-weight: bold;">Como prefere?</label>
-            <select id="metodo" style="width:100%; padding: 10px; border-radius: 8px;" onchange="ajustarCampos()">
-                <option value="">Escolha uma opção...</option>
-                <option value="Entrega">Entrega (Itajubá)</option>
-                <option value="Retirada">Retirar no Rebourgeon</option>
-            </select>
+        <div class="opcao-entrega">
+            <div id="btn-entrega" class="btn-opcao" onclick="selecionarMetodo('Entrega')">Entrega</div>
+            <div id="btn-retirada" class="btn-opcao" onclick="selecionarMetodo('Retirada')">Retirar</div>
         </div>
 
-        <!-- NOVO AVISO DE TAXA -->
-        <div id="aviso-taxa" class="aviso-taxa">
-            🚀 Envie o pedido para consultar taxa de entrega
+        <div id="form-endereco" style="display:none;">
+            <div class="grid-campos">
+                <div class="campo-grupo">
+                    <label>Endereço</label>
+                    <input type="text" id="rua" placeholder="Rua e número">
+                </div>
+                <div class="campo-grupo">
+                    <label>Bairro</label>
+                    <input type="text" id="bairro" placeholder="Bairro">
+                </div>
+            </div>
         </div>
 
-        <div id="campo-endereco" style="display:none;">
-            <input type="text" id="rua" placeholder="Rua e número" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ccc; box-sizing: border-box;">
-            <input type="text" id="bairro" placeholder="Bairro" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing: border-box;">
-        </div>
-
-        <div id="info-retirada" style="display:none; background:#fff9c4; padding:10px; border-radius:8px; font-size:0.85rem;">
+        <div id="box-retirada" style="display:none; background:#fff9c4; padding:15px; border-radius:10px; font-size:0.85rem; margin-top:15px;">
             📍 Retirada: Rua Maria Rodrigues Munis, 50 - Rebourgeon.
         </div>
 
-        <div style="margin: 15px 0; font-weight: bold; text-align: right; font-size: 1.1rem;">
-            Total: <span id="total-valor" style="color: var(--rosa-botao);">R$ 0,00</span>
+        <div class="valor-total-container">
+            <div style="font-size: 1.1rem; font-weight: bold;">Total: <span id="total-valor" style="color: var(--rosa-botao);">R$ 0,00</span></div>
+            <div id="aviso-taxa" class="taxa-aviso">Envie o pedido para consultar taxa de entrega</div>
         </div>
 
-        <button class="btn-whatsapp" onclick="enviarWhatsApp()">Enviar Pedido para a Mi</button>
+        <div class="pagamento-grid">
+            <div class="btn-pg ativo" onclick="selecionarPg('Pix', this)">Pix</div>
+            <div class="btn-pg" onclick="selecionarPg('Cartão', this)">Cartão</div>
+            <div class="btn-pg" onclick="selecionarPg('Link', this)">Link</div>
+        </div>
+
+        <button class="btn-whatsapp" onclick="enviarWhatsApp()">Confirmar Pedido pelo WhatsApp</button>
     </div>
 </div>
 
@@ -76,14 +97,13 @@
     
     let listaBolos = [];
     let pedido = {};
+    let pgSelecionado = "Pix";
+    let metodoEntrega = "";
     const VALOR_FATIA = 18.00;
 
     async function buscarEstoque() {
         const { data, error } = await supabaseClient.from('estoque').select('*');
-        if (error) {
-            document.getElementById('vitrine').innerHTML = "Erro ao carregar.";
-            return;
-        }
+        if (error) return document.getElementById('vitrine').innerHTML = "Erro ao carregar fatias.";
         listaBolos = data;
         renderizarBolos();
     }
@@ -130,6 +150,21 @@
         atualizarResumo();
     }
 
+    function selecionarMetodo(m) {
+        metodoEntrega = m;
+        document.getElementById('btn-entrega').classList.toggle('ativo', m === 'Entrega');
+        document.getElementById('btn-retirada').classList.toggle('ativo', m === 'Retirada');
+        document.getElementById('form-endereco').style.display = m === 'Entrega' ? 'block' : 'none';
+        document.getElementById('box-retirada').style.display = m === 'Retirada' ? 'block' : 'none';
+        document.getElementById('aviso-taxa').style.display = m === 'Entrega' ? 'block' : 'none';
+    }
+
+    function selecionarPg(t, e) {
+        pgSelecionado = t;
+        document.querySelectorAll('.btn-pg').forEach(b => b.classList.remove('ativo'));
+        e.classList.add('ativo');
+    }
+
     function atualizarResumo() {
         let texto = ""; let total = 0;
         for (let i in pedido) {
@@ -138,22 +173,12 @@
                 total += pedido[i].qtd * VALOR_FATIA;
             }
         }
-        document.getElementById('resumo').innerHTML = texto || "Nenhuma fatia selecionada.";
+        document.getElementById('resumo').innerHTML = texto || "Selecione suas fatias acima.";
         document.getElementById('total-valor').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
     }
 
-    function ajustarCampos() {
-        const m = document.getElementById('metodo').value;
-        document.getElementById('campo-endereco').style.display = m === 'Entrega' ? 'block' : 'none';
-        document.getElementById('info-retirada').style.display = m === 'Retirada' ? 'block' : 'none';
-        
-        // MOSTRAR OU ESCONDER AVISO DE TAXA
-        document.getElementById('aviso-taxa').style.display = m === 'Entrega' ? 'block' : 'none';
-    }
-
     function enviarWhatsApp() {
-        const metodo = document.getElementById('metodo').value;
-        if (!metodo) return alert("Escolha Entrega ou Retirada.");
+        if (!metodoEntrega) return alert("Escolha Entrega ou Retirada!");
         let mensagem = `*NOVO PEDIDO - DOCE FATIA*\n\n`;
         let temItens = false;
         for (let i in pedido) {
@@ -163,12 +188,12 @@
             }
         }
         if (!temItens) return alert("Selecione um item!");
-        mensagem += `*Total:* ${document.getElementById('total-valor').innerText}\n*Opção:* ${metodo}`;
-        if (metodo === 'Entrega') {
+        mensagem += `*Total:* ${document.getElementById('total-valor').innerText}\n*Opção:* ${metodoEntrega}\n*Pagamento:* ${pgSelecionado}`;
+        if (metodoEntrega === 'Entrega') {
             const r = document.getElementById('rua').value;
             const b = document.getElementById('bairro').value;
             if (!r || !b) return alert("Preencha o endereço.");
-            mensagem += `\n*Endereço:* ${r}, ${b}\n_(Favor consultar taxa de entrega)_`;
+            mensagem += `\n*Endereço:* ${r}, ${b}`;
         }
         window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(mensagem)}`);
     }
