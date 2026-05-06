@@ -13,91 +13,163 @@
             --verde: #25d366; 
             --fundo: #fdf2f5;
             --cinza: #666;
+            --ouro: #f1c40f;
+            --branco: #ffffff;
         }
 
         body { 
             font-family: 'Montserrat', sans-serif; 
             background: var(--fundo); 
             margin: 0; 
-            padding: 10px; 
+            padding: 15px; 
             color: var(--marrom);
-            padding-bottom: 50px;
+            padding-bottom: 80px;
         }
 
-        h2 { text-align: center; font-size: 1.1rem; text-transform: uppercase; margin: 10px 0; }
+        h2 { 
+            text-align: center; 
+            font-size: 1rem; 
+            letter-spacing: 1px;
+            text-transform: uppercase; 
+            margin: 15px 0 20px 0; 
+            color: var(--marrom);
+        }
 
+        /* Abas Estilo Minimalista */
         .abas { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
-            gap: 5px; 
-            margin-bottom: 15px; 
+            gap: 8px; 
+            margin-bottom: 20px; 
             position: sticky;
             top: 0;
             z-index: 100;
             background: var(--fundo);
-            padding: 5px 0;
+            padding: 10px 0;
         }
 
         .btn-aba { 
-            padding: 10px 2px; 
-            border: 1px solid var(--rosa); 
-            background: white; 
-            border-radius: 8px; 
-            font-weight: bold; 
+            padding: 12px 5px; 
+            border: 1px solid rgba(255, 105, 180, 0.3); 
+            background: var(--branco); 
+            border-radius: 10px; 
+            font-weight: 600; 
             cursor: pointer; 
-            font-size: 9px;
+            font-size: 10px;
             color: var(--rosa);
             text-transform: uppercase;
+            transition: 0.3s;
         }
 
-        .btn-aba.ativa { background: var(--rosa); color: white; }
+        .btn-aba.ativa { 
+            background: var(--rosa); 
+            color: var(--branco); 
+            border-color: var(--rosa);
+            box-shadow: 0 4px 10px rgba(255, 105, 180, 0.2);
+        }
+
+        /* Botão Flutuante Discreto */
+        .btn-relatorio-fixo { 
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #444; 
+            color: white; 
+            width: 50px;
+            height: 50px;
+            border: none; 
+            border-radius: 50%; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
         .secao { display: none; }
         .secao.ativa { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .btn-relatorio { 
-            background: #444; color: white; width: 100%; padding: 15px; 
-            border: none; border-radius: 12px; margin-bottom: 15px; font-weight: bold; 
-            cursor: pointer; font-size: 0.9rem;
-        }
-
+        /* Cards Elegantes */
         .card { 
-            background: white; padding: 15px; border-radius: 15px; margin-bottom: 12px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 8px solid #ccc;
+            background: var(--branco); 
+            padding: 18px; 
+            border-radius: 18px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 4px 15px rgba(93, 64, 55, 0.05); 
+            border: 1px solid rgba(0,0,0,0.03);
             position: relative;
         }
 
-        .card-novo { border-left-color: var(--verde); }
-        .card-reserva { border-left-color: orange; }
-        .card-desistiu { border-left-color: #ff4444; opacity: 0.7; }
+        .card-novo { border-top: 5px solid var(--verde); }
+        .card-reserva { border-top: 5px solid orange; }
+        .card-desistiu { border-top: 5px solid #ff4444; opacity: 0.7; }
 
         .itens-pedido { 
-            background: #fafafa; padding: 10px; border-radius: 8px; 
-            font-size: 0.8rem; margin: 10px 0; border: 1px solid #eee;
+            background: #f9f9f9; 
+            padding: 12px; 
+            border-radius: 10px; 
+            font-size: 0.85rem; 
+            margin: 12px 0; 
+            line-height: 1.4;
         }
 
-        .acoes-card { display: flex; gap: 8px; }
-        .btn-mini { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.7rem; }
-        .btn-whats { background: #e8f5e9; color: #2e7d32; }
-        .btn-ok { background: var(--marrom); color: white; }
-        .btn-del { background: #ffebee; color: #c62828; }
+        .valor-tag { 
+            display: inline-block; 
+            font-weight: 700; 
+            color: var(--rosa); 
+            font-size: 1rem; 
+            margin-top: 5px;
+        }
 
-        /* Estilo Tabelas (Estoque e Config) */
-        .box-config { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
-        .input-padrao { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin: 5px 0 15px 0; box-sizing: border-box; font-family: 'Montserrat'; }
+        .acoes-card { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px; }
+        .btn-mini { 
+            flex: 1; 
+            padding: 10px; 
+            border: none; 
+            border-radius: 10px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            font-size: 0.75rem; 
+            text-transform: uppercase;
+        }
+
+        .btn-whats { background: #e8f5e9; color: #2e7d32; }
+        .btn-ok { background: var(--marrom); color: var(--branco); }
+        .btn-del { background: #fee; color: #c62828; }
+        .btn-pago { background: var(--verde); color: white; }
+        .btn-pendente { background: var(--ouro); color: var(--marrom); }
+
+        /* Tabelas */
+        .box-config { background: var(--branco); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .input-padrao { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; margin: 8px 0 18px 0; box-sizing: border-box; font-family: 'Montserrat'; background: #fcfcfc; }
         
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; font-size: 0.8rem; }
-        th { background: var(--marrom); color: white; padding: 10px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #eee; }
-        .input-estoque { width: 45px; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: #f5f5f5; color: var(--marrom); padding: 12px; text-align: left; font-size: 0.75rem; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
+        .input-estoque { width: 50px; padding: 6px; text-align: center; border: 1px solid #eee; border-radius: 6px; }
+
+        .btn-save-festival {
+            background: var(--verde);
+            color: white;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <h2>Mii Cakes - Gestão Elite 🍰</h2>
+    <h2>MII CAKES - GESTÃO ELITE 🍰</h2>
 
-    <button class="btn-relatorio" onclick="gerarRelatorioProducao()">📋 Gerar Relatório de Produção</button>
+    <!-- Botão de Relatório Discreto e Fixo -->
+    <button class="btn-relatorio-fixo" onclick="gerarRelatorioProducao()" title="Gerar Relatório de Produção">📋</button>
 
     <div class="abas">
         <button class="btn-aba ativa" onclick="mudarAba('novos', this)">Pedidos</button>
@@ -108,22 +180,20 @@
         <button class="btn-aba" onclick="mudarAba('historico', this)">Histórico</button>
     </div>
 
-    <!-- SEÇÕES DE PEDIDOS -->
     <div id="aba-novos" class="secao ativa"><div id="lista-novos"></div></div>
     <div id="aba-reservas" class="secao"><div id="lista-reservas"></div></div>
     <div id="aba-desistencias" class="secao"><div id="lista-desistencias"></div></div>
     <div id="aba-historico" class="secao"><div id="lista-historico"></div></div>
 
-    <!-- SEÇÃO ESTOQUE -->
     <div id="aba-estoque" class="secao">
         <div class="box-config">
-            <h3>📦 Controle de Fatias</h3>
+            <h3 style="margin-top:0">📦 Estoque</h3>
             <table id="tabela-estoque">
                 <thead>
                     <tr>
                         <th>Sabor</th>
                         <th>Qtd</th>
-                        <th>Próxima Fornada</th>
+                        <th>Fornada</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -132,27 +202,18 @@
         </div>
     </div>
 
-    <!-- SEÇÃO FESTIVAL -->
     <div id="aba-festival" class="secao">
         <div class="box-config">
-            <h3>📅 Detalhes do Festival</h3>
+            <h3 style="margin-top:0">📅 Configurar Festival</h3>
             <label>Nome do Evento</label>
-            <input type="text" id="f-nome" class="input-padrao" placeholder="Ex: Festival de Fatias">
-            
-            <label>Local de Retirada/Evento</label>
-            <input type="text" id="f-local" class="input-padrao" placeholder="Endereço completo">
-            
+            <input type="text" id="f-nome" class="input-padrao">
+            <label>Local</label>
+            <input type="text" id="f-local" class="input-padrao">
             <div style="display:flex; gap:10px;">
-                <div style="flex:1">
-                    <label>Data</label>
-                    <input type="text" id="f-data" class="input-padrao" placeholder="Ex: 10/05">
-                </div>
-                <div style="flex:1">
-                    <label>Horário</label>
-                    <input type="text" id="f-hora" class="input-padrao" placeholder="Ex: 14h as 18h">
-                </div>
+                <div style="flex:1"><label>Data</label><input type="text" id="f-data" class="input-padrao"></div>
+                <div style="flex:1"><label>Hora</label><input type="text" id="f-hora" class="input-padrao"></div>
             </div>
-            <button class="btn-relatorio" style="background:var(--verde)" onclick="salvarFestival()">💾 Salvar Configurações</button>
+            <button class="btn-save-festival" onclick="salvarFestival()">SALVAR ALTERAÇÕES</button>
         </div>
     </div>
 
@@ -171,42 +232,57 @@
         const { data: pedidos } = await _supa.from('pedidos').select('*').order('created_at', { ascending: false });
         const { data: estoque } = await _supa.from('estoque').select('*').order('nome');
 
-        // Renderizar Listas de Pedidos
         renderizarPedidos(pedidos?.filter(p => p.status === 'Novo') || [], 'lista-novos', 'card-novo');
         renderizarPedidos(pedidos?.filter(p => p.status === 'Reserva') || [], 'lista-reservas', 'card-reserva');
         renderizarPedidos(pedidos?.filter(p => p.status === 'Desistiu') || [], 'lista-desistencias', 'card-desistiu');
         renderizarPedidos(pedidos?.filter(p => p.status === 'Finalizado') || [], 'lista-historico', '');
 
-        // Renderizar Tabela Estoque
         document.getElementById('corpo-estoque').innerHTML = estoque.map(i => `
             <tr>
-                <td>${i.nome}</td>
+                <td><strong>${i.nome}</strong></td>
                 <td><input type="number" id="q-${i.id}" value="${i.quantidade}" class="input-estoque"></td>
-                <td><input type="text" id="d-${i.id}" value="${i.dados_proximidade || ''}" style="width:70px; border:1px solid #ddd; border-radius:4px; font-size:0.7rem;"></td>
-                <td><button onclick="salvarItemEstoque(${i.id})" style="border:none; background:none; cursor:pointer;">💾</button></td>
+                <td><input type="text" id="d-${i.id}" value="${i.dados_proximidade || ''}" style="width:60px; border:1px solid #eee; border-radius:5px; font-size:0.7rem; padding:4px;"></td>
+                <td style="text-align:right"><button onclick="salvarItemEstoque(${i.id})" style="border:none; background:none; cursor:pointer; font-size:1.1rem;">💾</button></td>
             </tr>
         `).join('');
     }
 
     function renderizarPedidos(lista, divId, classe) {
         const container = document.getElementById(divId);
-        if(lista.length === 0) { container.innerHTML = "<p style='text-align:center; font-size:0.7rem; color:#999; padding:20px;'>Sem registros.</p>"; return; }
+        if(lista.length === 0) { container.innerHTML = "<p style='text-align:center; font-size:0.8rem; color:#bbb; padding:40px;'>Nenhum pedido por aqui.</p>"; return; }
         
-        container.innerHTML = lista.map(p => `
+        container.innerHTML = lista.map(p => {
+            const isPago = p.pagamento_status === 'Pago';
+            const v = p.valor ? p.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00';
+            
+            return `
             <div class="card ${classe}">
-                <div style="display:flex; justify-content:space-between;">
-                    <strong>${p.nome}</strong>
-                    <input type="checkbox" class="check-prod" data-itens="${p.itens}">
+                <div style="display:flex; justify-content:space-between; align-items: flex-start;">
+                    <div>
+                        <strong style="font-size:1rem">${p.nome}</strong><br>
+                        <span class="valor-tag">${v}</span>
+                    </div>
+                    <input type="checkbox" class="check-prod" data-itens="${p.itens}" style="transform: scale(1.3); accent-color: var(--rosa);">
                 </div>
-                <small>📱 ${p.telefone}</small>
+                <div style="margin-top:5px;"><small style="color:var(--cinza)">📱 ${p.telefone}</small></div>
                 <div class="itens-pedido">${p.itens.replace(/\n/g, '<br>')}</div>
                 <div class="acoes-card">
                     <button class="btn-mini btn-whats" onclick="window.open('https://wa.me/55${p.telefone.replace(/\D/g,'')}')">ZAP</button>
-                    ${p.status !== 'Finalizado' ? `<button class="btn-mini btn-ok" onclick="mudarStatus('${p.id}', 'Finalizado')">OK</button>` : ''}
+                    <button class="btn-mini ${isPago ? 'btn-pago' : 'btn-pendente'}" onclick="mudarPagamento('${p.id}', '${p.pagamento_status}')">
+                        ${isPago ? 'PAGO' : 'PAGAR'}
+                    </button>
+                    ${p.status !== 'Finalizado' ? `<button class="btn-mini btn-ok" onclick="mudarStatus('${p.id}', 'Finalizado')">CONCLUIR</button>` : ''}
                     ${p.status !== 'Desistiu' && p.status !== 'Finalizado' ? `<button class="btn-mini btn-del" onclick="mudarStatus('${p.id}', 'Desistiu')">X</button>` : ''}
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
+    }
+
+    async function mudarPagamento(id, statusAtual) {
+        const novoStatus = statusAtual === 'Pago' ? 'Aguardando' : 'Pago';
+        await _supa.from('pedidos').update({ pagamento_status: novoStatus }).eq('id', id);
+        carregarTudo();
     }
 
     async function mudarStatus(id, status) {
@@ -218,7 +294,6 @@
         const quantidade = document.getElementById(`q-${id}`).value;
         const dados_proximidade = document.getElementById(`d-${id}`).value;
         await _supa.from('estoque').update({ quantidade, dados_proximidade }).eq('id', id);
-        alert("Estoque atualizado!");
     }
 
     async function carregarConfig() {
@@ -239,12 +314,12 @@
             festival_hora: document.getElementById('f-hora').value
         };
         const { error } = await _supa.from('config').update(conf).eq('id', 1);
-        if(!error) alert("Festival atualizado com sucesso!");
+        if(!error) alert("Configurações salvas!");
     }
 
     function gerarRelatorioProducao() {
         const marcados = document.querySelectorAll('.check-prod:checked');
-        if(marcados.length === 0) return alert("Selecione os pedidos na caixinha!");
+        if(marcados.length === 0) return alert("Selecione os pedidos!");
         let texto = "*📋 RELATÓRIO DE PRODUÇÃO*\n\n";
         marcados.forEach((m, i) => {
             texto += `*PEDIDO ${i+1}:*\n${m.getAttribute('data-itens')}\n\n`;
@@ -252,7 +327,7 @@
         window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(texto)}`);
     }
 
-    setInterval(carregarTudo, 20000); // Atualiza a cada 20s
+    setInterval(carregarTudo, 20000); 
     window.onload = carregarTudo;
 </script>
 </body>
