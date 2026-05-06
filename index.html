@@ -177,7 +177,7 @@
             return `
             <div class="card-bolo">
                 <div class="img-container">
-                    <div class="badge-reserva" style="background: ${temEstoque ? 'rgba(136, 14, 79, 0.7)' : '#ff4081'}">
+                    <div class="badge-reserva" style="background: ${temEstoque ? '#4CAF50' : '#FF9800'}">
                         ${temEstoque ? 'Pronta Entrega' : 'Reservar'}
                     </div>
                     <img src="${b.foto || ''}" onerror="this.src='https://via.placeholder.com/150'">
@@ -241,18 +241,24 @@
         document.getElementById('total-val').innerText = `R$ ${soma.toFixed(2).replace('.', ',')}`;
     }
 
-    function gerarWhatsApp() {
+    async function gerarWhatsApp() {
         const nome = document.getElementById('nome-cliente').value;
         const zap = document.getElementById('whatsapp-input').value;
         if(!nome || !zap) return alert("Preencha nome e WhatsApp.");
         
         let itensZap = "";
         let temItens = false;
+        let possuiReserva = false;
+
         listaBolos.forEach((b, i) => {
             if(meuCarrinho[i] > 0) {
                 temItens = true;
                 const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
-                const status = (b.quantidade || 0) > 0 ? "[PRONTA]" : "[RESERVA]";
+                const estoque = b.quantidade || 0;
+                const status = estoque > 0 ? "[PRONTA]" : "[RESERVA]";
+                
+                if(estoque <= 0) possuiReserva = true; // Identifica se há reserva
+
                 itensZap += `${meuCarrinho[i]}x ${b.nome} ${status} (${calda})\n`;
             }
         });
@@ -266,6 +272,17 @@
                          `*FORMA:* ${metodoEscolhido}\n` +
                          `${metodoEscolhido === 'Entrega' ? `*END:* ${document.getElementById('rua-numero').value}, ${document.getElementById('bairro').value}\n` : ''}` +
                          `*PAGAMENTO:* ${pagamentoEscolhido}`;
+
+        // SALVAMENTO NO BANCO PARA O ADMIN
+        const statusBanco = possuiReserva ? "Reserva" : "Novo";
+        try {
+            await _supa.from('pedidos').insert([{
+                nome: nome,
+                telefone: zap,
+                itens: msgFinal,
+                status: statusBanco
+            }]);
+        } catch (e) { console.error("Erro ao salvar pedido"); }
 
         window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msgFinal)}`);
     }
