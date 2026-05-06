@@ -73,7 +73,7 @@
 
         .grid-bastidores { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
         .item-bastidor { background: #eee; border-radius: 15px; overflow: hidden; height: 300px; position: relative; }
-        .item-bastidor img, .item-bastidor video { width: 100%; height: 100%; object-fit: cover; }
+        .item-bastidor img, .item-bastidor video { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -118,24 +118,24 @@
                 <p style="font-size: 0.8rem; font-weight: bold; margin-bottom: 10px;">🛡️ Garantia de Reserva:</p>
                 
                 <label class="opcao-garantia">
-                    <input type="radio" name="garantia" value="Reserva Garantida (50%)" onchange="atualizarInterface()">
+                    <input type="radio" name="garantia" value="Garantida (50%)" onchange="atualizarInterface()">
                     <span style="font-size: 0.75rem;"><strong>Pagar 50% agora</strong><br>Garantia TOTAL de ter a sua fatia.</span>
                 </label>
 
                 <label class="opcao-garantia">
-                    <input type="radio" name="garantia" value="Pago Total" onchange="atualizarInterface()">
+                    <input type="radio" name="garantia" value="Garantida (100%)" onchange="atualizarInterface()">
                     <span style="font-size: 0.75rem;"><strong>Pagar 100% (Total)</strong><br>Reserva garantida e agilidade na entrega.</span>
                 </label>
 
                 <label class="opcao-garantia">
-                    <input type="radio" name="garantia" value="Pendente (Sem Garantia)" checked onchange="atualizarInterface()">
+                    <input type="radio" name="garantia" value="Sem Garantia" checked onchange="atualizarInterface()">
                     <span style="font-size: 0.75rem;"><strong>Não pagar agora</strong><br>
                         <span class="risco-aviso">⚠️ Você corre o risco de ficar sem a Fatia se o estoque acabar.</span>
                     </span>
                 </label>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 12px; margin-top: 15px;">
                 <button class="btn-seletor ativa" id="btn-pix" onclick="setPagamento('Pix')">Pix</button>
                 <button class="btn-seletor" id="btn-cartao" onclick="setPagamento('Cartão')">Cartão</button>
                 <button class="btn-seletor" id="btn-link" onclick="setPagamento('Link de Pagamento')">Link de Pagamento</button>
@@ -256,7 +256,7 @@
         let totalPagarAgora = 0;
         let listaHtml = "";
         let temReservaNoCarrinho = false;
-        const garantia = document.querySelector('input[name="garantia"]:checked')?.value || "Pendente (Sem Garantia)";
+        const garantia = document.querySelector('input[name="garantia"]:checked')?.value || "Sem Garantia";
 
         listaBolos.forEach((b, i) => {
             if(meuCarrinho[i] > 0) {
@@ -267,12 +267,13 @@
 
                 if(meuCarrinho[i] > estoque) {
                     temReservaNoCarrinho = true;
-                    if (garantia === "Reserva Garantida (50%)") {
+                    if (garantia === "Garantida (50%)") {
                         totalPagarAgora += (valorItem / 2);
-                    } else if (garantia === "Pago Total") {
+                    } else if (garantia === "Garantida (100%)") {
                         totalPagarAgora += valorItem;
                     }
                 } else {
+                    // Itens pronta entrega sempre entram no total imediato
                     totalPagarAgora += valorItem;
                 }
                 listaHtml += `• ${meuCarrinho[i]}x ${b.nome} (${calda})<br>`;
@@ -283,18 +284,12 @@
         document.getElementById('resumo-lista').innerHTML = listaHtml || "Escolha suas delícias acima.";
 
         const totalExibicao = document.getElementById('total-val');
-        if (temReservaNoCarrinho && garantia === "Reserva Garantida (50%)") {
+        if (temReservaNoCarrinho && garantia !== "Sem Garantia") {
             let restante = totalProdutos - totalPagarAgora;
             totalExibicao.innerHTML = `
                 <div style="font-size: 0.8rem; color: #666; font-weight: normal;">Total Pedido: R$ ${totalProdutos.toFixed(2).replace('.', ',')}</div>
                 <div style="color: var(--rosa-botao)">PAGAR AGORA: R$ ${totalPagarAgora.toFixed(2).replace('.', ',')}</div>
                 <div style="font-size: 0.8rem; color: var(--marrom); font-weight: 600;">PAGAR NA ENTREGA: R$ ${restante.toFixed(2).replace('.', ',')}</div>
-            `;
-        } else if (temReservaNoCarrinho && garantia === "Pendente (Sem Garantia)") {
-             totalExibicao.innerHTML = `
-                <div style="font-size: 0.8rem; color: #666; font-weight: normal;">Total Pedido: R$ ${totalProdutos.toFixed(2).replace('.', ',')}</div>
-                <div style="color: var(--rosa-botao)">PAGAR AGORA: R$ ${totalPagarAgora.toFixed(2).replace('.', ',')}</div>
-                <div style="font-size: 0.7rem; color: var(--rosa-botao); font-weight: normal; font-style: italic;">(Reserva sem garantia de estoque)</div>
             `;
         } else {
             totalExibicao.innerHTML = `<span style="color:var(--rosa-botao)">R$ ${totalProdutos.toFixed(2).replace('.', ',')}</span>`;
@@ -328,8 +323,8 @@
                     itensReserva += `${meuCarrinho[i]}x ${b.nome} [RESERVA] (${calda})\n`;
                     resumoReserva += `${meuCarrinho[i]}x ${b.nome} (${calda}); `;
                     
-                    if (garantiaEscolhida === "Reserva Garantida (50%)") totalImediato += (valorItem / 2);
-                    else if (garantiaEscolhida === "Pago Total") totalImediato += valorItem;
+                    if (garantiaEscolhida === "Garantida (50%)") totalImediato += (valorItem / 2);
+                    else if (garantiaEscolhida === "Garantida (100%)") totalImediato += valorItem;
                 } else {
                     possuiPronta = true;
                     itensPronta += `${meuCarrinho[i]}x ${b.nome} [PRONTA] (${calda})\n`;
@@ -341,19 +336,18 @@
 
         if(!temItens) return alert("Seu carrinho está vazio!");
 
-        let restanteDia = totalGeral - totalImediato;
-
         let msgFinal = `*PEDIDO/RESERVA - MII CAKES*\n\n*Cliente:* ${nome}\n*WhatsApp:* ${zap}\n\n`;
         if(possuiPronta) msgFinal += `*PRONTA ENTREGA:*\n${itensPronta}\n`;
         if(possuiReserva) {
             msgFinal += `*RESERVAS:*\n${itensReserva}*GARANTIA:* ${garantiaEscolhida}\n\n`;
-            if(garantiaEscolhida.includes("Sem Garantia")) msgFinal += `⚠️ _Ciente do risco de ficar sem o produto._\n\n`;
+            if(garantiaEscolhida === "Sem Garantia") msgFinal += `⚠️ _Ciente do risco de ficar sem o produto._\n\n`;
         }
         
         msgFinal += `*RESUMO FINANCEIRO:*\n`;
         msgFinal += `Total do Pedido: R$ ${totalGeral.toFixed(2)}\n`;
         msgFinal += `*PAGAR AGORA:* R$ ${totalImediato.toFixed(2)}\n`;
-        if(restanteDia > 0) msgFinal += `*PAGAR NA ENTREGA:* R$ ${restanteDia.toFixed(2)}\n`;
+        let restante = totalGeral - totalImediato;
+        if(restante > 0) msgFinal += `*PAGAR NO ATO:* R$ ${restante.toFixed(2)}\n`;
         
         msgFinal += `\n*FORMA:* ${metodoEscolhido}\n${metodoEscolhido === 'Entrega' ? `*END:* ${document.getElementById('rua-numero').value}, ${document.getElementById('bairro').value}\n` : ''}*PAGAMENTO:* ${pagamentoEscolhido}`;
 
@@ -362,13 +356,14 @@
 
         try {
             if(possuiPronta) {
-                await _supa.from('pedidos').insert([{ nome, telefone: zap, itens: resumoNovo + (possuiReserva ? " (+Reserva)" : ""), status: 'Novo', pagamento_status: 'Pendente' }]);
+                await _supa.from('pedidos').insert([{ nome, telefone: zap, itens: resumoNovo, status: 'Novo', pagamento_status: 'Pendente' }]);
             }
             if(possuiReserva) {
                 await _supa.from('pedidos').insert([{ nome, telefone: zap, itens: resumoReserva, status: 'Reserva', pagamento_status: garantiaEscolhida }]);
             }
             window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msgFinal)}`, '_blank');
         } catch (e) { alert("Erro ao salvar pedido."); }
+        
         btn.innerText = "Fazer Pedido / Reservar";
         btn.disabled = false;
     }
@@ -376,8 +371,12 @@
     function carregarGaleria() {
         const galeria = document.getElementById('galeria-bastidores');
         let html = "";
-        for(let i=1; i<=6; i++) html += `<div class="item-bastidor"><video loop muted playsinline onclick="this.paused ? this.play() : this.pause()"><source src="${RAW_URL}Video${i}.mp4" type="video/mp4"></video></div>`;
-        for(let i=1; i<=6; i++) html += `<div class="item-bastidor"><img src="${RAW_URL}Bastidor${i}.jpg" onerror="this.parentElement.style.display='none'"></div>`;
+        for(let i=1; i<=6; i++) {
+            html += `<div class="item-bastidor"><video loop muted playsinline onclick="this.paused ? this.play() : this.pause()"><source src="${RAW_URL}Video${i}.mp4" type="video/mp4"></video></div>`;
+        }
+        for(let i=1; i<=6; i++) {
+            html += `<div class="item-bastidor"><img src="${RAW_URL}Bastidor${i}.jpg" onerror="this.parentElement.style.display='none'"></div>`;
+        }
         galeria.innerHTML = html;
     }
 
