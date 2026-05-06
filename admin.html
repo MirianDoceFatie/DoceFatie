@@ -8,142 +8,99 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --rosa: #ff69b4; 
-            --marrom: #5d4037; 
-            --verde: #25d366; 
-            --fundo: #fdf2f5;
-            --cinza: #666;
-            --ouro: #f1c40f;
-            --branco: #ffffff;
+            --rosa: #ff69b4; --marrom: #5d4037; --verde: #25d366; 
+            --fundo: #fdf2f5; --branco: #ffffff; --ouro: #f1c40f;
         }
-
-        body { 
-            font-family: 'Montserrat', sans-serif; 
-            background: var(--fundo); 
-            margin: 0; 
-            padding: 15px; 
-            color: var(--marrom);
-            padding-bottom: 80px;
-        }
-
-        h2 { text-align: center; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase; margin: 15px 0 20px 0; }
-
-        .abas { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 8px; 
-            margin-bottom: 20px; 
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: var(--fundo);
-            padding: 10px 0;
-        }
-
-        .btn-aba { 
-            padding: 12px 5px; 
-            border: 1px solid rgba(255, 105, 180, 0.3); 
-            background: var(--branco); 
-            border-radius: 10px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            font-size: 10px;
-            color: var(--rosa);
-            text-transform: uppercase;
-        }
-
-        .btn-aba.ativa { 
-            background: var(--rosa); 
-            color: var(--branco); 
-            border-color: var(--rosa);
-            box-shadow: 0 4px 10px rgba(255, 105, 180, 0.2);
-        }
-
-        /* Botão de relatório flutuante discreto */
-        .btn-relatorio-fixo { 
-            position: fixed; bottom: 20px; right: 20px;
-            background: #444; color: white; 
-            width: 50px; height: 50px;
-            border: none; border-radius: 50%; 
-            cursor: pointer; font-size: 1.2rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            z-index: 1000; display: flex; align-items: center; justify-content: center;
-        }
-
+        body { font-family: 'Montserrat', sans-serif; background: var(--fundo); margin: 0; padding: 10px; color: var(--marrom); padding-bottom: 80px; }
+        h2 { text-align: center; font-size: 0.9rem; text-transform: uppercase; margin: 15px 0; letter-spacing: 1px; }
+        
+        /* Menu de Abas */
+        .abas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; position: sticky; top: 0; z-index: 100; background: var(--fundo); padding: 5px 0; }
+        .btn-aba { padding: 10px 2px; border: 1px solid rgba(255, 105, 180, 0.2); background: var(--branco); border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 9px; color: var(--rosa); text-transform: uppercase; }
+        .btn-aba.ativa { background: var(--rosa); color: var(--branco); border-color: var(--rosa); }
+        
         .secao { display: none; }
         .secao.ativa { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .card { 
-            background: var(--branco); 
-            padding: 18px; border-radius: 18px; 
-            margin-bottom: 15px; 
-            box-shadow: 0 4px 15px rgba(93, 64, 55, 0.05); 
-            border-top: 5px solid #ccc;
-        }
-
-        .card-novo { border-top-color: var(--verde); }
-        .card-reserva { border-top-color: orange; }
-        .card-desistiu { border-top-color: #ff4444; opacity: 0.7; }
-
-        .itens-pedido { background: #f9f9f9; padding: 12px; border-radius: 10px; font-size: 0.85rem; margin: 12px 0; }
-        .valor-tag { font-weight: 700; color: var(--rosa); font-size: 1rem; }
-
-        .acoes-card { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px; }
-        .btn-mini { flex: 1; padding: 10px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.75rem; }
-
-        .btn-whats { background: #e8f5e9; color: #2e7d32; }
-        .btn-ok { background: var(--marrom); color: var(--branco); }
-        .btn-del { background: #fee; color: #c62828; }
-        .btn-pago { background: var(--verde); color: white; }
-        .btn-pendente { background: var(--ouro); color: var(--marrom); }
-
-        .box-config { background: var(--branco); padding: 20px; border-radius: 20px; }
-        .input-padrao { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; margin: 8px 0 18px 0; box-sizing: border-box; }
+        /* Cards de Pedidos */
+        .card { background: var(--branco); padding: 15px; border-radius: 15px; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border-left: 6px solid #ccc; }
+        .card-novo { border-left-color: var(--verde); }
+        .card-reserva { border-left-color: var(--ouro); }
+        .card-desistiu { border-left-color: #ff4444; opacity: 0.7; }
         
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th { background: #f5f5f5; padding: 12px; text-align: left; }
-        td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
-        .input-estoque { width: 50px; padding: 6px; text-align: center; border: 1px solid #eee; border-radius: 6px; }
+        .itens-pedido { background: #fdfafb; padding: 10px; border-radius: 8px; font-size: 0.8rem; margin: 10px 0; border: 1px dashed #eee; line-height: 1.4; }
+        .acoes-card { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
+        .btn-mini { flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.65rem; text-transform: uppercase; }
+        
+        /* Tabelas */
+        .container-branco { background: var(--branco); padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th, td { padding: 10px 5px; text-align: left; border-bottom: 1px solid #f5f5f5; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 6px; font-family: inherit; }
+        
+        .btn-salvar { background: var(--verde); color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; margin-top: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <h2>MII CAKES - GESTÃO ELITE 🍰</h2>
-
-    <button class="btn-relatorio-fixo" onclick="gerarRelatorioProducao()">📋</button>
+    <h2>MII CAKES - ADMIN ELITE 🍰</h2>
 
     <div class="abas">
         <button class="btn-aba ativa" onclick="mudarAba('novos', this)">Pedidos</button>
         <button class="btn-aba" onclick="mudarAba('reservas', this)">Reservas</button>
         <button class="btn-aba" onclick="mudarAba('estoque', this)">Estoque</button>
         <button class="btn-aba" onclick="mudarAba('festival', this)">Festival</button>
-        <button class="btn-aba" onclick="mudarAba('desistencias', this)">Desistiu</button>
         <button class="btn-aba" onclick="mudarAba('historico', this)">Histórico</button>
+        <button class="btn-aba" onclick="carregarTudo()">🔄 Atualizar</button>
     </div>
 
+    <!-- Pedidos Novos -->
     <div id="aba-novos" class="secao ativa"><div id="lista-novos"></div></div>
-    <div id="aba-reservas" class="secao"><div id="lista-reservas"></div></div>
-    <div id="aba-desistencias" class="secao"><div id="lista-desistencias"></div></div>
-    <div id="aba-historico" class="secao"><div id="lista-historico"></div></div>
 
+    <!-- Reservas -->
+    <div id="aba-reservas" class="secao"><div id="lista-reservas"></div></div>
+
+    <!-- Estoque -->
     <div id="aba-estoque" class="secao">
-        <div class="box-config">
-            <h3 style="margin-top:0">📦 Estoque</h3>
+        <div class="container-branco">
+            <h3 style="margin-top:0; font-size:1rem;">📦 Controle de Estoque</h3>
             <table>
-                <thead><tr><th>Sabor</th><th>Qtd</th><th>Fornada</th><th></th></tr></thead>
+                <thead><tr><th>Produto</th><th style="width:50px">Qtd</th><th>Próxima</th><th></th></tr></thead>
                 <tbody id="corpo-estoque"></tbody>
             </table>
         </div>
     </div>
 
+    <!-- Configurações do Festival -->
     <div id="aba-festival" class="secao">
-        <div class="box-config">
-            <h3 style="margin-top:0">📅 Festival</h3>
-            <label>Evento</label><input type="text" id="f-nome" class="input-padrao">
-            <label>Local</label><input type="text" id="f-local" class="input-padrao">
-            <button style="background:var(--verde); color:white; width:100%; padding:15px; border:none; border-radius:12px; font-weight:bold;" onclick="salvarFestival()">SALVAR</button>
+        <div class="container-branco">
+            <h3 style="margin-top:0; font-size:1rem; color:var(--rosa);">📅 Informações do Dia</h3>
+            
+            <label style="font-size: 0.7rem; font-weight: bold;">NOME DO EVENTO:</label>
+            <input type="text" id="f-nome" style="margin-bottom: 10px;" placeholder="Ex: Festival de Fatias">
+            
+            <label style="font-size: 0.7rem; font-weight: bold;">LOCAL / ENDEREÇO:</label>
+            <input type="text" id="f-local" style="margin-bottom: 10px;" placeholder="Ex: Rua Maria Rodrigues, 50">
+
+            <label style="font-size: 0.7rem; font-weight: bold;">DATA (Texto):</label>
+            <input type="text" id="f-data" style="margin-bottom: 10px;" placeholder="Ex: Sábado, 10 de Maio">
+
+            <label style="font-size: 0.7rem; font-weight: bold;">HORÁRIO:</label>
+            <input type="text" id="f-hora" style="margin-bottom: 15px;" placeholder="Ex: Das 10h às 18h">
+            
+            <button onclick="salvarFestival()" class="btn-salvar">SALVAR CONFIGURAÇÕES</button>
+            <button id="btn-inicializar" onclick="criarConfigInicial()" style="margin-top:20px; background:none; border:none; color:#ccc; font-size:0.6rem; cursor:pointer; width:100%;">Fix: Criar linha inicial no banco</button>
         </div>
+    </div>
+
+    <!-- Histórico e Desistências -->
+    <div id="aba-historico" class="secao">
+        <h3 style="font-size:0.8rem; margin-left:10px;">Cancelados</h3>
+        <div id="lista-desistencias"></div>
+        <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+        <h3 style="font-size:0.8rem; margin-left:10px;">Concluídos</h3>
+        <div id="lista-historico"></div>
     </div>
 
 <script>
@@ -154,16 +111,15 @@
         document.querySelectorAll('.btn-aba').forEach(b => b.classList.remove('ativa'));
         document.getElementById('aba-' + abaId).classList.add('ativa');
         btn.classList.add('ativa');
-        if(abaId === 'festival') carregarConfig();
+        if(abaId === 'festival') carregarConfigFestival();
     }
 
     async function carregarTudo() {
-        const { data: pedidos, error: errP } = await _supa.from('pedidos').select('*');
+        const { data: pedidos } = await _supa.from('pedidos').select('*').order('created_at', { ascending: false });
         const { data: estoque } = await _supa.from('estoque').select('*').order('nome');
 
-        if (errP) return console.error(errP);
-
-        const filtrar = (status) => pedidos?.filter(p => (p.status || "").trim().toLowerCase() === status.toLowerCase()) || [];
+        // Filtros (Casando com os status da Vitrine)
+        const filtrar = (status) => pedidos?.filter(p => (p.status || "").toLowerCase() === status.toLowerCase()) || [];
 
         renderizarPedidos(filtrar('Novo'), 'lista-novos', 'card-novo');
         renderizarPedidos(filtrar('Reserva'), 'lista-reservas', 'card-reserva');
@@ -174,9 +130,9 @@
             document.getElementById('corpo-estoque').innerHTML = estoque.map(i => `
                 <tr>
                     <td><strong>${i.nome}</strong></td>
-                    <td><input type="number" id="q-${i.id}" value="${i.quantidade || 0}" class="input-estoque"></td>
-                    <td><input type="text" id="d-${i.id}" value="${i.dados_proximidade || ''}" style="width:60px; border:1px solid #eee; border-radius:5px;"></td>
-                    <td style="text-align:right"><button onclick="salvarItemEstoque(${i.id})" style="border:none; background:none; cursor:pointer;">💾</button></td>
+                    <td><input type="number" id="q-${i.id}" value="${i.quantidade || 0}"></td>
+                    <td><input type="text" id="d-${i.id}" value="${i.dados_proximidade || ''}" placeholder="Data"></td>
+                    <td><button onclick="salvarEstoque(${i.id})" style="border:none; background:none; cursor:pointer;">💾</button></td>
                 </tr>
             `).join('');
         }
@@ -184,69 +140,82 @@
 
     function renderizarPedidos(lista, divId, classe) {
         const container = document.getElementById(divId);
-        if(!lista || lista.length === 0) { container.innerHTML = "<p style='text-align:center; padding:40px; color:#bbb;'>Vazio.</p>"; return; }
+        if(!lista || lista.length === 0) { 
+            container.innerHTML = "<p style='text-align:center; padding:30px; font-size:0.8rem; color:#999;'>Vazio.</p>"; 
+            return; 
+        }
         
-        container.innerHTML = lista.map(p => {
-            const isPago = p.pagamento_status === 'Pago';
-            const v = p.valor ? parseFloat(p.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00';
-            
-            return `
+        container.innerHTML = lista.map(p => `
             <div class="card ${classe}">
-                <div style="display:flex; justify-content:space-between;">
-                    <div><strong>${p.nome || 'Cliente'}</strong><br><span class="valor-tag">${v}</span></div>
-                    <input type="checkbox" class="check-prod" data-itens="${p.itens || ''}" style="transform:scale(1.3)">
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                    <strong>${p.nome || 'Cliente'}</strong>
+                    <span style="color:var(--rosa); font-weight:bold;">#${p.id}</span>
                 </div>
-                <small>📱 ${p.telefone || ''}</small>
-                <div class="itens-pedido">${p.itens ? p.itens.replace(/\n/g, '<br>') : 'Sem itens'}</div>
+                <div style="font-size:0.7rem; color:#888;">${p.telefone || ''}</div>
+                <div class="itens-pedido">${(p.itens || '').replace(/;/g, '<br>')}</div>
                 <div class="acoes-card">
-                    <button class="btn-mini btn-whats" onclick="window.open('https://wa.me/55${(p.telefone || '').replace(/\D/g,'')}')">ZAP</button>
-                    <button class="btn-mini ${isPago ? 'btn-pago' : 'btn-pendente'}" onclick="mudarPagamento('${p.id}', '${p.pagamento_status}')">${isPago ? 'PAGO' : 'PAGAR'}</button>
-                    <button class="btn-mini btn-ok" onclick="mudarStatus('${p.id}', 'Finalizado')">OK</button>
-                    <button class="btn-mini btn-del" onclick="mudarStatus('${p.id}', 'Desistiu')">X</button>
+                    <button class="btn-mini" style="background:#e8f5e9; color:#2e7d32;" onclick="window.open('https://wa.me/55${(p.telefone || '').replace(/\D/g,'')}')">WhatsApp</button>
+                    <button class="btn-mini" style="background:${p.pagamento_status === 'Pago' ? 'var(--verde)' : '#eee'}; color:${p.pagamento_status === 'Pago' ? 'white' : '#666'};" 
+                            onclick="alternarPagamento(${p.id}, '${p.pagamento_status}')">
+                        ${p.pagamento_status === 'Pago' ? 'PAGO ✅' : 'PENDENTE'}
+                    </button>
+                    <button class="btn-mini" style="background:var(--marrom); color:white;" onclick="atualizarStatus(${p.id}, 'Finalizado')">OK</button>
+                    <button class="btn-mini" style="background:#fff1f0; color:#cf1322;" onclick="atualizarStatus(${p.id}, 'Desistiu')">X</button>
                 </div>
-            </div>`;
-        }).join('');
+            </div>
+        `).join('');
     }
 
-    async function mudarPagamento(id, status) {
-        await _supa.from('pedidos').update({ pagamento_status: status === 'Pago' ? 'Aguardando' : 'Pago' }).eq('id', id);
-        carregarTudo();
-    }
-
-    async function mudarStatus(id, status) {
-        await _supa.from('pedidos').update({ status }).eq('id', id);
-        carregarTudo();
-    }
-
-    async function salvarItemEstoque(id) {
-        const q = document.getElementById(`q-${id}`).value;
-        const d = document.getElementById(`d-${id}`).value;
-        await _supa.from('estoque').update({ quantidade: q, dados_proximidade: d }).eq('id', id);
-    }
-
-    async function carregarConfig() {
-        const { data } = await _supa.from('config').select('*').eq('id', 1).single();
-        if(data) {
+    // --- FUNÇÕES DO FESTIVAL ---
+    async function carregarConfigFestival() {
+        const { data } = await _supa.from('config').select('*').limit(1).single();
+        if (data) {
             document.getElementById('f-nome').value = data.festival_nome || '';
             document.getElementById('f-local').value = data.festival_local || '';
+            document.getElementById('f-data').value = data.festival_data || '';
+            document.getElementById('f-hora').value = data.festival_hora || '';
+            document.getElementById('btn-inicializar').style.display = 'none';
         }
     }
 
     async function salvarFestival() {
-        const conf = { festival_nome: document.getElementById('f-nome').value, festival_local: document.getElementById('f-local').value };
-        await _supa.from('config').update(conf).eq('id', 1);
+        const payload = {
+            festival_nome: document.getElementById('f-nome').value,
+            festival_local: document.getElementById('f-local').value,
+            festival_data: document.getElementById('f-data').value,
+            festival_hora: document.getElementById('f-hora').value
+        };
+        const { error } = await _supa.from('config').update(payload).match({ id: 1 });
+        if (error) alert("Erro ao salvar: " + error.message);
+        else alert("Festival atualizado!");
+    }
+
+    async function criarConfigInicial() {
+        const { error } = await _supa.from('config').insert([{ id: 1, festival_nome: 'Mii Cakes' }]);
+        if (error) alert("Já existe ou erro: " + error.message);
+        else { alert("Linha criada! Agora você pode editar."); carregarConfigFestival(); }
+    }
+
+    // --- OUTRAS AÇÕES ---
+    async function alternarPagamento(id, statusAtual) {
+        const novoStatus = statusAtual === 'Pago' ? 'Pendente' : 'Pago';
+        await _supa.from('pedidos').update({ pagamento_status: novoStatus }).eq('id', id);
+        carregarTudo();
+    }
+
+    async function atualizarStatus(id, novoStatus) {
+        await _supa.from('pedidos').update({ status: novoStatus }).eq('id', id);
+        carregarTudo();
+    }
+
+    async function salvarEstoque(id) {
+        const q = document.getElementById(`q-${id}`).value;
+        const d = document.getElementById(`d-${id}`).value;
+        await _supa.from('estoque').update({ quantidade: q, dados_proximidade: d }).eq('id', id);
         alert("Salvo!");
     }
 
-    function gerarRelatorioProducao() {
-        const marcados = document.querySelectorAll('.check-prod:checked');
-        if(marcados.length === 0) return alert("Selecione os pedidos!");
-        let texto = "*📋 PRODUÇÃO MII CAKES*\n\n";
-        marcados.forEach((m, i) => { texto += `*PEDIDO ${i+1}:*\n${m.getAttribute('data-itens')}\n\n`; });
-        window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(texto)}`);
-    }
-
-    setInterval(carregarTudo, 15000); 
+    setInterval(carregarTudo, 30000);
     window.onload = carregarTudo;
 </script>
 </body>
