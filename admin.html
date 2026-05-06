@@ -25,7 +25,6 @@
         .secao.ativa { display: block; }
 
         .card-pedido { border: 1px solid #eee; padding: 15px; border-radius: 10px; margin-bottom: 10px; background: var(--branco); position: relative; transition: 0.3s; }
-        /* Classe para pedidos atendidos via WhatsApp */
         .card-pedido.atendido { border-left: 8px solid var(--verde); background: #f0fff4; }
         
         .resumo-container { 
@@ -111,11 +110,9 @@
     </div>
 
 <script>
-    // Configuração Supabase
     const supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
     let dadosEstoque = [];
 
-    // Navegação entre abas
     function abrir(id) {
         document.querySelectorAll('.secao').forEach(s => s.classList.remove('ativa'));
         document.querySelectorAll('.btn-menu').forEach(b => b.classList.remove('ativo'));
@@ -128,18 +125,17 @@
         if(id === 'festival') carregarFestival();
     }
 
-    // Formatação visual do resumo do pedido
     function formatarResumo(texto) {
         if(!texto) return "Sem itens.";
         let formatado = texto.replace(/\n/g, '<br>');
-        if(formatado.includes('--- DETALHES ---')) {
-            formatado = formatado.replace('--- DETALHES ---', '<div class="logistica-box"><strong>📍 ENTREGA E PAGAMENTO:</strong>');
+        // Formatação especial para quando o pedido vem com separadores de detalhes
+        if(formatado.includes('*FORMA:*')) {
+            formatado = formatado.replace('*FORMA:*', '<div class="logistica-box"><strong>📍 LOGÍSTICA:</strong>');
             formatado += '</div>';
         }
         return formatado;
     }
 
-    // Carregamento de pedidos com filtros de status
     async function carregarPedidos() {
         const { data } = await supa.from('pedidos').select('*').order('created_at', { ascending: false });
         if(!data) return;
@@ -148,7 +144,6 @@
         const desistencias = data.filter(p => p.status === 'Desistiu');
         const historico = data.filter(p => p.status === 'Finalizado');
 
-        // Renderizar Pedidos Ativos (Branco = Novo / Verde = Atendido)
         document.getElementById('lista-pedidos').innerHTML = ativos.map(p => `
             <div class="card-pedido ${p.status === 'Atendido' ? 'atendido' : ''}">
                 <div style="display:flex; justify-content:space-between;">
@@ -167,7 +162,6 @@
             </div>
         `).join('') || "Sem pedidos novos.";
 
-        // Renderizar Desistências
         document.getElementById('lista-desistencias').innerHTML = desistencias.map(p => `
             <div class="card-pedido" style="border-left: 5px solid var(--vermelho);">
                 <strong>👤 ${p.nome}</strong> | <small>${p.telefone}</small>
@@ -176,7 +170,6 @@
             </div>
         `).join('') || "Vazio.";
 
-        // Renderizar Histórico
         document.getElementById('lista-historico').innerHTML = historico.map(p => `
             <div class="card-pedido" style="opacity:0.8">
                 <small>${new Date(p.created_at).toLocaleDateString()}</small> | <strong>${p.nome}</strong>
@@ -185,7 +178,6 @@
         `).join('') || "Vazio.";
     }
 
-    // Gerenciar estoque sincronizado com a vitrine
     async function carregarEstoque() {
         const { data } = await supa.from('estoque').select('*').order('nome');
         dadosEstoque = data || [];
@@ -209,15 +201,14 @@
         carregarEstoque();
     }
 
-    // Finalizar pedido e dar baixa no estoque
     async function finalizarPedido(id, itensTexto) {
-        if(!confirm("Deseja finalizar esta venda e arquivar no histórico?")) return;
+        if(!confirm("Deseja finalizar esta venda e dar baixa no estoque?")) return;
         const linhas = itensTexto.split('\n');
         for (const linha of linhas) {
             const match = linha.match(/(\d+)x\s+(.+)/);
             if (match) {
                 const qtdVendida = parseInt(match[1]);
-                const sabor = match[2].split('[')[0].split('(')[0].trim();
+                let sabor = match[2].split('[')[0].split('(')[0].trim();
                 const { data: item } = await supa.from('estoque').select('*').eq('nome', sabor).single();
                 if (item) {
                     const novaQtd = Math.max(0, (item.quantidade || 0) - qtdVendida);
@@ -229,8 +220,8 @@
         carregarPedidos();
     }
 
-    // Aba Reservas (Filtra tag [RESERVA])
     async function carregarReservasClientes() {
+        // Filtra pedidos que contenham a tag [RESERVA] gerada pela vitrine
         const { data } = await supa.from('pedidos')
             .select('*')
             .ilike('itens', '%[RESERVA]%')
@@ -246,13 +237,11 @@
         `).join('') || "Sem reservas pendentes.";
     }
 
-    // Atualizar status genérico (Desistências/Reativações)
     async function mudarStatus(id, novoStatus) {
         await supa.from('pedidos').update({ status: novoStatus }).eq('id', id);
         carregarPedidos();
     }
 
-    // Enviar para WhatsApp e mudar cor para Verde (Atendido)
     async function enviarWhatsApp(id, nome, tel, itens) {
         await supa.from('pedidos').update({ status: 'Atendido' }).eq('id', id);
         const link = `https://wa.me/55${tel.replace(/\D/g,'')}?text=${encodeURIComponent("*MII CAKES*\nOlá " + nome + "! Confirmamos seu pedido:\n\n" + itens)}`;
@@ -260,7 +249,6 @@
         carregarPedidos();
     }
 
-    // Gerar relatório consolidado dos pedidos selecionados
     function enviarRelatorioSelecionados() {
         const selecionados = document.querySelectorAll('.selecionar-pedido:checked');
         if(selecionados.length === 0) return alert("Selecione os pedidos para o relatório.");
@@ -273,7 +261,6 @@
         window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(relatorio)}`);
     }
 
-    // Configuração do Festival
     async function carregarFestival() {
         const { data } = await supa.from('config').select('*').eq('id', 1).single();
         if(data) {
@@ -292,10 +279,9 @@
             festival_hora: document.getElementById('f-hora').value 
         };
         await supa.from('config').update(d).eq('id', 1);
-        alert("Banner do Festival atualizado na Vitrine!");
+        alert("Configurações salvas!");
     }
 
-    // Início automático
     window.onload = () => { carregarPedidos(); carregarEstoque(); };
 </script>
 </body>
