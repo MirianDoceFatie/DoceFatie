@@ -14,8 +14,8 @@
         body { font-family: 'Montserrat', sans-serif; background: var(--fundo); margin: 0; padding: 10px; color: var(--marrom); padding-bottom: 80px; }
         h2 { text-align: center; font-size: 0.9rem; text-transform: uppercase; margin: 15px 0; letter-spacing: 1px; }
         
-        /* Dashboard de Resumo Dinâmico */
-        #painel-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
+        /* Dashboard de Resumo */
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
         .stat-card { background: var(--branco); padding: 10px; border-radius: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .stat-card span { display: block; font-size: 0.6rem; text-transform: uppercase; color: #888; margin-bottom: 4px; }
         .stat-card b { font-size: 0.85rem; color: var(--rosa); }
@@ -52,18 +52,19 @@
 
     <h2>MII CAKES - ADMIN ELITE 🍰</h2>
 
-    <div id="painel-resumo">
+    <!-- Dashboard Financeiro Adicionado -->
+    <div class="stats-grid">
         <div class="stat-card">
-            <span id="label-qtd">Qtd</span>
+            <span>Pedidos</span>
             <b id="stat-qtd">0</b>
         </div>
         <div class="stat-card">
-            <span id="label-total">Total Aba</span>
-            <b id="stat-total">R$ 0,00</b>
+            <span>Total</span>
+            <b id="stat-total">R$ 0</b>
         </div>
         <div class="stat-card">
-            <span id="label-pendente">Falta Cobrar</span>
-            <b id="stat-diferenca">R$ 0,00</b>
+            <span>A Cobrar</span>
+            <b id="stat-diferenca">R$ 0</b>
         </div>
     </div>
 
@@ -108,44 +109,33 @@
 
 <script>
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
-    let todosOsPedidos = [];
 
     function mudarAba(abaId, btn) {
         document.querySelectorAll('.secao').forEach(s => s.classList.remove('ativa'));
         document.querySelectorAll('.btn-aba').forEach(b => b.classList.remove('ativa'));
         document.getElementById('aba-' + abaId).classList.add('ativa');
         btn.classList.add('ativa');
-
-        const painel = document.getElementById('painel-resumo');
-        if (['novos', 'reservas', 'historico'].includes(abaId)) {
-            painel.style.display = 'grid';
-            atualizarCalculosAba(abaId);
-        } else {
-            painel.style.display = 'none';
-        }
     }
 
     async function carregarTudo() {
-        const { data: pedidos, error: errP } = await _supa.from('pedidos').select('*').order('created_at', { ascending: false });
-        const { data: estoque, error: errE } = await _supa.from('estoque').select('*').order('nome');
+        const { data: pedidos } = await _supa.from('pedidos').select('*').order('created_at', { ascending: false });
+        const { data: estoque } = await _supa.from('estoque').select('*').order('nome');
 
-        if (errP) console.error("Erro Pedidos:", errP);
-        
-        todosOsPedidos = pedidos || [];
-        
-        // Renderização corrigida com verificação de texto
-        const filtrar = (s) => todosOsPedidos.filter(p => (p.status || "").trim().toLowerCase() === s.toLowerCase());
+        // Atualiza Estatísticas do Topo
+        if(pedidos) {
+            const totalVendas = pedidos.reduce((acc, p) => acc + Number(p.valor_total || 0), 0);
+            const totalPago = pedidos.reduce((acc, p) => acc + Number(p.valor_pago || 0), 0);
+            document.getElementById('stat-qtd').innerText = pedidos.length;
+            document.getElementById('stat-total').innerText = `R$ ${totalVendas.toFixed(2)}`;
+            document.getElementById('stat-diferenca').innerText = `R$ ${(totalVendas - totalPago).toFixed(2)}`;
+        }
 
-        renderizarPedidos(filtrar('novo'), 'lista-novos', 'card-novo');
-        renderizarPedidos(filtrar('reserva'), 'lista-reservas', 'card-reserva');
-        renderizarPedidos(filtrar('desistiu'), 'lista-desistencias', 'card-desistiu');
-        renderizarPedidos(filtrar('finalizado'), 'lista-historico', '');
+        const filtrar = (s) => pedidos?.filter(p => (p.status || "").toLowerCase() === s.toLowerCase()) || [];
 
-        // Atualiza os cálculos da aba que estiver aberta agora
-        const btnAtivo = document.querySelector('.btn-aba.ativa').innerText;
-        if (btnAtivo === 'PEDIDOS') atualizarCalculosAba('novos');
-        else if (btnAtivo === 'RESERVAS') atualizarCalculosAba('reservas');
-        else if (btnAtivo === 'HISTÓRICO') atualizarCalculosAba('historico');
+        renderizarPedidos(filtrar('Novo'), 'lista-novos', 'card-novo');
+        renderizarPedidos(filtrar('Reserva'), 'lista-reservas', 'card-reserva');
+        renderizarPedidos(filtrar('Desistiu'), 'lista-desistencias', 'card-desistiu');
+        renderizarPedidos(filtrar('Finalizado'), 'lista-historico', '');
 
         if(estoque) {
             document.getElementById('corpo-estoque').innerHTML = estoque.map(i => `
@@ -158,34 +148,12 @@
         }
     }
 
-    function atualizarCalculosAba(abaId) {
-        let lista = [];
-        if (abaId === 'novos') lista = todosOsPedidos.filter(p => (p.status || "").trim().toLowerCase() === 'novo');
-        else if (abaId === 'reservas') lista = todosOsPedidos.filter(p => (p.status || "").trim().toLowerCase() === 'reserva');
-        else if (abaId === 'historico') lista = todosOsPedidos.filter(p => (p.status || "").trim().toLowerCase() === 'finalizado');
-
-        const totalVendas = lista.reduce((acc, p) => acc + Number(p.valor_total || 0), 0);
-        const totalPago = lista.reduce((acc, p) => acc + Number(p.valor_pago || 0), 0);
-        
-        document.getElementById('stat-qtd').innerText = lista.length;
-        document.getElementById('stat-total').innerText = `R$ ${totalVendas.toFixed(2)}`;
-        document.getElementById('stat-diferenca').innerText = `R$ ${(totalVendas - totalPago).toFixed(2)}`;
-    }
-
     function renderizarPedidos(lista, divId, classe) {
-        const container = document.getElementById(divId);
-        if (!container) return;
-        
-        if (lista.length === 0) {
-            container.innerHTML = '<p style="text-align:center; font-size:0.7rem; color:#999;">Nenhum pedido aqui.</p>';
-            return;
-        }
-
-        container.innerHTML = lista.map(p => {
+        document.getElementById(divId).innerHTML = lista.map(p => {
             const dif = Number(p.valor_total || 0) - Number(p.valor_pago || 0);
             return `
             <div class="card ${classe}">
-                <strong>${p.nome}</strong> <span style="float:right; font-size:0.6rem;">#${p.id.toString().slice(0,5)}</span>
+                <strong>${p.nome}</strong> <span style="float:right; font-size:0.6rem;">#${p.id.slice(0,5)}</span>
                 <div class="itens-pedido">${p.itens}</div>
                 
                 <div class="info-financeira-card">
@@ -196,20 +164,23 @@
 
                 <div class="acoes-card">
                     <button class="btn-mini" style="background:#e8f5e9; color:#2e7d32;" onclick="window.open('https://wa.me/55${(p.telefone || '').replace(/\D/g,'')}')">WhatsApp</button>
-                    <button class="btn-mini" style="background:var(--marrom); color:white;" onclick="despacharPedido('${p.id}', '${p.itens}')">ENTREGUE 🛵</button>
+                    <button class="btn-mini" style="background:var(--marrom); color:white;" onclick="despacharPedido('${p.id}', '${p.itens}')">SAIU PARA ENTREGA 🛵</button>
                     <button class="btn-mini" style="background:#fff1f0; color:#cf1322;" onclick="atualizarStatus('${p.id}', 'Desistiu')">X</button>
                 </div>
             </div>
         `}).join('');
     }
 
-    async function atualizarStatus(id, status) {
-        await _supa.from('pedidos').update({ status }).eq('id', id);
-        carregarTudo();
-    }
-
     async function despacharPedido(id, itens) {
         await _supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id);
+        // Lógica simples de redução (reduz 1 de cada item encontrado no texto do pedido)
+        const { data: est } = await _supa.from('estoque').select('*');
+        for (let item of est) {
+            if (itens.includes(item.nome) && item.quantidade > 0) {
+                await _supa.from('estoque').update({ quantidade: item.quantidade - 1 }).eq('id', item.id);
+            }
+        }
+        alert("Pedido finalizado e estoque atualizado!");
         carregarTudo();
     }
 
@@ -221,9 +192,15 @@
             const d = linha.querySelector('.input-data').value;
             await _supa.from('estoque').update({ quantidade: q, dados_proximidade: d }).eq('id', id);
         }
-        alert("Estoque atualizado!");
+        alert("Estoque atualizado com sucesso!");
     }
 
+    async function atualizarStatus(id, status) {
+        await _supa.from('pedidos').update({ status }).eq('id', id);
+        carregarTudo();
+    }
+
+    // Inicia o carregamento
     window.onload = carregarTudo;
 </script>
 </body>
