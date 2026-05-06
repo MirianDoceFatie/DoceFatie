@@ -255,11 +255,14 @@
                 temItens = true;
                 const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
                 const estoque = b.quantidade || 0;
-                const status = estoque > 0 ? "[PRONTA]" : "[RESERVA]";
                 
-                if(estoque <= 0) possuiReserva = true; // Identifica se há reserva
-
-                itensZap += `${meuCarrinho[i]}x ${b.nome} ${status} (${calda})\n`;
+                // Lógica de identificação de reserva por item
+                if(meuCarrinho[i] > estoque) {
+                    possuiReserva = true;
+                    itensZap += `${meuCarrinho[i]}x ${b.nome} [RESERVA] (${calda})\n`;
+                } else {
+                    itensZap += `${meuCarrinho[i]}x ${b.nome} [PRONTA] (${calda})\n`;
+                }
             }
         });
 
@@ -273,18 +276,26 @@
                          `${metodoEscolhido === 'Entrega' ? `*END:* ${document.getElementById('rua-numero').value}, ${document.getElementById('bairro').value}\n` : ''}` +
                          `*PAGAMENTO:* ${pagamentoEscolhido}`;
 
-        // SALVAMENTO NO BANCO PARA O ADMIN
+        // SALVAMENTO OBRIGATÓRIO NO BANCO ANTES DO WHATSAPP
         const statusBanco = possuiReserva ? "Reserva" : "Novo";
         try {
-            await _supa.from('pedidos').insert([{
+            const { error } = await _supa.from('pedidos').insert([{
                 nome: nome,
                 telefone: zap,
                 itens: msgFinal,
                 status: statusBanco
             }]);
-        } catch (e) { console.error("Erro ao salvar pedido"); }
+            
+            if (error) throw error;
 
-        window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msgFinal)}`);
+            // Se salvou com sucesso, abre o WhatsApp
+            window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msgFinal)}`, '_blank');
+            alert("Pedido registrado com sucesso! Verifique seu WhatsApp.");
+            
+        } catch (e) { 
+            console.error("Erro ao salvar pedido:", e); 
+            alert("Erro ao conectar com o servidor. Verifique sua internet.");
+        }
     }
 
     function carregarGaleria() {
