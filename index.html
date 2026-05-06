@@ -172,7 +172,7 @@
     function renderizarVitrine() {
         const vitrineDiv = document.getElementById('vitrine');
         vitrineDiv.innerHTML = listaBolos.map((b, i) => {
-            const estoque = b.Ó || 0; 
+            const estoque = b.quantidade || 0; 
             const temEstoque = estoque > 0;
             return `
             <div class="card-bolo">
@@ -217,8 +217,6 @@
         document.getElementById('btn-retirar').classList.toggle('ativo', tipo === 'Retirada');
         document.getElementById('campos-endereco').style.display = tipo === 'Entrega' ? 'grid' : 'none';
         document.getElementById('info-retirada').style.display = tipo === 'Retirada' ? 'block' : 'none';
-        
-        // Exibe ou oculta a frase da taxa de entrega
         document.getElementById('label-taxa').style.display = tipo === 'Entrega' ? 'block' : 'none';
     }
 
@@ -254,7 +252,7 @@
             if(meuCarrinho[i] > 0) {
                 temItens = true;
                 const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
-                const status = (b.Ó || 0) > 0 ? "[PRONTA]" : "[RESERVA]";
+                const status = (b.quantidade || 0) > 0 ? "[PRONTA]" : "[RESERVA]";
                 itensZap += `${meuCarrinho[i]}x ${b.nome} ${status} (${calda})\n`;
             }
         });
