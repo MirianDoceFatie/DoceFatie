@@ -14,7 +14,6 @@
         body { font-family: 'Montserrat', sans-serif; background: var(--fundo); margin: 0; padding: 10px; color: var(--marrom); padding-bottom: 80px; }
         h2 { text-align: center; font-size: 0.9rem; text-transform: uppercase; margin: 15px 0; letter-spacing: 1px; }
         
-        /* Menu de Abas */
         .abas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; position: sticky; top: 0; z-index: 100; background: var(--fundo); padding: 5px 0; }
         .btn-aba { padding: 10px 2px; border: 1px solid rgba(255, 105, 180, 0.2); background: var(--branco); border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 9px; color: var(--rosa); text-transform: uppercase; }
         .btn-aba.ativa { background: var(--rosa); color: var(--branco); border-color: var(--rosa); }
@@ -23,7 +22,6 @@
         .secao.ativa { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Cards de Pedidos */
         .card { background: var(--branco); padding: 15px; border-radius: 15px; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border-left: 6px solid #ccc; }
         .card-novo { border-left-color: var(--verde); }
         .card-reserva { border-left-color: var(--ouro); }
@@ -33,13 +31,12 @@
         .acoes-card { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
         .btn-mini { flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.65rem; text-transform: uppercase; }
         
-        /* Tabelas */
         .container-branco { background: var(--branco); padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         th, td { padding: 10px 5px; text-align: left; border-bottom: 1px solid #f5f5f5; }
-        input[type="text"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 6px; font-family: inherit; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 6px; }
         
-        .btn-salvar { background: var(--verde); color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        .btn-salvar-tudo { background: var(--verde); color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; margin-bottom: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -55,51 +52,34 @@
         <button class="btn-aba" onclick="carregarTudo()">🔄 Atualizar</button>
     </div>
 
-    <!-- Pedidos Novos -->
+    <!-- Seções Restauradas -->
     <div id="aba-novos" class="secao ativa"><div id="lista-novos"></div></div>
-
-    <!-- Reservas -->
     <div id="aba-reservas" class="secao"><div id="lista-reservas"></div></div>
 
-    <!-- Estoque -->
     <div id="aba-estoque" class="secao">
         <div class="container-branco">
-            <h3 style="margin-top:0; font-size:1rem;">📦 Controle de Estoque</h3>
+            <button class="btn-salvar-tudo" onclick="salvarTodoEstoque()">💾 SALVAR TODO ESTOQUE</button>
             <table>
-                <thead><tr><th>Produto</th><th style="width:50px">Qtd</th><th>Próxima</th><th></th></tr></thead>
+                <thead><tr><th>Produto</th><th style="width:50px">Qtd</th><th>Próxima</th></tr></thead>
                 <tbody id="corpo-estoque"></tbody>
             </table>
         </div>
     </div>
 
-    <!-- Configurações do Festival -->
     <div id="aba-festival" class="secao">
         <div class="container-branco">
-            <h3 style="margin-top:0; font-size:1rem; color:var(--rosa);">📅 Informações do Dia</h3>
-            
-            <label style="font-size: 0.7rem; font-weight: bold;">NOME DO EVENTO:</label>
-            <input type="text" id="f-nome" style="margin-bottom: 10px;" placeholder="Ex: Festival de Fatias">
-            
-            <label style="font-size: 0.7rem; font-weight: bold;">LOCAL / ENDEREÇO:</label>
-            <input type="text" id="f-local" style="margin-bottom: 10px;" placeholder="Ex: Rua Maria Rodrigues, 50">
-
-            <label style="font-size: 0.7rem; font-weight: bold;">DATA (Texto):</label>
-            <input type="text" id="f-data" style="margin-bottom: 10px;" placeholder="Ex: Sábado, 10 de Maio">
-
-            <label style="font-size: 0.7rem; font-weight: bold;">HORÁRIO:</label>
-            <input type="text" id="f-hora" style="margin-bottom: 15px;" placeholder="Ex: Das 10h às 18h">
-            
-            <button onclick="salvarFestival()" class="btn-salvar">SALVAR CONFIGURAÇÕES</button>
-            <button id="btn-inicializar" onclick="criarConfigInicial()" style="margin-top:20px; background:none; border:none; color:#ccc; font-size:0.6rem; cursor:pointer; width:100%;">Fix: Criar linha inicial no banco</button>
+            <h3>📅 Informações do Dia</h3>
+            <input type="text" id="f-nome" placeholder="Nome do Evento">
+            <input type="text" id="f-local" placeholder="Local">
+            <input type="text" id="f-data" placeholder="Data">
+            <input type="text" id="f-hora" placeholder="Horário">
+            <button onclick="salvarFestival()" class="btn-salvar-tudo" style="margin-top:10px;">SALVAR CONFIGURAÇÕES</button>
         </div>
     </div>
 
-    <!-- Histórico e Desistências -->
     <div id="aba-historico" class="secao">
-        <h3 style="font-size:0.8rem; margin-left:10px;">Cancelados</h3>
         <div id="lista-desistencias"></div>
-        <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
-        <h3 style="font-size:0.8rem; margin-left:10px;">Concluídos</h3>
+        <hr>
         <div id="lista-historico"></div>
     </div>
 
@@ -111,15 +91,13 @@
         document.querySelectorAll('.btn-aba').forEach(b => b.classList.remove('ativa'));
         document.getElementById('aba-' + abaId).classList.add('ativa');
         btn.classList.add('ativa');
-        if(abaId === 'festival') carregarConfigFestival();
     }
 
     async function carregarTudo() {
         const { data: pedidos } = await _supa.from('pedidos').select('*').order('created_at', { ascending: false });
         const { data: estoque } = await _supa.from('estoque').select('*').order('nome');
 
-        // Filtros (Casando com os status da Vitrine)
-        const filtrar = (status) => pedidos?.filter(p => (p.status || "").toLowerCase() === status.toLowerCase()) || [];
+        const filtrar = (s) => pedidos?.filter(p => (p.status || "").toLowerCase() === s.toLowerCase()) || [];
 
         renderizarPedidos(filtrar('Novo'), 'lista-novos', 'card-novo');
         renderizarPedidos(filtrar('Reserva'), 'lista-reservas', 'card-reserva');
@@ -128,94 +106,57 @@
 
         if(estoque) {
             document.getElementById('corpo-estoque').innerHTML = estoque.map(i => `
-                <tr>
+                <tr class="linha-estoque" data-id="${i.id}">
                     <td><strong>${i.nome}</strong></td>
-                    <td><input type="number" id="q-${i.id}" value="${i.quantidade || 0}"></td>
-                    <td><input type="text" id="d-${i.id}" value="${i.dados_proximidade || ''}" placeholder="Data"></td>
-                    <td><button onclick="salvarEstoque(${i.id})" style="border:none; background:none; cursor:pointer;">💾</button></td>
+                    <td><input type="number" class="input-qtd" value="${i.quantidade || 0}"></td>
+                    <td><input type="text" class="input-data" value="${i.dados_proximidade || ''}"></td>
                 </tr>
             `).join('');
         }
     }
 
     function renderizarPedidos(lista, divId, classe) {
-        const container = document.getElementById(divId);
-        if(!lista || lista.length === 0) { 
-            container.innerHTML = "<p style='text-align:center; padding:30px; font-size:0.8rem; color:#999;'>Vazio.</p>"; 
-            return; 
-        }
-        
-        container.innerHTML = lista.map(p => `
+        document.getElementById(divId).innerHTML = lista.map(p => `
             <div class="card ${classe}">
-                <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
-                    <strong>${p.nome || 'Cliente'}</strong>
-                    <span style="color:var(--rosa); font-weight:bold;">#${p.id}</span>
-                </div>
-                <div style="font-size:0.7rem; color:#888;">${p.telefone || ''}</div>
-                <div class="itens-pedido">${(p.itens || '').replace(/;/g, '<br>')}</div>
+                <strong>${p.nome}</strong> <span style="float:right">#${p.id}</span>
+                <div class="itens-pedido">${p.itens}</div>
                 <div class="acoes-card">
                     <button class="btn-mini" style="background:#e8f5e9; color:#2e7d32;" onclick="window.open('https://wa.me/55${(p.telefone || '').replace(/\D/g,'')}')">WhatsApp</button>
-                    <button class="btn-mini" style="background:${p.pagamento_status === 'Pago' ? 'var(--verde)' : '#eee'}; color:${p.pagamento_status === 'Pago' ? 'white' : '#666'};" 
-                            onclick="alternarPagamento(${p.id}, '${p.pagamento_status}')">
-                        ${p.pagamento_status === 'Pago' ? 'PAGO ✅' : 'PENDENTE'}
-                    </button>
-                    <button class="btn-mini" style="background:var(--marrom); color:white;" onclick="atualizarStatus(${p.id}, 'Finalizado')">OK</button>
+                    <button class="btn-mini" style="background:#eee;">Aguardando Pagamento</button>
+                    <button class="btn-mini" style="background:var(--marrom); color:white;" onclick="despacharPedido(${p.id}, '${p.itens}')">SAIU PARA ENTREGA 🛵</button>
                     <button class="btn-mini" style="background:#fff1f0; color:#cf1322;" onclick="atualizarStatus(${p.id}, 'Desistiu')">X</button>
                 </div>
             </div>
         `).join('');
     }
 
-    // --- FUNÇÕES DO FESTIVAL ---
-    async function carregarConfigFestival() {
-        const { data } = await _supa.from('config').select('*').limit(1).single();
-        if (data) {
-            document.getElementById('f-nome').value = data.festival_nome || '';
-            document.getElementById('f-local').value = data.festival_local || '';
-            document.getElementById('f-data').value = data.festival_data || '';
-            document.getElementById('f-hora').value = data.festival_hora || '';
-            document.getElementById('btn-inicializar').style.display = 'none';
+    async function despacharPedido(id, itens) {
+        await _supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id);
+        const { data: est } = await _supa.from('estoque').select('*');
+        const produto = est.find(i => itens.includes(i.nome));
+        if(produto && produto.quantidade > 0) {
+            await _supa.from('estoque').update({ quantidade: produto.quantidade - 1 }).eq('id', produto.id);
         }
-    }
-
-    async function salvarFestival() {
-        const payload = {
-            festival_nome: document.getElementById('f-nome').value,
-            festival_local: document.getElementById('f-local').value,
-            festival_data: document.getElementById('f-data').value,
-            festival_hora: document.getElementById('f-hora').value
-        };
-        const { error } = await _supa.from('config').update(payload).match({ id: 1 });
-        if (error) alert("Erro ao salvar: " + error.message);
-        else alert("Festival atualizado!");
-    }
-
-    async function criarConfigInicial() {
-        const { error } = await _supa.from('config').insert([{ id: 1, festival_nome: 'Mii Cakes' }]);
-        if (error) alert("Já existe ou erro: " + error.message);
-        else { alert("Linha criada! Agora você pode editar."); carregarConfigFestival(); }
-    }
-
-    // --- OUTRAS AÇÕES ---
-    async function alternarPagamento(id, statusAtual) {
-        const novoStatus = statusAtual === 'Pago' ? 'Pendente' : 'Pago';
-        await _supa.from('pedidos').update({ pagamento_status: novoStatus }).eq('id', id);
+        alert("Despachado e estoque reduzido!");
         carregarTudo();
     }
 
-    async function atualizarStatus(id, novoStatus) {
-        await _supa.from('pedidos').update({ status: novoStatus }).eq('id', id);
+    async function salvarTodoEstoque() {
+        const linhas = document.querySelectorAll('.linha-estoque');
+        for (let linha of linhas) {
+            const id = linha.dataset.id;
+            const q = linha.querySelector('.input-qtd').value;
+            const d = linha.querySelector('.input-data').value;
+            await _supa.from('estoque').update({ quantidade: q, dados_proximidade: d }).eq('id', id);
+        }
+        alert("Estoque atualizado!");
+    }
+
+    async function atualizarStatus(id, status) {
+        await _supa.from('pedidos').update({ status }).eq('id', id);
         carregarTudo();
     }
 
-    async function salvarEstoque(id) {
-        const q = document.getElementById(`q-${id}`).value;
-        const d = document.getElementById(`d-${id}`).value;
-        await _supa.from('estoque').update({ quantidade: q, dados_proximidade: d }).eq('id', id);
-        alert("Salvo!");
-    }
-
-    setInterval(carregarTudo, 30000);
     window.onload = carregarTudo;
 </script>
 </body>
