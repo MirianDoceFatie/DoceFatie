@@ -14,6 +14,12 @@
         body { font-family: 'Montserrat', sans-serif; background: var(--fundo); margin: 0; padding: 10px; color: var(--marrom); padding-bottom: 80px; }
         h2 { text-align: center; font-size: 0.9rem; text-transform: uppercase; margin: 15px 0; letter-spacing: 1px; }
         
+        /* Dashboard de Resumo Dinâmico */
+        #painel-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
+        .stat-card { background: var(--branco); padding: 10px; border-radius: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .stat-card span { display: block; font-size: 0.6rem; text-transform: uppercase; color: #888; margin-bottom: 4px; }
+        .stat-card b { font-size: 0.85rem; color: var(--rosa); }
+
         .abas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; position: sticky; top: 0; z-index: 100; background: var(--fundo); padding: 5px 0; }
         .btn-aba { padding: 10px 2px; border: 1px solid rgba(255, 105, 180, 0.2); background: var(--branco); border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 9px; color: var(--rosa); text-transform: uppercase; }
         .btn-aba.ativa { background: var(--rosa); color: var(--branco); border-color: var(--rosa); }
@@ -22,11 +28,14 @@
         .secao.ativa { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .card { background: var(--branco); padding: 15px; border-radius: 15px; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border-left: 6px solid #ccc; }
+        .card { background: var(--branco); padding: 15px; border-radius: 15px; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border-left: 6px solid #ccc; position: relative; }
         .card-novo { border-left-color: var(--verde); }
         .card-reserva { border-left-color: var(--ouro); }
         .card-desistiu { border-left-color: #ff4444; opacity: 0.7; }
         
+        .info-financeira-card { font-size: 0.7rem; margin-top: 5px; color: #666; display: flex; gap: 10px; border-top: 1px solid #f0f0f0; padding-top: 8px; }
+        .pendente-alerta { color: #e74c3c; font-weight: bold; }
+
         .itens-pedido { background: #fdfafb; padding: 10px; border-radius: 8px; font-size: 0.8rem; margin: 10px 0; border: 1px dashed #eee; line-height: 1.4; }
         .acoes-card { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
         .btn-mini { flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.65rem; text-transform: uppercase; }
@@ -34,7 +43,7 @@
         .container-branco { background: var(--branco); padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         th, td { padding: 10px 5px; text-align: left; border-bottom: 1px solid #f5f5f5; }
-        input[type="text"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 6px; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 6px; box-sizing: border-box; }
         
         .btn-salvar-tudo { background: var(--verde); color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; margin-bottom: 10px; cursor: pointer; }
     </style>
@@ -42,6 +51,22 @@
 <body>
 
     <h2>MII CAKES - ADMIN ELITE 🍰</h2>
+
+    <!-- Dashboard Financeiro Dinâmico -->
+    <div id="painel-resumo">
+        <div class="stat-card">
+            <span>Qtd Pedidos</span>
+            <b id="stat-qtd">0</b>
+        </div>
+        <div class="stat-card">
+            <span>Total Aba</span>
+            <b id="stat-total">R$ 0,00</b>
+        </div>
+        <div class="stat-card">
+            <span>Falta Cobrar</span>
+            <b id="stat-diferenca">R$ 0,00</b>
+        </div>
+    </div>
 
     <div class="abas">
         <button class="btn-aba ativa" onclick="mudarAba('novos', this)">Pedidos</button>
@@ -52,7 +77,6 @@
         <button class="btn-aba" onclick="carregarTudo()">🔄 Atualizar</button>
     </div>
 
-    <!-- Seções Restauradas -->
     <div id="aba-novos" class="secao ativa"><div id="lista-novos"></div></div>
     <div id="aba-reservas" class="secao"><div id="lista-reservas"></div></div>
 
@@ -85,19 +109,37 @@
 
 <script>
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
+    let todosOsPedidos = []; // Cache para cálculos dinâmicos
 
     function mudarAba(abaId, btn) {
         document.querySelectorAll('.secao').forEach(s => s.classList.remove('ativa'));
         document.querySelectorAll('.btn-aba').forEach(b => b.classList.remove('ativa'));
         document.getElementById('aba-' + abaId).classList.add('ativa');
         btn.classList.add('ativa');
+
+        // Lógica para mostrar/esconder o painel de resumo e atualizar os cálculos
+        const painel = document.getElementById('painel-resumo');
+        if (['novos', 'reservas', 'historico'].includes(abaId)) {
+            painel.style.display = 'grid';
+            atualizarCalculosAba(abaId);
+        } else {
+            painel.style.display = 'none';
+        }
     }
 
     async function carregarTudo() {
         const { data: pedidos } = await _supa.from('pedidos').select('*').order('created_at', { ascending: false });
         const { data: estoque } = await _supa.from('estoque').select('*').order('nome');
 
-        const filtrar = (s) => pedidos?.filter(p => (p.status || "").toLowerCase() === s.toLowerCase()) || [];
+        todosOsPedidos = pedidos || [];
+        
+        // Atualiza a aba ativa no momento do carregamento
+        const abaAtiva = document.querySelector('.btn-aba.ativa').innerText.toLowerCase();
+        if (abaAtiva.includes('pedidos')) atualizarCalculosAba('novos');
+        else if (abaAtiva.includes('reservas')) atualizarCalculosAba('reservas');
+        else if (abaAtiva.includes('histórico')) atualizarCalculosAba('historico');
+
+        const filtrar = (s) => todosOsPedidos.filter(p => (p.status || "").toLowerCase() === s.toLowerCase());
 
         renderizarPedidos(filtrar('Novo'), 'lista-novos', 'card-novo');
         renderizarPedidos(filtrar('Reserva'), 'lista-reservas', 'card-reserva');
@@ -115,29 +157,52 @@
         }
     }
 
+    function atualizarCalculosAba(abaId) {
+        let listaFiltrada = [];
+        
+        if (abaId === 'novos') listaFiltrada = todosOsPedidos.filter(p => p.status === 'Novo');
+        else if (abaId === 'reservas') listaFiltrada = todosOsPedidos.filter(p => p.status === 'Reserva');
+        else if (abaId === 'historico') listaFiltrada = todosOsPedidos.filter(p => p.status === 'Finalizado');
+
+        const totalVendas = listaFiltrada.reduce((acc, p) => acc + Number(p.valor_total || 0), 0);
+        const totalPago = listaFiltrada.reduce((acc, p) => acc + Number(p.valor_pago || 0), 0);
+        
+        document.getElementById('stat-qtd').innerText = listaFiltrada.length;
+        document.getElementById('stat-total').innerText = `R$ ${totalVendas.toFixed(2)}`;
+        document.getElementById('stat-diferenca').innerText = `R$ ${(totalVendas - totalPago).toFixed(2)}`;
+    }
+
     function renderizarPedidos(lista, divId, classe) {
-        document.getElementById(divId).innerHTML = lista.map(p => `
+        document.getElementById(divId).innerHTML = lista.map(p => {
+            const dif = Number(p.valor_total || 0) - Number(p.valor_pago || 0);
+            return `
             <div class="card ${classe}">
-                <strong>${p.nome}</strong> <span style="float:right">#${p.id}</span>
+                <strong>${p.nome}</strong> <span style="float:right; font-size:0.6rem;">#${p.id.toString().slice(0,5)}</span>
                 <div class="itens-pedido">${p.itens}</div>
+                
+                <div class="info-financeira-card">
+                    <span>Total: R$ ${Number(p.valor_total || 0).toFixed(2)}</span>
+                    <span>Pago: R$ ${Number(p.valor_pago || 0).toFixed(2)}</span>
+                    <span class="${dif > 0 ? 'pendente-alerta' : ''}">Falta: R$ ${dif.toFixed(2)}</span>
+                </div>
+
                 <div class="acoes-card">
                     <button class="btn-mini" style="background:#e8f5e9; color:#2e7d32;" onclick="window.open('https://wa.me/55${(p.telefone || '').replace(/\D/g,'')}')">WhatsApp</button>
-                    <button class="btn-mini" style="background:#eee;">Aguardando Pagamento</button>
-                    <button class="btn-mini" style="background:var(--marrom); color:white;" onclick="despacharPedido(${p.id}, '${p.itens}')">SAIU PARA ENTREGA 🛵</button>
-                    <button class="btn-mini" style="background:#fff1f0; color:#cf1322;" onclick="atualizarStatus(${p.id}, 'Desistiu')">X</button>
+                    <button class="btn-mini" style="background:var(--marrom); color:white;" onclick="despacharPedido('${p.id}', '${p.itens}')">SAIU PARA ENTREGA 🛵</button>
+                    <button class="btn-mini" style="background:#fff1f0; color:#cf1322;" onclick="atualizarStatus('${p.id}', 'Desistiu')">X</button>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     }
 
     async function despacharPedido(id, itens) {
         await _supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id);
         const { data: est } = await _supa.from('estoque').select('*');
-        const produto = est.find(i => itens.includes(i.nome));
-        if(produto && produto.quantidade > 0) {
-            await _supa.from('estoque').update({ quantidade: produto.quantidade - 1 }).eq('id', produto.id);
+        for (let item of est) {
+            if (itens.includes(item.nome) && item.quantidade > 0) {
+                await _supa.from('estoque').update({ quantidade: item.quantidade - 1 }).eq('id', item.id);
+            }
         }
-        alert("Despachado e estoque reduzido!");
         carregarTudo();
     }
 
