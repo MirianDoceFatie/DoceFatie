@@ -5,264 +5,224 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Elite - Mii Cakes</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { 
             --rosa: #ff69b4; 
             --marrom: #5d4037; 
             --verde: #25d366; 
-            --fundo: #fdf2f5; 
-            --branco: #ffffff;
-            --vermelho: #ff4d4d;
-        }
-        body { font-family: 'Montserrat', sans-serif; background: var(--fundo); margin: 0; padding: 20px; color: var(--marrom); }
-        
-        .menu-botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .btn-menu { background: white; border: 2px solid var(--rosa); color: var(--rosa); padding: 12px 5px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 0.65rem; text-transform: uppercase; transition: 0.3s; }
-        .btn-menu.ativo { background: var(--rosa); color: white; }
-
-        .secao { display: none; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .secao.ativa { display: block; }
-
-        .card-pedido { border: 1px solid #eee; padding: 15px; border-radius: 10px; margin-bottom: 10px; background: var(--branco); position: relative; transition: 0.3s; }
-        .card-pedido.atendido { border-left: 8px solid var(--verde); background: #f0fff4; }
-        
-        .resumo-container { 
-            margin: 10px 0; font-size: 0.85rem; background: #f9f9f9; 
-            padding: 12px; border-radius: 8px; border: 1px solid #f0f0f0; line-height: 1.4;
-        }
-        
-        .logistica-box { 
-            margin-top: 10px; padding-top: 8px; border-top: 2px dashed var(--rosa); 
-            color: #d81b60; font-weight: 500;
+            --fundo: #fdf2f5;
+            --cinza: #666;
         }
 
-        .acoes-pedido { display: flex; gap: 5px; margin-top: 10px; }
-        .btn-acao { flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.7rem; color: white; text-transform: uppercase; }
-        .btn-whats { background: var(--verde); }
-        .btn-finalizar { background: var(--marrom); }
-        .btn-relatorio { background: #555; color: white; width: 100%; margin-bottom: 15px; padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background: var(--fundo); 
+            margin: 0; 
+            padding: 10px; 
+            color: var(--marrom);
+            padding-bottom: 50px;
+        }
+
+        h2 { text-align: center; font-size: 1.1rem; text-transform: uppercase; margin: 10px 0; }
+
+        .abas { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 5px; 
+            margin-bottom: 15px; 
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--fundo);
+            padding: 5px 0;
+        }
+
+        .btn-aba { 
+            padding: 10px 2px; 
+            border: 1px solid var(--rosa); 
+            background: white; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 9px;
+            color: var(--rosa);
+            text-transform: uppercase;
+        }
+
+        .btn-aba.ativa { background: var(--rosa); color: white; }
+
+        .secao { display: none; }
+        .secao.ativa { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .btn-relatorio { 
+            background: #444; color: white; width: 100%; padding: 15px; 
+            border: none; border-radius: 12px; margin-bottom: 15px; font-weight: bold; 
+            cursor: pointer; font-size: 0.9rem;
+        }
+
+        .card { 
+            background: white; padding: 15px; border-radius: 15px; margin-bottom: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 8px solid #ccc;
+            position: relative;
+        }
+
+        .card-novo { border-left-color: var(--verde); }
+        .card-reserva { border-left-color: orange; }
+        .card-desistiu { border-left-color: #ff4444; opacity: 0.7; }
+
+        .itens-pedido { 
+            background: #fafafa; padding: 10px; border-radius: 8px; 
+            font-size: 0.8rem; margin: 10px 0; border: 1px solid #eee;
+        }
+
+        .acoes-card { display: flex; gap: 8px; }
+        .btn-mini { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.7rem; }
+        .btn-whats { background: #e8f5e9; color: #2e7d32; }
+        .btn-ok { background: var(--marrom); color: white; }
+        .btn-del { background: #ffebee; color: #c62828; }
+
+        /* Estilo Tabelas (Estoque e Config) */
+        .box-config { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
+        .input-padrao { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin: 5px 0 15px 0; box-sizing: border-box; font-family: 'Montserrat'; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
-        td, th { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-        input[type="text"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        
-        .btn-salvar { background: var(--marrom); color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; margin-top: 15px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
-        .btn-delete { color: var(--vermelho); cursor: pointer; font-weight: bold; font-size: 1.1rem; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; font-size: 0.8rem; }
+        th { background: var(--marrom); color: white; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        .input-estoque { width: 45px; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <div class="menu-botoes">
-        <button class="btn-menu ativo" onclick="abrir('pedidos')">Pedidos</button>
-        <button class="btn-menu" onclick="abrir('estoque')">Estoque</button>
-        <button class="btn-menu" onclick="abrir('reservas')">Reservas</button>
-        <button class="btn-menu" onclick="abrir('desistencias')">Desistências</button>
-        <button class="btn-menu" onclick="abrir('festival')">Festival</button>
-        <button class="btn-menu" onclick="abrir('historico')">Histórico</button>
+    <h2>Mii Cakes - Gestão Elite 🍰</h2>
+
+    <button class="btn-relatorio" onclick="gerarRelatorioProducao()">📋 Gerar Relatório de Produção</button>
+
+    <div class="abas">
+        <button class="btn-aba ativa" onclick="mudarAba('novos', this)">Pedidos</button>
+        <button class="btn-aba" onclick="mudarAba('reservas', this)">Reservas</button>
+        <button class="btn-aba" onclick="mudarAba('estoque', this)">Estoque</button>
+        <button class="btn-aba" onclick="mudarAba('festival', this)">Festival</button>
+        <button class="btn-aba" onclick="mudarAba('desistencias', this)">Desistiu</button>
+        <button class="btn-aba" onclick="mudarAba('historico', this)">Histórico</button>
     </div>
 
-    <!-- SEÇÃO PEDIDOS ATIVOS -->
-    <div id="secao-pedidos" class="secao ativa">
-        <h3>📥 Pedidos Ativos</h3>
-        <button class="btn-relatorio" onclick="enviarRelatorioSelecionados()">Gerar Relatório de Selecionados</button>
-        <div id="lista-pedidos">Carregando pedidos...</div>
-    </div>
+    <!-- SEÇÕES DE PEDIDOS -->
+    <div id="aba-novos" class="secao ativa"><div id="lista-novos"></div></div>
+    <div id="aba-reservas" class="secao"><div id="lista-reservas"></div></div>
+    <div id="aba-desistencias" class="secao"><div id="lista-desistencias"></div></div>
+    <div id="aba-historico" class="secao"><div id="lista-historico"></div></div>
 
-    <!-- SEÇÃO ESTOQUE (VITRINE) -->
-    <div id="secao-estoque" class="secao">
-        <h3>🍰 Gerenciar Vitrine</h3>
-        <table id="tabela-estoque">
-            <thead><tr><th>Sabor</th><th width="70">Qtd</th><th>🕒 Próxima Fornada</th></tr></thead>
-            <tbody id="corpo-estoque"></tbody>
-        </table>
-        <button class="btn-salvar" onclick="salvarEstoque()">Salvar Alterações na Vitrine</button>
-    </div>
-
-    <!-- SEÇÃO RESERVAS -->
-    <div id="secao-reservas" class="secao">
-        <h3>📋 Lista de Espera (Reservas)</h3>
-        <div id="lista-reservas-clientes">Carregando...</div>
-    </div>
-
-    <!-- SEÇÃO DESISTÊNCIAS -->
-    <div id="secao-desistencias" class="secao">
-        <h3>❌ Pedidos Desistentes</h3>
-        <div id="lista-desistencias">Carregando...</div>
+    <!-- SEÇÃO ESTOQUE -->
+    <div id="aba-estoque" class="secao">
+        <div class="box-config">
+            <h3>📦 Controle de Fatias</h3>
+            <table id="tabela-estoque">
+                <thead>
+                    <tr>
+                        <th>Sabor</th>
+                        <th>Qtd</th>
+                        <th>Próxima Fornada</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-estoque"></tbody>
+            </table>
+        </div>
     </div>
 
     <!-- SEÇÃO FESTIVAL -->
-    <div id="secao-festival" class="secao">
-        <h3>🎡 Configurar Festival</h3>
-        <input type="text" id="f-nome" placeholder="Nome do Evento" style="margin-bottom:10px">
-        <input type="text" id="f-local" placeholder="Localização" style="margin-bottom:10px">
-        <div style="display:flex; gap:10px">
-            <input type="text" id="f-data" placeholder="Data">
-            <input type="text" id="f-hora" placeholder="Horário">
+    <div id="aba-festival" class="secao">
+        <div class="box-config">
+            <h3>📅 Detalhes do Festival</h3>
+            <label>Nome do Evento</label>
+            <input type="text" id="f-nome" class="input-padrao" placeholder="Ex: Festival de Fatias">
+            
+            <label>Local de Retirada/Evento</label>
+            <input type="text" id="f-local" class="input-padrao" placeholder="Endereço completo">
+            
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1">
+                    <label>Data</label>
+                    <input type="text" id="f-data" class="input-padrao" placeholder="Ex: 10/05">
+                </div>
+                <div style="flex:1">
+                    <label>Horário</label>
+                    <input type="text" id="f-hora" class="input-padrao" placeholder="Ex: 14h as 18h">
+                </div>
+            </div>
+            <button class="btn-relatorio" style="background:var(--verde)" onclick="salvarFestival()">💾 Salvar Configurações</button>
         </div>
-        <button class="btn-salvar" onclick="salvarFestival()">Atualizar Banner na Vitrine</button>
-    </div>
-
-    <!-- SEÇÃO HISTÓRICO -->
-    <div id="secao-historico" class="secao">
-        <h3>📜 Histórico de Vendas (Finalizados)</h3>
-        <div id="lista-historico">Vazio.</div>
     </div>
 
 <script>
-    const supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
-    let dadosEstoque = [];
+    const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
 
-    function abrir(id) {
+    function mudarAba(abaId, btn) {
         document.querySelectorAll('.secao').forEach(s => s.classList.remove('ativa'));
-        document.querySelectorAll('.btn-menu').forEach(b => b.classList.remove('ativo'));
-        document.getElementById('secao-' + id).classList.add('ativa');
-        event.currentTarget.classList.add('ativo');
-        
-        if(['pedidos','historico','desistencias'].includes(id)) carregarPedidos();
-        if(id === 'reservas') carregarReservasClientes();
-        if(id === 'estoque') carregarEstoque();
-        if(id === 'festival') carregarFestival();
+        document.querySelectorAll('.btn-aba').forEach(b => b.classList.remove('ativa'));
+        document.getElementById('aba-' + abaId).classList.add('ativa');
+        btn.classList.add('ativa');
+        if(abaId === 'festival') carregarConfig();
     }
 
-    function formatarResumo(texto) {
-        if(!texto) return "Sem itens.";
-        let formatado = texto.replace(/\n/g, '<br>');
-        // Formatação especial para quando o pedido vem com separadores de detalhes
-        if(formatado.includes('*FORMA:*')) {
-            formatado = formatado.replace('*FORMA:*', '<div class="logistica-box"><strong>📍 LOGÍSTICA:</strong>');
-            formatado += '</div>';
-        }
-        return formatado;
-    }
+    async function carregarTudo() {
+        const { data: pedidos } = await _supa.from('pedidos').select('*').order('created_at', { ascending: false });
+        const { data: estoque } = await _supa.from('estoque').select('*').order('nome');
 
-    async function carregarPedidos() {
-        const { data } = await supa.from('pedidos').select('*').order('created_at', { ascending: false });
-        if(!data) return;
+        // Renderizar Listas de Pedidos
+        renderizarPedidos(pedidos?.filter(p => p.status === 'Novo') || [], 'lista-novos', 'card-novo');
+        renderizarPedidos(pedidos?.filter(p => p.status === 'Reserva') || [], 'lista-reservas', 'card-reserva');
+        renderizarPedidos(pedidos?.filter(p => p.status === 'Desistiu') || [], 'lista-desistencias', 'card-desistiu');
+        renderizarPedidos(pedidos?.filter(p => p.status === 'Finalizado') || [], 'lista-historico', '');
 
-        const ativos = data.filter(p => p.status !== 'Finalizado' && p.status !== 'Desistiu');
-        const desistencias = data.filter(p => p.status === 'Desistiu');
-        const historico = data.filter(p => p.status === 'Finalizado');
-
-        document.getElementById('lista-pedidos').innerHTML = ativos.map(p => `
-            <div class="card-pedido ${p.status === 'Atendido' ? 'atendido' : ''}">
-                <div style="display:flex; justify-content:space-between;">
-                    <div>
-                        <input type="checkbox" class="selecionar-pedido" data-resumo="${p.itens}">
-                        <strong>👤 ${p.nome || 'Cliente'}</strong>
-                    </div>
-                    <span class="btn-delete" onclick="mudarStatus('${p.id}', 'Desistiu')">✖</span>
-                </div>
-                <small>📱 ${p.telefone}</small>
-                <div class="resumo-container">${formatarResumo(p.itens)}</div>
-                <div class="acoes-pedido">
-                    <button class="btn-acao btn-whats" onclick="enviarWhatsApp('${p.id}', '${p.nome}', '${p.telefone}', \`${p.itens}\`)">WhatsApp</button>
-                    <button class="btn-acao btn-finalizar" onclick="finalizarPedido('${p.id}', \`${p.itens}\`)">Finalizar</button>
-                </div>
-            </div>
-        `).join('') || "Sem pedidos novos.";
-
-        document.getElementById('lista-desistencias').innerHTML = desistencias.map(p => `
-            <div class="card-pedido" style="border-left: 5px solid var(--vermelho);">
-                <strong>👤 ${p.nome}</strong> | <small>${p.telefone}</small>
-                <div class="resumo-container" style="font-size:0.75rem;">${formatarResumo(p.itens)}</div>
-                <button class="btn-acao" style="background:var(--rosa)" onclick="mudarStatus('${p.id}', 'Novo')">Reativar</button>
-            </div>
-        `).join('') || "Vazio.";
-
-        document.getElementById('lista-historico').innerHTML = historico.map(p => `
-            <div class="card-pedido" style="opacity:0.8">
-                <small>${new Date(p.created_at).toLocaleDateString()}</small> | <strong>${p.nome}</strong>
-                <div class="resumo-container">${formatarResumo(p.itens)}</div>
-            </div>
-        `).join('') || "Vazio.";
-    }
-
-    async function carregarEstoque() {
-        const { data } = await supa.from('estoque').select('*').order('nome');
-        dadosEstoque = data || [];
-        document.getElementById('corpo-estoque').innerHTML = dadosEstoque.map((item, i) => `
+        // Renderizar Tabela Estoque
+        document.getElementById('corpo-estoque').innerHTML = estoque.map(i => `
             <tr>
-                <td><small>${item.nome}</small></td>
-                <td><input type="number" value="${item.quantidade || 0}" onchange="dadosEstoque[${i}].quantidade=this.value"></td>
-                <td><input type="text" value="${item.dados_proximidade || ''}" onchange="dadosEstoque[${i}].dados_proximidade=this.value"></td>
+                <td>${i.nome}</td>
+                <td><input type="number" id="q-${i.id}" value="${i.quantidade}" class="input-estoque"></td>
+                <td><input type="text" id="d-${i.id}" value="${i.dados_proximidade || ''}" style="width:70px; border:1px solid #ddd; border-radius:4px; font-size:0.7rem;"></td>
+                <td><button onclick="salvarItemEstoque(${i.id})" style="border:none; background:none; cursor:pointer;">💾</button></td>
             </tr>
         `).join('');
     }
 
-    async function salvarEstoque() {
-        for (const item of dadosEstoque) {
-            await supa.from('estoque').update({ 
-                quantidade: item.quantidade, 
-                dados_proximidade: item.dados_proximidade 
-            }).eq('id', item.id);
-        }
-        alert("Estoque e Vitrine atualizados!");
-        carregarEstoque();
-    }
-
-    async function finalizarPedido(id, itensTexto) {
-        if(!confirm("Deseja finalizar esta venda e dar baixa no estoque?")) return;
-        const linhas = itensTexto.split('\n');
-        for (const linha of linhas) {
-            const match = linha.match(/(\d+)x\s+(.+)/);
-            if (match) {
-                const qtdVendida = parseInt(match[1]);
-                let sabor = match[2].split('[')[0].split('(')[0].trim();
-                const { data: item } = await supa.from('estoque').select('*').eq('nome', sabor).single();
-                if (item) {
-                    const novaQtd = Math.max(0, (item.quantidade || 0) - qtdVendida);
-                    await supa.from('estoque').update({ quantidade: novaQtd }).eq('id', item.id);
-                }
-            }
-        }
-        await supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id);
-        carregarPedidos();
-    }
-
-    async function carregarReservasClientes() {
-        // Filtra pedidos que contenham a tag [RESERVA] gerada pela vitrine
-        const { data } = await supa.from('pedidos')
-            .select('*')
-            .ilike('itens', '%[RESERVA]%')
-            .neq('status', 'Finalizado')
-            .neq('status', 'Desistiu');
-
-        document.getElementById('lista-reservas-clientes').innerHTML = data?.map(r => `
-            <div class="card-pedido">
-                <strong>👤 ${r.nome}</strong> | <small>${r.telefone}</small>
-                <div class="resumo-container">${formatarResumo(r.itens)}</div>
-                <button class="btn-acao btn-whats" onclick="enviarWhatsApp('${r.id}', '${r.nome}', '${r.telefone}', \`${r.itens}\`)">Avisar Cliente</button>
+    function renderizarPedidos(lista, divId, classe) {
+        const container = document.getElementById(divId);
+        if(lista.length === 0) { container.innerHTML = "<p style='text-align:center; font-size:0.7rem; color:#999; padding:20px;'>Sem registros.</p>"; return; }
+        
+        container.innerHTML = lista.map(p => `
+            <div class="card ${classe}">
+                <div style="display:flex; justify-content:space-between;">
+                    <strong>${p.nome}</strong>
+                    <input type="checkbox" class="check-prod" data-itens="${p.itens}">
+                </div>
+                <small>📱 ${p.telefone}</small>
+                <div class="itens-pedido">${p.itens.replace(/\n/g, '<br>')}</div>
+                <div class="acoes-card">
+                    <button class="btn-mini btn-whats" onclick="window.open('https://wa.me/55${p.telefone.replace(/\D/g,'')}')">ZAP</button>
+                    ${p.status !== 'Finalizado' ? `<button class="btn-mini btn-ok" onclick="mudarStatus('${p.id}', 'Finalizado')">OK</button>` : ''}
+                    ${p.status !== 'Desistiu' && p.status !== 'Finalizado' ? `<button class="btn-mini btn-del" onclick="mudarStatus('${p.id}', 'Desistiu')">X</button>` : ''}
+                </div>
             </div>
-        `).join('') || "Sem reservas pendentes.";
+        `).join('');
     }
 
-    async function mudarStatus(id, novoStatus) {
-        await supa.from('pedidos').update({ status: novoStatus }).eq('id', id);
-        carregarPedidos();
+    async function mudarStatus(id, status) {
+        await _supa.from('pedidos').update({ status }).eq('id', id);
+        carregarTudo();
     }
 
-    async function enviarWhatsApp(id, nome, tel, itens) {
-        await supa.from('pedidos').update({ status: 'Atendido' }).eq('id', id);
-        const link = `https://wa.me/55${tel.replace(/\D/g,'')}?text=${encodeURIComponent("*MII CAKES*\nOlá " + nome + "! Confirmamos seu pedido:\n\n" + itens)}`;
-        window.open(link);
-        carregarPedidos();
+    async function salvarItemEstoque(id) {
+        const quantidade = document.getElementById(`q-${id}`).value;
+        const dados_proximidade = document.getElementById(`d-${id}`).value;
+        await _supa.from('estoque').update({ quantidade, dados_proximidade }).eq('id', id);
+        alert("Estoque atualizado!");
     }
 
-    function enviarRelatorioSelecionados() {
-        const selecionados = document.querySelectorAll('.selecionar-pedido:checked');
-        if(selecionados.length === 0) return alert("Selecione os pedidos para o relatório.");
-        
-        let relatorio = "*RELATÓRIO DE PRODUÇÃO - MII CAKES*\n\n";
-        selecionados.forEach(item => {
-            relatorio += "--------------------------\n" + item.getAttribute('data-resumo') + "\n";
-        });
-        
-        window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(relatorio)}`);
-    }
-
-    async function carregarFestival() {
-        const { data } = await supa.from('config').select('*').eq('id', 1).single();
+    async function carregarConfig() {
+        const { data } = await _supa.from('config').select('*').eq('id', 1).single();
         if(data) {
             document.getElementById('f-nome').value = data.festival_nome || '';
             document.getElementById('f-local').value = data.festival_local || '';
@@ -272,17 +232,28 @@
     }
 
     async function salvarFestival() {
-        const d = { 
-            festival_nome: document.getElementById('f-nome').value, 
-            festival_local: document.getElementById('f-local').value, 
-            festival_data: document.getElementById('f-data').value, 
-            festival_hora: document.getElementById('f-hora').value 
+        const conf = {
+            festival_nome: document.getElementById('f-nome').value,
+            festival_local: document.getElementById('f-local').value,
+            festival_data: document.getElementById('f-data').value,
+            festival_hora: document.getElementById('f-hora').value
         };
-        await supa.from('config').update(d).eq('id', 1);
-        alert("Configurações salvas!");
+        const { error } = await _supa.from('config').update(conf).eq('id', 1);
+        if(!error) alert("Festival atualizado com sucesso!");
     }
 
-    window.onload = () => { carregarPedidos(); carregarEstoque(); };
+    function gerarRelatorioProducao() {
+        const marcados = document.querySelectorAll('.check-prod:checked');
+        if(marcados.length === 0) return alert("Selecione os pedidos na caixinha!");
+        let texto = "*📋 RELATÓRIO DE PRODUÇÃO*\n\n";
+        marcados.forEach((m, i) => {
+            texto += `*PEDIDO ${i+1}:*\n${m.getAttribute('data-itens')}\n\n`;
+        });
+        window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(texto)}`);
+    }
+
+    setInterval(carregarTudo, 20000); // Atualiza a cada 20s
+    window.onload = carregarTudo;
 </script>
 </body>
 </html>
