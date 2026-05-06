@@ -14,6 +14,7 @@
             --rosa-botao: #ff4081; 
             --marrom: #5d4037; 
             --cinza-borda: #eee;
+            --verde-sucesso: #2ecc71;
         }
 
         body { 
@@ -61,6 +62,10 @@
         .input-padrao { width: 100%; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 12px; font-family: 'Montserrat'; box-sizing: border-box; background: #fafafa; font-size: 0.85rem; }
         .btn-seletor { flex: 1; padding: 12px; border: 2px solid var(--cinza-borda); border-radius: 12px; background: white; color: #888; font-weight: 600; font-size: 0.75rem; cursor: pointer; }
         .btn-seletor.ativa { border-color: var(--rosa-topo); color: var(--rosa-topo); background: #fff0f5; }
+
+        #secao-garantia { background: #fff4f4; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #ffcccc; display: none; }
+        .opcao-garantia { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer; text-align: left; }
+        .risco-aviso { color: var(--rosa-botao); font-size: 0.7rem; font-weight: bold; display: block; margin-top: 3px; }
         
         .total-display { text-align: center; font-weight: bold; font-size: 1.4rem; margin: 20px 0; border-top: 1px dashed #eee; padding-top: 15px; }
         .aviso-taxa { display: block; color: var(--rosa-botao); font-size: 0.75rem; font-weight: normal; margin-top: 8px; font-style: italic; }
@@ -83,7 +88,6 @@
 </header>
 
 <div class="container">
-    
     <div id="tela-venda" class="tela ativa">
         <div id="vitrine" class="grid-fatias">
             <p style="text-align:center; grid-column: 1/-1;">Carregando delícias...</p>
@@ -110,6 +114,27 @@
                 <strong>📍 Retirada:</strong> Rua Maria Rodrigues Munis, nº 50, Bairro Rebourgeon.
             </div>
 
+            <div id="secao-garantia">
+                <p style="font-size: 0.8rem; font-weight: bold; margin-bottom: 10px;">🛡️ Garantia de Reserva:</p>
+                
+                <label class="opcao-garantia">
+                    <input type="radio" name="garantia" value="Reserva Garantida (50%)" onchange="atualizarInterface()">
+                    <span style="font-size: 0.75rem;"><strong>Pagar 50% agora</strong><br>Garantia TOTAL de ter a sua fatia.</span>
+                </label>
+
+                <label class="opcao-garantia">
+                    <input type="radio" name="garantia" value="Pago Total" onchange="atualizarInterface()">
+                    <span style="font-size: 0.75rem;"><strong>Pagar 100% (Total)</strong><br>Reserva garantida e agilidade na entrega.</span>
+                </label>
+
+                <label class="opcao-garantia">
+                    <input type="radio" name="garantia" value="Pendente (Sem Garantia)" checked onchange="atualizarInterface()">
+                    <span style="font-size: 0.75rem;"><strong>Não pagar agora</strong><br>
+                        <span class="risco-aviso">⚠️ Você corre o risco de ficar sem a Fatia se o estoque acabar.</span>
+                    </span>
+                </label>
+            </div>
+
             <div style="display: flex; gap: 10px; margin-bottom: 12px;">
                 <button class="btn-seletor ativa" id="btn-pix" onclick="setPagamento('Pix')">Pix</button>
                 <button class="btn-seletor" id="btn-cartao" onclick="setPagamento('Cartão')">Cartão</button>
@@ -117,7 +142,7 @@
             </div>
 
             <div class="total-display">
-                TOTAL: <span id="total-val" style="color:var(--rosa-botao)">R$ 0,00</span>
+                <div id="total-val">R$ 0,00</div>
                 <span id="label-taxa" class="aviso-taxa">Envie o pedido para consultar taxa de entrega</span>
             </div>
             <button class="btn-finalizar" id="btn-fazer-pedido" onclick="gerarWhatsApp()">Fazer Pedido / Reservar</button>
@@ -128,7 +153,6 @@
         <h2 style="text-align:center; font-family:'Great Vibes'; font-size: 3rem; color: var(--rosa-topo);">Nossos Bastidores ✨</h2>
         <div id="galeria-bastidores" class="grid-bastidores"></div>
     </div>
-
 </div>
 
 <script>
@@ -228,93 +252,132 @@
     }
 
     function atualizarInterface() {
-        let soma = 0; 
+        let totalProdutos = 0; 
+        let totalPagarAgora = 0;
         let listaHtml = "";
+        let temReservaNoCarrinho = false;
+        const garantia = document.querySelector('input[name="garantia"]:checked')?.value || "Pendente (Sem Garantia)";
+
         listaBolos.forEach((b, i) => {
             if(meuCarrinho[i] > 0) {
                 const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
-                soma += meuCarrinho[i] * 18;
+                const estoque = b.quantidade || 0;
+                const valorItem = meuCarrinho[i] * 18;
+                totalProdutos += valorItem;
+
+                if(meuCarrinho[i] > estoque) {
+                    temReservaNoCarrinho = true;
+                    if (garantia === "Reserva Garantida (50%)") {
+                        totalPagarAgora += (valorItem / 2);
+                    } else if (garantia === "Pago Total") {
+                        totalPagarAgora += valorItem;
+                    }
+                } else {
+                    totalPagarAgora += valorItem;
+                }
                 listaHtml += `• ${meuCarrinho[i]}x ${b.nome} (${calda})<br>`;
             }
         });
+
+        document.getElementById('secao-garantia').style.display = temReservaNoCarrinho ? 'block' : 'none';
         document.getElementById('resumo-lista').innerHTML = listaHtml || "Escolha suas delícias acima.";
-        document.getElementById('total-val').innerText = `R$ ${soma.toFixed(2).replace('.', ',')}`;
+
+        const totalExibicao = document.getElementById('total-val');
+        if (temReservaNoCarrinho && garantia === "Reserva Garantida (50%)") {
+            let restante = totalProdutos - totalPagarAgora;
+            totalExibicao.innerHTML = `
+                <div style="font-size: 0.8rem; color: #666; font-weight: normal;">Total Pedido: R$ ${totalProdutos.toFixed(2).replace('.', ',')}</div>
+                <div style="color: var(--rosa-botao)">PAGAR AGORA: R$ ${totalPagarAgora.toFixed(2).replace('.', ',')}</div>
+                <div style="font-size: 0.8rem; color: var(--marrom); font-weight: 600;">PAGAR NA ENTREGA: R$ ${restante.toFixed(2).replace('.', ',')}</div>
+            `;
+        } else if (temReservaNoCarrinho && garantia === "Pendente (Sem Garantia)") {
+             totalExibicao.innerHTML = `
+                <div style="font-size: 0.8rem; color: #666; font-weight: normal;">Total Pedido: R$ ${totalProdutos.toFixed(2).replace('.', ',')}</div>
+                <div style="color: var(--rosa-botao)">PAGAR AGORA: R$ ${totalPagarAgora.toFixed(2).replace('.', ',')}</div>
+                <div style="font-size: 0.7rem; color: var(--rosa-botao); font-weight: normal; font-style: italic;">(Reserva sem garantia de estoque)</div>
+            `;
+        } else {
+            totalExibicao.innerHTML = `<span style="color:var(--rosa-botao)">R$ ${totalProdutos.toFixed(2).replace('.', ',')}</span>`;
+        }
     }
 
     async function gerarWhatsApp() {
         const btn = document.getElementById('btn-fazer-pedido');
         const nome = document.getElementById('nome-cliente').value;
         const zap = document.getElementById('whatsapp-input').value;
+        const garantiaEscolhida = document.querySelector('input[name="garantia"]:checked').value;
         
         if(!nome || !zap) return alert("Preencha seu nome e WhatsApp.");
         if(zap.length < 10) return alert("WhatsApp inválido.");
 
-        let itensZap = "";
-        let resumoBanco = "";
-        let temItens = false;
-        let possuiReserva = false;
+        let totalGeral = 0;
+        let totalImediato = 0;
+        let itensPronta = "", itensReserva = "", resumoNovo = "", resumoReserva = "";
+        let temItens = false, possuiReserva = false, possuiPronta = false;
 
         listaBolos.forEach((b, i) => {
             if(meuCarrinho[i] > 0) {
                 temItens = true;
                 const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
                 const estoque = b.quantidade || 0;
-                
+                const valorItem = meuCarrinho[i] * 18;
+                totalGeral += valorItem;
+
                 if(meuCarrinho[i] > estoque) {
                     possuiReserva = true;
-                    itensZap += `${meuCarrinho[i]}x ${b.nome} [RESERVA] (${calda})\n`;
+                    itensReserva += `${meuCarrinho[i]}x ${b.nome} [RESERVA] (${calda})\n`;
+                    resumoReserva += `${meuCarrinho[i]}x ${b.nome} (${calda}); `;
+                    
+                    if (garantiaEscolhida === "Reserva Garantida (50%)") totalImediato += (valorItem / 2);
+                    else if (garantiaEscolhida === "Pago Total") totalImediato += valorItem;
                 } else {
-                    itensZap += `${meuCarrinho[i]}x ${b.nome} [PRONTA] (${calda})\n`;
+                    possuiPronta = true;
+                    itensPronta += `${meuCarrinho[i]}x ${b.nome} [PRONTA] (${calda})\n`;
+                    resumoNovo += `${meuCarrinho[i]}x ${b.nome} (${calda}); `;
+                    totalImediato += valorItem;
                 }
-                resumoBanco += `${meuCarrinho[i]}x ${b.nome} (${calda}); `;
             }
         });
 
         if(!temItens) return alert("Seu carrinho está vazio!");
 
-        const msgFinal = `*PEDIDO/RESERVA - MII CAKES*\n\n` +
-                         `*Cliente:* ${nome}\n` +
-                         `*WhatsApp:* ${zap}\n\n` +
-                         `*ITENS:*\n${itensZap}\n` +
-                         `*FORMA:* ${metodoEscolhido}\n` +
-                         `${metodoEscolhido === 'Entrega' ? `*END:* ${document.getElementById('rua-numero').value}, ${document.getElementById('bairro').value}\n` : ''}` +
-                         `*PAGAMENTO:* ${pagamentoEscolhido}`;
+        let restanteDia = totalGeral - totalImediato;
+
+        let msgFinal = `*PEDIDO/RESERVA - MII CAKES*\n\n*Cliente:* ${nome}\n*WhatsApp:* ${zap}\n\n`;
+        if(possuiPronta) msgFinal += `*PRONTA ENTREGA:*\n${itensPronta}\n`;
+        if(possuiReserva) {
+            msgFinal += `*RESERVAS:*\n${itensReserva}*GARANTIA:* ${garantiaEscolhida}\n\n`;
+            if(garantiaEscolhida.includes("Sem Garantia")) msgFinal += `⚠️ _Ciente do risco de ficar sem o produto._\n\n`;
+        }
+        
+        msgFinal += `*RESUMO FINANCEIRO:*\n`;
+        msgFinal += `Total do Pedido: R$ ${totalGeral.toFixed(2)}\n`;
+        msgFinal += `*PAGAR AGORA:* R$ ${totalImediato.toFixed(2)}\n`;
+        if(restanteDia > 0) msgFinal += `*PAGAR NA ENTREGA:* R$ ${restanteDia.toFixed(2)}\n`;
+        
+        msgFinal += `\n*FORMA:* ${metodoEscolhido}\n${metodoEscolhido === 'Entrega' ? `*END:* ${document.getElementById('rua-numero').value}, ${document.getElementById('bairro').value}\n` : ''}*PAGAMENTO:* ${pagamentoEscolhido}`;
 
         btn.innerText = "Conectando...";
         btn.disabled = true;
 
-        const statusBanco = possuiReserva ? "Reserva" : "Novo";
-        
         try {
-            const { error } = await _supa.from('pedidos').insert([{
-                nome: nome,
-                telefone: zap,
-                itens: resumoBanco, 
-                status: statusBanco
-            }]);
-            
-            if (error) throw error;
-
+            if(possuiPronta) {
+                await _supa.from('pedidos').insert([{ nome, telefone: zap, itens: resumoNovo + (possuiReserva ? " (+Reserva)" : ""), status: 'Novo', pagamento_status: 'Pendente' }]);
+            }
+            if(possuiReserva) {
+                await _supa.from('pedidos').insert([{ nome, telefone: zap, itens: resumoReserva, status: 'Reserva', pagamento_status: garantiaEscolhida }]);
+            }
             window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msgFinal)}`, '_blank');
-            
-        } catch (e) { 
-            console.error("Erro no Supabase:", e); 
-            alert("Erro ao conectar com o servidor. Verifique sua internet ou tente novamente em instantes.");
-        } finally {
-            btn.innerText = "Fazer Pedido / Reservar";
-            btn.disabled = false;
-        }
+        } catch (e) { alert("Erro ao salvar pedido."); }
+        btn.innerText = "Fazer Pedido / Reservar";
+        btn.disabled = false;
     }
 
     function carregarGaleria() {
         const galeria = document.getElementById('galeria-bastidores');
         let html = "";
-        for(let i=1; i<=6; i++) {
-            html += `<div class="item-bastidor"><video loop muted playsinline onclick="this.paused ? this.play() : this.pause()"><source src="${RAW_URL}Video${i}.mp4" type="video/mp4"></video></div>`;
-        }
-        for(let i=1; i<=6; i++) {
-            html += `<div class="item-bastidor"><img src="${RAW_URL}Bastidor${i}.jpg" onerror="this.parentElement.style.display='none'"></div>`;
-        }
+        for(let i=1; i<=6; i++) html += `<div class="item-bastidor"><video loop muted playsinline onclick="this.paused ? this.play() : this.pause()"><source src="${RAW_URL}Video${i}.mp4" type="video/mp4"></video></div>`;
+        for(let i=1; i<=6; i++) html += `<div class="item-bastidor"><img src="${RAW_URL}Bastidor${i}.jpg" onerror="this.parentElement.style.display='none'"></div>`;
         galeria.innerHTML = html;
     }
 
