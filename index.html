@@ -60,7 +60,7 @@
         .resumo-lista { font-size: 0.85rem; margin-bottom: 20px; border-left: 3px solid var(--rosa-topo); padding-left: 15px; color: #666; text-align: left; }
         .input-padrao { width: 100%; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 12px; font-family: 'Montserrat'; box-sizing: border-box; background: #fafafa; font-size: 0.85rem; }
         .btn-seletor { flex: 1; padding: 12px; border: 2px solid var(--cinza-borda); border-radius: 12px; background: white; color: #888; font-weight: 600; font-size: 0.75rem; cursor: pointer; }
-        .btn-seletor.ativo { border-color: var(--rosa-topo); color: var(--rosa-topo); background: #fff0f5; }
+        .btn-seletor.ativa { border-color: var(--rosa-topo); color: var(--rosa-topo); background: #fff0f5; }
         
         .total-display { text-align: center; font-weight: bold; font-size: 1.4rem; margin: 20px 0; border-top: 1px dashed #eee; padding-top: 15px; }
         .aviso-taxa { display: block; color: var(--rosa-botao); font-size: 0.75rem; font-weight: normal; margin-top: 8px; font-style: italic; }
@@ -97,7 +97,7 @@
             <input type="tel" id="whatsapp-input" class="input-padrao" placeholder="Seu WhatsApp (Somente números)" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             
             <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-                <button class="btn-seletor ativo" id="btn-entrega" onclick="setMetodo('Entrega')">Entrega</button>
+                <button class="btn-seletor ativa" id="btn-entrega" onclick="setMetodo('Entrega')">Entrega</button>
                 <button class="btn-seletor" id="btn-retirar" onclick="setMetodo('Retirada')">Retirar</button>
             </div>
             
@@ -111,7 +111,7 @@
             </div>
 
             <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-                <button class="btn-seletor ativo" id="btn-pix" onclick="setPagamento('Pix')">Pix</button>
+                <button class="btn-seletor ativa" id="btn-pix" onclick="setPagamento('Pix')">Pix</button>
                 <button class="btn-seletor" id="btn-cartao" onclick="setPagamento('Cartão')">Cartão</button>
                 <button class="btn-seletor" id="btn-link" onclick="setPagamento('Link de Pagamento')">Link de Pagamento</button>
             </div>
@@ -120,7 +120,7 @@
                 TOTAL: <span id="total-val" style="color:var(--rosa-botao)">R$ 0,00</span>
                 <span id="label-taxa" class="aviso-taxa">Envie o pedido para consultar taxa de entrega</span>
             </div>
-            <button class="btn-finalizar" onclick="gerarWhatsApp()">Fazer Pedido / Reservar</button>
+            <button class="btn-finalizar" id="btn-fazer-pedido" onclick="gerarWhatsApp()">Fazer Pedido / Reservar</button>
         </div>
     </div>
 
@@ -213,8 +213,8 @@
 
     function setMetodo(tipo) {
         metodoEscolhido = tipo;
-        document.getElementById('btn-entrega').classList.toggle('ativo', tipo === 'Entrega');
-        document.getElementById('btn-retirar').classList.toggle('ativo', tipo === 'Retirada');
+        document.getElementById('btn-entrega').classList.toggle('ativa', tipo === 'Entrega');
+        document.getElementById('btn-retirar').classList.toggle('ativa', tipo === 'Retirada');
         document.getElementById('campos-endereco').style.display = tipo === 'Entrega' ? 'grid' : 'none';
         document.getElementById('info-retirada').style.display = tipo === 'Retirada' ? 'block' : 'none';
         document.getElementById('label-taxa').style.display = tipo === 'Entrega' ? 'block' : 'none';
@@ -222,9 +222,9 @@
 
     function setPagamento(tipo) {
         pagamentoEscolhido = tipo;
-        document.getElementById('btn-pix').classList.toggle('ativo', tipo === 'Pix');
-        document.getElementById('btn-cartao').classList.toggle('ativo', tipo === 'Cartão');
-        document.getElementById('btn-link').classList.toggle('ativo', tipo === 'Link de Pagamento');
+        document.getElementById('btn-pix').classList.toggle('ativa', tipo === 'Pix');
+        document.getElementById('btn-cartao').classList.toggle('ativa', tipo === 'Cartão');
+        document.getElementById('btn-link').classList.toggle('ativa', tipo === 'Link de Pagamento');
     }
 
     function atualizarInterface() {
@@ -242,11 +242,15 @@
     }
 
     async function gerarWhatsApp() {
+        const btn = document.getElementById('btn-fazer-pedido');
         const nome = document.getElementById('nome-cliente').value;
         const zap = document.getElementById('whatsapp-input').value;
-        if(!nome || !zap) return alert("Preencha nome e WhatsApp.");
         
+        if(!nome || !zap) return alert("Preencha seu nome e WhatsApp.");
+        if(zap.length < 10) return alert("WhatsApp inválido.");
+
         let itensZap = "";
+        let resumoBanco = "";
         let temItens = false;
         let possuiReserva = false;
 
@@ -256,13 +260,13 @@
                 const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
                 const estoque = b.quantidade || 0;
                 
-                // Lógica de identificação de reserva por item
                 if(meuCarrinho[i] > estoque) {
                     possuiReserva = true;
                     itensZap += `${meuCarrinho[i]}x ${b.nome} [RESERVA] (${calda})\n`;
                 } else {
                     itensZap += `${meuCarrinho[i]}x ${b.nome} [PRONTA] (${calda})\n`;
                 }
+                resumoBanco += `${meuCarrinho[i]}x ${b.nome} (${calda}); `;
             }
         });
 
@@ -276,25 +280,29 @@
                          `${metodoEscolhido === 'Entrega' ? `*END:* ${document.getElementById('rua-numero').value}, ${document.getElementById('bairro').value}\n` : ''}` +
                          `*PAGAMENTO:* ${pagamentoEscolhido}`;
 
-        // SALVAMENTO OBRIGATÓRIO NO BANCO ANTES DO WHATSAPP
+        btn.innerText = "Conectando...";
+        btn.disabled = true;
+
         const statusBanco = possuiReserva ? "Reserva" : "Novo";
+        
         try {
             const { error } = await _supa.from('pedidos').insert([{
                 nome: nome,
                 telefone: zap,
-                itens: msgFinal,
+                itens: resumoBanco, 
                 status: statusBanco
             }]);
             
             if (error) throw error;
 
-            // Se salvou com sucesso, abre o WhatsApp
             window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msgFinal)}`, '_blank');
-            alert("Pedido registrado com sucesso! Verifique seu WhatsApp.");
             
         } catch (e) { 
-            console.error("Erro ao salvar pedido:", e); 
-            alert("Erro ao conectar com o servidor. Verifique sua internet.");
+            console.error("Erro no Supabase:", e); 
+            alert("Erro ao conectar com o servidor. Verifique sua internet ou tente novamente em instantes.");
+        } finally {
+            btn.innerText = "Fazer Pedido / Reservar";
+            btn.disabled = false;
         }
     }
 
