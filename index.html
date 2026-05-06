@@ -3,22 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mii Cakes - Fatias Premium</title>
+    <title>Mii Cakes - Vitrine Premium</title>
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        :root { --rosa-topo: #ff69b4; --rosa-fundo: #fff0f5; --rosa-botao: #ff4081; --marrom: #5d4037; }
-        body { font-family: 'Montserrat', sans-serif; background-color: var(--rosa-fundo); margin: 0; padding-bottom: 50px; color: var(--marrom); }
+        :root { 
+            --rosa-topo: #ff69b4; 
+            --rosa-fundo: #fff0f5; 
+            --rosa-botao: #ff4081; 
+            --marrom: #5d4037; 
+            --cinza-borda: #eee;
+        }
+
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--rosa-fundo); 
+            margin: 0; 
+            padding-bottom: 50px; 
+            color: var(--marrom); 
+            overflow-x: hidden;
+        }
         
-        header { background-color: var(--rosa-topo); color: white; text-align: center; padding: 30px 10px; }
+        header { background-color: var(--rosa-topo); color: white; text-align: center; padding: 30px 10px; position: relative; }
         header h1 { margin: 0; font-family: 'Great Vibes', cursive; font-size: 3.5rem; font-weight: normal; }
         .subtitulo { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 3px; margin-top: 5px; opacity: 0.9; }
         .preco-tag { font-weight: 600; font-size: 1rem; display: block; margin: 10px auto; background: rgba(0,0,0,0.1); padding: 5px 20px; border-radius: 20px; width: fit-content; }
-        /* Ajuste do Link de Bastidores */
-        .btn-bastidores { background: white; color: var(--rosa-topo); border: none; padding: 8px 15px; border-radius: 15px; font-weight: 600; font-size: 0.65rem; text-transform: uppercase; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); cursor: pointer; }
+        
+        .btn-nav { 
+            background: white; color: var(--rosa-topo); border: none; 
+            padding: 10px 20px; border-radius: 20px; font-weight: 600; 
+            font-size: 0.7rem; text-transform: uppercase; cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: 0.3s;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-nav:hover { transform: scale(1.05); }
 
         .container { max-width: 1000px; margin: auto; padding: 20px; }
+        
+        .tela { display: none; }
+        .tela.ativa { display: block; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
         .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; }
         .img-container { width: 90%; height: 180px; margin: 10px auto; border-radius: 10px; overflow: hidden; position: relative; }
@@ -32,106 +58,164 @@
         .btn-circular { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; }
         .select-calda { width: 85%; padding: 6px; border-radius: 8px; border: 1px solid #eee; font-size: 0.7rem; color: #666; background: #fafafa; }
 
-        .checkout-box { background: white; border-radius: 15px; padding: 25px; max-width: 700px; margin: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        .checkout-box h3 { text-align: center; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 0; }
-        .resumo-texto { border-left: 3px solid var(--rosa-topo); padding-left: 15px; color: #888; font-size: 0.8rem; margin: 15px 0; min-height: 20px; }
-
+        .checkout-box { background: white; border-radius: 15px; padding: 25px; max-width: 700px; margin: 20px auto; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .checkout-box h3 { text-align: center; text-transform: uppercase; letter-spacing: 2px; font-size: 1.1rem; margin-top: 0; }
+        .resumo-lista { font-size: 0.85rem; margin-bottom: 20px; border-left: 3px solid var(--rosa-topo); padding-left: 15px; color: #666; }
         .input-padrao { width: 100%; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 12px; font-family: 'Montserrat'; box-sizing: border-box; background: #fafafa; font-size: 0.85rem; }
+        .seletor-grupo { display: flex; gap: 10px; margin-bottom: 12px; }
+        .btn-seletor { flex: 1; padding: 12px; border: 2px solid var(--cinza-borda); border-radius: 12px; background: white; color: #888; font-weight: 600; font-size: 0.75rem; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .btn-seletor.ativo { border-color: var(--rosa-topo); color: var(--rosa-topo); background: #fff0f5; }
+        
+        .grid-entrega { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+        .info-retirada { background: #fff9c4; padding: 15px; border-radius: 12px; font-size: 0.8rem; margin-bottom: 12px; border: 1px solid #fbc02d; line-height: 1.4; }
+        
+        .total-display { text-align: center; font-weight: bold; font-size: 1.4rem; margin: 20px 0; border-top: 1px dashed #eee; padding-top: 15px; }
+        .obs-taxa { display: block; color: var(--rosa-botao); font-size: 0.7rem; font-weight: normal; margin-top: 5px; font-style: italic; }
+        .btn-finalizar { background: var(--marrom); color: white; border: none; padding: 18px; border-radius: 12px; width: 100%; font-weight: bold; text-transform: uppercase; cursor: pointer; letter-spacing: 1px; font-size: 1rem; }
 
-        .botoes-metodo { display: flex; gap: 10px; margin-bottom: 15px; }
-        .btn-opcao { flex: 1; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; text-align: center; cursor: pointer; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #aaa; }
-        .btn-opcao.ativo { border-color: var(--rosa-topo); color: var(--rosa-topo); background: #fff5f8; }
-
-        .form-entrega-grid { display: flex; gap: 10px; margin-bottom: 15px; }
-        .aviso-retirada { background: #fff9c4; padding: 15px; border-radius: 8px; border: 1px solid #fbc02d; margin-bottom: 15px; font-size: 0.85rem; text-align: left; }
-
-        .pagamento-grid { display: flex; gap: 8px; margin-bottom: 20px; }
-        .btn-pag { flex: 1; padding: 10px; border: 1px solid #f0f0f0; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; background: white; text-align: center; }
-        .btn-pag.selecionado { background: var(--rosa-topo); color: white; border-color: var(--rosa-topo); }
-
-        .total-display { text-align: center; font-weight: bold; font-size: 1.2rem; margin: 20px 0; border-top: 1px dashed #eee; padding-top: 15px; }
-        .btn-finalizar { background: var(--marrom); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; text-transform: uppercase; cursor: pointer; letter-spacing: 1px; }
-        .msg-frete-alerta { font-size: 0.65rem; color: #d81b60; display: none; margin-top: 5px; font-style: italic; }
+        .bastidores-titulo { text-align: center; font-family: 'Great Vibes', cursive; font-size: 3rem; color: var(--rosa-topo); margin: 20px 0; }
+        .grid-bastidores { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .item-bastidor { background: #eee; border-radius: 15px; overflow: hidden; height: 300px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; }
+        .item-bastidor img, .item-bastidor video { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+        .play-hint { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; font-size: 0.6rem; padding: 3px 8px; border-radius: 10px; pointer-events: none; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>Mii Cakes</h1>
-    <div class="subtitulo">Fatias Fresquinhas</div>
+    <div class="subtitulo">Fatias Premium</div>
     <span class="preco-tag">R$ 18,00</span>
-    <!-- Link atualizado para o Instagram -->
-    <a href="https://www.instagram.com/fatiaqueromais" target="_blank" class="btn-bastidores">✨ Ver Bastidores</a>
+    <div style="margin-top: 15px;">
+        <button id="nav-btn" class="btn-nav" onclick="alternarTela()">✨ Ver Bastidores</button>
+    </div>
 </header>
 
 <div class="container">
-    <div id="vitrine" class="grid-fatias"></div>
-
-    <div class="checkout-box">
-        <h3>Resumo do Pedido</h3>
-        <div id="resumo-lista" class="resumo-texto">Escolha suas delícias acima.</div>
-
-        <input type="text" id="nome-cliente" class="input-padrao" placeholder="Seu Nome Completo">
-        <input type="tel" id="whatsapp-input" class="input-padrao" placeholder="Seu WhatsApp (Ex: 35 99999-9999)" maxlength="15">
-
-        <div class="botoes-metodo">
-            <div id="opt-entrega" class="btn-opcao" onclick="mudarMetodo('Entrega')">Entrega</div>
-            <div id="opt-retirada" class="btn-opcao" onclick="mudarMetodo('Retirar')">Retirar</div>
+    
+    <div id="tela-venda" class="tela ativa">
+        <div id="vitrine" class="grid-fatias">
+            <p style="text-align:center; grid-column: 1/-1;">Carregando vitrine...</p>
         </div>
 
-        <div id="campos-entrega" style="display:none;">
-            <div class="form-entrega-grid">
-                <input type="text" id="rua" class="input-padrao" style="flex: 2; margin-bottom: 0;" placeholder="Rua e número">
-                <input type="text" id="bairro" class="input-padrao" style="flex: 1; margin-bottom: 0;" placeholder="Bairro">
+        <div class="checkout-box">
+            <h3>Resumo do Pedido</h3>
+            <div id="resumo-lista" class="resumo-lista">Escolha suas delícias acima.</div>
+            
+            <input type="text" id="nome-cliente" class="input-padrao" placeholder="Seu Nome Completo">
+            
+            <!-- CAMPO DE WHATSAPP COM LIMITE DE NÚMEROS -->
+            <input type="tel" id="whatsapp-input" class="input-padrao" 
+                   placeholder="Seu WhatsApp (Somente números)" 
+                   maxlength="11" 
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            
+            <div class="seletor-grupo">
+                <button class="btn-seletor ativo" id="btn-entrega" onclick="setMetodo('Entrega')">Entrega</button>
+                <button class="btn-seletor" id="btn-retirar" onclick="setMetodo('Retirada')">Retirar</button>
             </div>
-        </div>
+            
+            <div id="campos-endereco" class="grid-entrega">
+                <input type="text" id="rua-numero" class="input-padrao" placeholder="Rua e número">
+                <input type="text" id="bairro" class="input-padrao" placeholder="Bairro">
+            </div>
 
-        <div id="campos-retirada" class="aviso-retirada" style="display:none;">
-            <strong>Local de Retirada:</strong><br>
-            Rua Maria Rodrigues Munis, nº 50, Bairro Rebourgeon
-        </div>
+            <div id="info-retirada" class="info-retirada" style="display:none;">
+                <strong>📍 Retirada:</strong> Rua Maria Rodrigues Munis, nº 50, Bairro Rebourgeon.
+            </div>
 
-        <div class="pagamento-grid">
-            <div class="btn-pag" id="pag-pix" onclick="escolherPag('Pix')">Pix</div>
-            <div class="btn-pag" id="pag-cartao" onclick="escolherPag('Cartão')">Cartão</div>
-            <div id="pag-link" class="btn-pag" onclick="escolherPag('Link de Pagamento')">Link de Pagamento</div>
-        </div>
+            <div class="seletor-grupo">
+                <button class="btn-seletor ativo" id="btn-pix" onclick="setPagamento('Pix')">Pix</button>
+                <button class="btn-seletor" id="btn-cartao" onclick="setPagamento('Cartão')">Cartão</button>
+                <button class="btn-seletor" id="btn-link" onclick="setPagamento('Link de Pagamento')">Link de Pagamento</button>
+            </div>
 
-        <div class="total-display">
-            TOTAL: <span id="total-val" style="color:var(--rosa-botao)">R$ 0,00</span>
-            <span id="alerta-frete" class="msg-frete-alerta">Envie o pedido para consultar taxa de entrega</span>
+            <div class="total-display">
+                TOTAL: <span id="total-val" style="color:var(--rosa-botao)">R$ 0,00</span>
+                <span id="aviso-taxa" class="obs-taxa">Envie o pedido para consultar taxa de entrega</span>
+            </div>
+            <button class="btn-finalizar" onclick="gerarWhatsApp()">Fazer Pedido</button>
         </div>
-
-        <button class="btn-finalizar" onclick="gerarWhatsApp()">Finalizar Pedido</button>
     </div>
+
+    <div id="tela-bastidores" class="tela">
+        <div class="bastidores-titulo">Nossos Bastidores ✨</div>
+        <div id="galeria-bastidores" class="grid-bastidores"></div>
+    </div>
+
 </div>
 
 <script>
-    // Configuração Supabase
+    const GITHUB_USER = "pedroatila123"; 
+    const GITHUB_REPO = "Estoque-de-Fatias"; 
+    const RAW_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/`;
+
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
     
     let listaBolos = [];
     let meuCarrinho = {};
-    let modoEntrega = "";
-    let modoPagamento = "";
+    let metodoEscolhido = 'Entrega';
+    let pagamentoEscolhido = 'Pix';
+    let telaAtual = 'venda';
+
+    function alternarTela() {
+        const btn = document.getElementById('nav-btn');
+        if(telaAtual === 'venda') {
+            document.getElementById('tela-venda').classList.remove('ativa');
+            document.getElementById('tela-bastidores').classList.add('ativa');
+            btn.innerHTML = "🍰 Voltar para a Loja";
+            telaAtual = 'bastidores';
+        } else {
+            document.getElementById('tela-bastidores').classList.remove('ativa');
+            document.getElementById('tela-venda').classList.add('ativa');
+            btn.innerHTML = "✨ Ver Bastidores";
+            telaAtual = 'venda';
+        }
+        window.scrollTo(0,0);
+    }
+
+    function carregarGaleria() {
+        const galeria = document.getElementById('galeria-bastidores');
+        let html = "";
+        for(let i=1; i<=15; i++) {
+            html += `
+                <div class="item-bastidor">
+                    <video loop muted playsinline onclick="this.paused ? this.play() : this.pause()">
+                        <source src="${RAW_URL}Video${i}.mp4" type="video/mp4">
+                    </video>
+                    <div class="play-hint">Clique para dar play</div>
+                </div>
+            `;
+        }
+        for(let i=1; i<=15; i++) {
+            html += `
+                <div class="item-bastidor">
+                    <img src="${RAW_URL}Bastidor${i}.jpg" onerror="this.parentElement.style.display='none'">
+                </div>
+            `;
+        }
+        galeria.innerHTML = html;
+    }
 
     async function carregarDados() {
-        const { data, error } = await _supa.from('estoque').select('*').order('nome');
+        const { data } = await _supa.from('estoque').select('*').order('nome');
         if (data) {
             listaBolos = data;
             renderizarVitrine();
         }
+        carregarGaleria();
     }
 
     function renderizarVitrine() {
-        document.getElementById('vitrine').innerHTML = listaBolos.map((b, i) => `
+        const vitrineDiv = document.getElementById('vitrine');
+        vitrineDiv.innerHTML = listaBolos.map((b, i) => `
             <div class="card-bolo">
                 <div class="img-container">
                     <div class="badge-reserva">Reserve Agora</div>
-                    <img src="${b.foto}">
+                    <img src="${b.foto || 'https://via.placeholder.com/150'}">
                 </div>
                 <div class="nome-produto">${b.nome}</div>
-                <div class="info-fornada">🧁 Próxima fornada: <b>Sábado</b></div>
+                <div class="info-fornada">🧁 Disponível: <b>${b.quantidade || 0} unid.</b></div>
                 <div class="controles">
                     <button class="btn-circular" onclick="ajustar(${i},-1)">-</button>
                     <span id="qtd-${i}" style="font-weight:bold;">${meuCarrinho[i] || 0}</span>
@@ -147,17 +231,6 @@
         `).join('');
     }
 
-    // Escuta mudanças no Admin em Tempo Real
-    _supa.channel('estoque_realtime')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'estoque' }, payload => {
-          const index = listaBolos.findIndex(item => item.id === payload.new.id);
-          if (index !== -1) {
-              listaBolos[index] = payload.new;
-              renderizarVitrine(); // Redesenha a vitrine sem perder os botões
-          }
-      })
-      .subscribe();
-
     function ajustar(i, v) {
         if(!meuCarrinho[i]) meuCarrinho[i] = 0;
         let novo = meuCarrinho[i] + v;
@@ -168,52 +241,63 @@
         }
     }
 
+    function setMetodo(tipo) {
+        metodoEscolhido = tipo;
+        document.getElementById('btn-entrega').classList.toggle('ativo', tipo === 'Entrega');
+        document.getElementById('btn-retirar').classList.toggle('ativo', tipo === 'Retirada');
+        document.getElementById('campos-endereco').style.display = tipo === 'Entrega' ? 'grid' : 'none';
+        document.getElementById('info-retirada').style.display = tipo === 'Retirada' ? 'block' : 'none';
+        document.getElementById('aviso-taxa').style.display = tipo === 'Entrega' ? 'block' : 'none';
+    }
+
+    function setPagamento(tipo) {
+        pagamentoEscolhido = tipo;
+        document.getElementById('btn-pix').classList.toggle('ativo', tipo === 'Pix');
+        document.getElementById('btn-cartao').classList.toggle('ativo', tipo === 'Cartão');
+        document.getElementById('btn-link').classList.toggle('ativo', tipo === 'Link de Pagamento');
+    }
+
     function atualizarInterface() {
-        let soma = 0; let lista = "";
+        let soma = 0; 
+        let listaHtml = "";
         listaBolos.forEach((b, i) => {
             if(meuCarrinho[i] > 0) {
                 const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
                 soma += meuCarrinho[i] * 18;
-                lista += `• ${meuCarrinho[i]}x ${b.nome} (${calda})<br>`;
+                listaHtml += `• ${meuCarrinho[i]}x ${b.nome} (${calda})<br>`;
             }
         });
-        document.getElementById('resumo-lista').innerHTML = lista || "Escolha suas delícias acima.";
+        document.getElementById('resumo-lista').innerHTML = listaHtml || "Escolha suas delícias acima.";
         document.getElementById('total-val').innerText = `R$ ${soma.toFixed(2).replace('.', ',')}`;
     }
 
-    function mudarMetodo(m) {
-        modoEntrega = m;
-        document.getElementById('opt-entrega').classList.toggle('ativo', m === 'Entrega');
-        document.getElementById('opt-retirada').classList.toggle('ativo', m === 'Retirar');
-        document.getElementById('campos-entrega').style.display = m === 'Entrega' ? 'block' : 'none';
-        document.getElementById('campos-retirada').style.display = m === 'Retirar' ? 'block' : 'none';
-        document.getElementById('alerta-frete').style.display = m === 'Entrega' ? 'block' : 'none';
-    }
-
-    function escolherPag(p) {
-        modoPagamento = p;
-        document.getElementById('pag-pix').classList.toggle('selecionado', p === 'Pix');
-        document.getElementById('pag-cartao').classList.toggle('selecionado', p === 'Cartão');
-        document.getElementById('pag-link').classList.toggle('selecionado', p === 'Link de Pagamento');
-    }
-
-    function gerarWhatsApp() {
+    async function gerarWhatsApp() {
         const nome = document.getElementById('nome-cliente').value;
-        if(!nome) return alert("Por favor, preencha seu nome.");
-        if(!modoEntrega || !modoPagamento) return alert("Selecione a forma de entrega e pagamento.");
-        
-        let m = `*PEDIDO MII CAKES*\n`;
-        m += `*Cliente:* ${nome}\n\n`;
+        const zap = document.getElementById('whatsapp-input').value;
+        if(!nome || !zap) return alert("Preencha nome e WhatsApp.");
+        if(zap.length < 10) return alert("Por favor, insira um número de WhatsApp válido.");
+
+        let itensZap = "";
+        let temItens = false;
         listaBolos.forEach((b, i) => {
             if(meuCarrinho[i] > 0) {
+                temItens = true;
                 const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
-                m += `${meuCarrinho[i]}x ${b.nome} (${calda})\n`;
+                itensZap += `${meuCarrinho[i]}x ${b.nome} (${calda})\n`;
             }
         });
-        m += `\n*Forma:* ${modoEntrega}\n*Pagamento:* ${modoPagamento}`;
-        if(modoEntrega === 'Entrega') m += `\n*Endereço:* ${document.getElementById('rua').value}, ${document.getElementById('bairro').value}`;
-        
-        window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(m)}`);
+
+        if(!temItens) return alert("Seu carrinho está vazio!");
+
+        const msgFinal = `*NOVO PEDIDO - MII CAKES*\n\n` +
+                         `*Cliente:* ${nome}\n` +
+                         `*WhatsApp:* ${zap}\n\n` +
+                         `*ITENS:*\n${itensZap}\n` +
+                         `*FORMA:* ${metodoEscolhido}\n` +
+                         `${metodoEscolhido === 'Entrega' ? `*END:* ${document.getElementById('rua-numero').value}, ${document.getElementById('bairro').value}\n` : ''}` +
+                         `*PAGAMENTO:* ${pagamentoEscolhido}`;
+
+        window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msgFinal)}`);
     }
 
     window.onload = carregarDados;
