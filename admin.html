@@ -52,18 +52,17 @@
 
     <h2>MII CAKES - ADMIN ELITE 🍰</h2>
 
-    <!-- Dashboard Financeiro Dinâmico -->
     <div id="painel-resumo">
         <div class="stat-card">
-            <span>Qtd Pedidos</span>
+            <span id="label-qtd">Qtd</span>
             <b id="stat-qtd">0</b>
         </div>
         <div class="stat-card">
-            <span>Total Aba</span>
+            <span id="label-total">Total Aba</span>
             <b id="stat-total">R$ 0,00</b>
         </div>
         <div class="stat-card">
-            <span>Falta Cobrar</span>
+            <span id="label-pendente">Falta Cobrar</span>
             <b id="stat-diferenca">R$ 0,00</b>
         </div>
     </div>
@@ -109,7 +108,7 @@
 
 <script>
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
-    let todosOsPedidos = []; // Cache para cálculos dinâmicos
+    let todosOsPedidos = [];
 
     function mudarAba(abaId, btn) {
         document.querySelectorAll('.secao').forEach(s => s.classList.remove('ativa'));
@@ -117,7 +116,6 @@
         document.getElementById('aba-' + abaId).classList.add('ativa');
         btn.classList.add('ativa');
 
-        // Lógica para mostrar/esconder o painel de resumo e atualizar os cálculos
         const painel = document.getElementById('painel-resumo');
         if (['novos', 'reservas', 'historico'].includes(abaId)) {
             painel.style.display = 'grid';
@@ -128,23 +126,26 @@
     }
 
     async function carregarTudo() {
-        const { data: pedidos } = await _supa.from('pedidos').select('*').order('created_at', { ascending: false });
-        const { data: estoque } = await _supa.from('estoque').select('*').order('nome');
+        const { data: pedidos, error: errP } = await _supa.from('pedidos').select('*').order('created_at', { ascending: false });
+        const { data: estoque, error: errE } = await _supa.from('estoque').select('*').order('nome');
 
+        if (errP) console.error("Erro Pedidos:", errP);
+        
         todosOsPedidos = pedidos || [];
         
-        // Atualiza a aba ativa no momento do carregamento
-        const abaAtiva = document.querySelector('.btn-aba.ativa').innerText.toLowerCase();
-        if (abaAtiva.includes('pedidos')) atualizarCalculosAba('novos');
-        else if (abaAtiva.includes('reservas')) atualizarCalculosAba('reservas');
-        else if (abaAtiva.includes('histórico')) atualizarCalculosAba('historico');
+        // Renderização corrigida com verificação de texto
+        const filtrar = (s) => todosOsPedidos.filter(p => (p.status || "").trim().toLowerCase() === s.toLowerCase());
 
-        const filtrar = (s) => todosOsPedidos.filter(p => (p.status || "").toLowerCase() === s.toLowerCase());
+        renderizarPedidos(filtrar('novo'), 'lista-novos', 'card-novo');
+        renderizarPedidos(filtrar('reserva'), 'lista-reservas', 'card-reserva');
+        renderizarPedidos(filtrar('desistiu'), 'lista-desistencias', 'card-desistiu');
+        renderizarPedidos(filtrar('finalizado'), 'lista-historico', '');
 
-        renderizarPedidos(filtrar('Novo'), 'lista-novos', 'card-novo');
-        renderizarPedidos(filtrar('Reserva'), 'lista-reservas', 'card-reserva');
-        renderizarPedidos(filtrar('Desistiu'), 'lista-desistencias', 'card-desistiu');
-        renderizarPedidos(filtrar('Finalizado'), 'lista-historico', '');
+        // Atualiza os cálculos da aba que estiver aberta agora
+        const btnAtivo = document.querySelector('.btn-aba.ativa').innerText;
+        if (btnAtivo === 'PEDIDOS') atualizarCalculosAba('novos');
+        else if (btnAtivo === 'RESERVAS') atualizarCalculosAba('reservas');
+        else if (btnAtivo === 'HISTÓRICO') atualizarCalculosAba('historico');
 
         if(estoque) {
             document.getElementById('corpo-estoque').innerHTML = estoque.map(i => `
@@ -158,22 +159,29 @@
     }
 
     function atualizarCalculosAba(abaId) {
-        let listaFiltrada = [];
-        
-        if (abaId === 'novos') listaFiltrada = todosOsPedidos.filter(p => p.status === 'Novo');
-        else if (abaId === 'reservas') listaFiltrada = todosOsPedidos.filter(p => p.status === 'Reserva');
-        else if (abaId === 'historico') listaFiltrada = todosOsPedidos.filter(p => p.status === 'Finalizado');
+        let lista = [];
+        if (abaId === 'novos') lista = todosOsPedidos.filter(p => (p.status || "").trim().toLowerCase() === 'novo');
+        else if (abaId === 'reservas') lista = todosOsPedidos.filter(p => (p.status || "").trim().toLowerCase() === 'reserva');
+        else if (abaId === 'historico') lista = todosOsPedidos.filter(p => (p.status || "").trim().toLowerCase() === 'finalizado');
 
-        const totalVendas = listaFiltrada.reduce((acc, p) => acc + Number(p.valor_total || 0), 0);
-        const totalPago = listaFiltrada.reduce((acc, p) => acc + Number(p.valor_pago || 0), 0);
+        const totalVendas = lista.reduce((acc, p) => acc + Number(p.valor_total || 0), 0);
+        const totalPago = lista.reduce((acc, p) => acc + Number(p.valor_pago || 0), 0);
         
-        document.getElementById('stat-qtd').innerText = listaFiltrada.length;
+        document.getElementById('stat-qtd').innerText = lista.length;
         document.getElementById('stat-total').innerText = `R$ ${totalVendas.toFixed(2)}`;
         document.getElementById('stat-diferenca').innerText = `R$ ${(totalVendas - totalPago).toFixed(2)}`;
     }
 
     function renderizarPedidos(lista, divId, classe) {
-        document.getElementById(divId).innerHTML = lista.map(p => {
+        const container = document.getElementById(divId);
+        if (!container) return;
+        
+        if (lista.length === 0) {
+            container.innerHTML = '<p style="text-align:center; font-size:0.7rem; color:#999;">Nenhum pedido aqui.</p>';
+            return;
+        }
+
+        container.innerHTML = lista.map(p => {
             const dif = Number(p.valor_total || 0) - Number(p.valor_pago || 0);
             return `
             <div class="card ${classe}">
@@ -188,21 +196,20 @@
 
                 <div class="acoes-card">
                     <button class="btn-mini" style="background:#e8f5e9; color:#2e7d32;" onclick="window.open('https://wa.me/55${(p.telefone || '').replace(/\D/g,'')}')">WhatsApp</button>
-                    <button class="btn-mini" style="background:var(--marrom); color:white;" onclick="despacharPedido('${p.id}', '${p.itens}')">SAIU PARA ENTREGA 🛵</button>
+                    <button class="btn-mini" style="background:var(--marrom); color:white;" onclick="despacharPedido('${p.id}', '${p.itens}')">ENTREGUE 🛵</button>
                     <button class="btn-mini" style="background:#fff1f0; color:#cf1322;" onclick="atualizarStatus('${p.id}', 'Desistiu')">X</button>
                 </div>
             </div>
         `}).join('');
     }
 
+    async function atualizarStatus(id, status) {
+        await _supa.from('pedidos').update({ status }).eq('id', id);
+        carregarTudo();
+    }
+
     async function despacharPedido(id, itens) {
         await _supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id);
-        const { data: est } = await _supa.from('estoque').select('*');
-        for (let item of est) {
-            if (itens.includes(item.nome) && item.quantidade > 0) {
-                await _supa.from('estoque').update({ quantidade: item.quantidade - 1 }).eq('id', item.id);
-            }
-        }
         carregarTudo();
     }
 
@@ -215,11 +222,6 @@
             await _supa.from('estoque').update({ quantidade: q, dados_proximidade: d }).eq('id', id);
         }
         alert("Estoque atualizado!");
-    }
-
-    async function atualizarStatus(id, status) {
-        await _supa.from('pedidos').update({ status }).eq('id', id);
-        carregarTudo();
     }
 
     window.onload = carregarTudo;
