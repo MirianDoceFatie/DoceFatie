@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --primary: #d63384; --primary-light: #fce4ec;
+            --primary: #ff69b4; --primary-dark: #ff4081; --primary-light: #fce4ec;
             --secondary: #5d4037; --bg: #f8f9fa;
             --white: #ffffff; --text: #2d3436;
             --success: #27ae60; --warning: #f39c12; --danger: #e74c3c;
@@ -17,51 +17,72 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; color: var(--text); }
         header { background: var(--white); padding: 20px; text-align: center; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 1000; }
-        header h1 { margin: 0; font-size: 1.2rem; color: var(--secondary); text-transform: uppercase; }
+        header h1 { margin: 0; font-size: 1.2rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 1px; }
         .container { padding: 15px; max-width: 800px; margin: 0 auto; }
         
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
         .stat-card { background: var(--white); padding: 15px; border-radius: 16px; box-shadow: var(--shadow); text-align: center; }
-        .stat-card b { display: block; font-size: 1rem; color: var(--primary); }
+        .stat-card span { font-size: 0.7rem; color: #888; text-transform: uppercase; font-weight: 700; }
+        .stat-card b { display: block; font-size: 0.9rem; color: var(--primary-dark); margin-top: 5px; }
         
-        .tabs-wrapper { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { padding: 10px 20px; border: none; background: var(--white); border-radius: 50px; font-weight: 600; font-size: 0.8rem; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .tabs-wrapper { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .tab-btn { padding: 10px 20px; border: none; background: var(--white); border-radius: 50px; font-weight: 600; font-size: 0.8rem; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: #666; }
         .tab-btn.active { background: var(--primary); color: var(--white); }
         
         .section { display: none; }
         .section.active { display: block; }
         
-        .order-card { background: var(--white); border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: var(--shadow); border-left: 6px solid #dfe6e9; }
+        /* Estilos dos Cards de Pedido */
+        .order-card { background: var(--white); border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: var(--shadow); border-left: 8px solid #dfe6e9; position: relative; }
         .card-pronta { border-left-color: var(--success); }
         .card-reserva { border-left-color: var(--warning); }
         
-        .items-box { background: #fdf2f7; border-radius: 12px; padding: 12px; font-size: 0.85rem; margin-bottom: 12px; white-space: pre-wrap; }
-        .finance-row { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 10px 0; border-top: 1px solid #f1f1f1; margin-top: 10px; }
+        .badge-reserva-alerta { 
+            background: var(--danger); color: white; padding: 5px 12px; 
+            border-radius: 8px; font-size: 0.75rem; font-weight: 900; 
+            text-transform: uppercase; position: absolute; top: 18px; right: 18px;
+            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .client-info { margin-bottom: 12px; }
+        .client-info strong { font-size: 1rem; color: var(--secondary); display: block; width: 70%; }
+        .client-address { font-size: 0.75rem; color: #777; display: block; margin-top: 4px; font-style: italic; }
+
+        .items-box { background: #fffafb; border: 1px solid #ffebf2; border-radius: 12px; padding: 12px; font-size: 0.85rem; margin-bottom: 12px; color: #555; line-height: 1.5; }
+        .finance-row { display: flex; justify-content: space-between; font-size: 0.8rem; padding-top: 10px; border-top: 1px dotted #eee; }
         
         .btn-group { display: flex; gap: 8px; margin-top: 15px; }
-        .btn { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 0.75rem; text-transform: uppercase; }
-        .btn-zap { background: #e8faf0; color: var(--success); }
-        .btn-done { background: var(--primary); color: var(--white); }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 0.75rem; text-transform: uppercase; transition: 0.2s; }
+        .btn-zap { background: #e8faf0; color: var(--success); text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; }
+        .btn-done { background: var(--secondary); color: var(--white); }
         
-        .input-std { width: 100%; padding: 12px; margin: 5px 0 15px; border-radius: 10px; border: 1px solid #ddd; }
+        .input-std { width: 100%; padding: 12px; margin: 5px 0 15px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit; }
         table { width: 100%; border-collapse: collapse; }
-        td { padding: 15px 10px; border-top: 1px solid #f8f9fa; }
+        td { padding: 12px 10px; border-top: 1px solid #f8f9fa; font-size: 0.85rem; }
+        .input-mini { width: 60px; padding: 8px; border-radius: 8px; border: 1px solid #ddd; text-align: center; }
     </style>
 </head>
 <body>
 
-    <header><h1>Mii Cakes - Gestão</h1></header>
+    <header><h1>Mii Cakes - Gestão Elite</h1></header>
 
     <div class="container">
         <div class="stats-grid">
             <div class="stat-card"><span>Ativos</span><b id="res-qtd">0</b></div>
-            <div class="stat-card"><span>Total</span><b id="res-total">R$ 0</b></div>
-            <div class="stat-card"><span>Falta</span><b id="res-falta">R$ 0</b></div>
+            <div class="stat-card"><span>Total Bruto</span><b id="res-total">R$ 0</b></div>
+            <div class="stat-card"><span>A Receber</span><b id="res-falta">R$ 0</b></div>
         </div>
 
         <div class="tabs-wrapper">
             <button class="tab-btn active" onclick="mudarAba('novos', this)">Pedidos</button>
-            <button class="tab-btn" onclick="mudarAba('reservas', this)">Reservas</button>
+            <button class="tab-btn" onclick="mudarAba('reservas', this)">Lista Reservas</button>
             <button class="tab-btn" onclick="mudarAba('estoque', this)">Estoque</button>
             <button class="tab-btn" onclick="mudarAba('festival', this)">Festival</button>
             <button class="tab-btn" onclick="mudarAba('historico', this)">Histórico</button>
@@ -73,8 +94,17 @@
 
         <div id="aba-estoque" class="section">
             <div style="background:white; padding:20px; border-radius:20px; box-shadow: var(--shadow);">
-                <button class="btn-done" style="width:100%; margin-bottom:15px;" onclick="salvarTodoEstoque()">💾 SALVAR TUDO</button>
-                <table><tbody id="corpo-estoque"></tbody></table>
+                <button class="btn-done" style="width:100%; margin-bottom:15px; background: var(--success);" onclick="salvarTodoEstoque()">💾 SALVAR TUDO</button>
+                <table>
+                    <thead>
+                        <tr style="font-size: 0.7rem; color: #888; text-transform: uppercase;">
+                            <th>Sabor</th>
+                            <th style="text-align: center;">Qtd</th>
+                            <th style="text-align: center;">Próx. Fornada</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpo-estoque"></tbody>
+                </table>
             </div>
         </div>
 
@@ -86,7 +116,7 @@
                     <div style="flex:1"><label>DATA</label><input type="text" id="f-data" class="input-std"></div>
                     <div style="flex:1"><label>HORÁRIO</label><input type="text" id="f-hora" class="input-std"></div>
                 </div>
-                <button class="btn-done" style="width:100%" onclick="salvarFestival()">💾 SALVAR CONFIGURAÇÃO</button>
+                <button class="btn-done" style="width:100%; background: var(--primary);" onclick="salvarFestival()">💾 ATUALIZAR VITRINE</button>
             </div>
         </div>
     </div>
@@ -99,68 +129,74 @@
         const { data: estoque } = await _supa.from('estoque').select('*').order('nome');
         const { data: config } = await _supa.from('config').select('*').eq('id', 1).single();
 
-        renderizarPedidos(pedidos || [], 'lista-novos', 'card-pronta', 'PRONTA');
-        renderizarPedidos(pedidos || [], 'lista-reservas', 'card-reserva', 'RESERVA');
-        renderizarPedidos(pedidos?.filter(p => p.status === 'Finalizado') || [], 'lista-historico', 'card-historico', 'HISTORICO');
+        // Aba Pedidos: Mostra tudo (Pronta entrega e os que têm reserva)
+        renderizarPedidos(pedidos || [], 'lista-novos', 'TUDO');
+        
+        // Aba Reservas: Mostra apenas quem tem pendência de produção
+        renderizarPedidos(pedidos || [], 'lista-reservas', 'SOMENTE_RESERVA');
+        
+        // Aba Histórico
+        renderizarPedidos(pedidos?.filter(p => p.status === 'Finalizado') || [], 'lista-historico', 'HISTORICO');
         
         if(estoque) renderEstoque(estoque);
         if(config) preencherFestival(config);
         atualizarResumo(pedidos || []);
     }
 
-    function renderizarPedidos(lista, divId, classeExtra, filtroInterno) {
+    function renderizarPedidos(lista, divId, modoFiltro) {
         const container = document.getElementById(divId);
+        
         const html = lista.map(p => {
-            if (p.status === 'Finalizado' || p.status === 'Desistiu') {
-                if (filtroInterno !== 'HISTORICO') return '';
-            } else {
-                const temReserva = p.itens && p.itens.includes('[RESERVA]');
-                if (filtroInterno === 'PRONTA' && temReserva) return '';
-                if (filtroInterno === 'RESERVA' && !temReserva) return '';
-            }
+            const isFinalizado = p.status === 'Finalizado' || p.status === 'Desistiu';
+            const temReserva = (p.status || '').toUpperCase().includes('RESERVA');
+
+            // Lógica de filtragem por aba
+            if (modoFiltro === 'HISTORICO' && !isFinalizado) return '';
+            if (modoFiltro !== 'HISTORICO' && isFinalizado) return '';
+            if (modoFiltro === 'SOMENTE_RESERVA' && !temReserva) return '';
+
+            // Definir classe de cor lateral
+            const classeCor = temReserva ? 'card-reserva' : 'card-pronta';
 
             return `
-                <div class="order-card ${classeExtra}">
-                    <strong>${p.nome || 'Cliente'}</strong><br>
-                    <small>📱 ${p.telefone || ''}</small>
+                <div class="order-card ${classeCor}">
+                    ${temReserva ? '<span class="badge-reserva-alerta">+ RESERVA</span>' : ''}
+                    <div class="client-info">
+                        <strong>${p.nome || 'Cliente'}</strong>
+                        <span class="client-address">📍 ${p.endereco || 'Retirada no Local'}</span>
+                        <small>📱 ${p.telefone || ''}</small>
+                    </div>
                     <div class="items-box">${(p.itens || '').replace(/\n/g, '<br>')}</div>
                     <div class="finance-row">
                         <span>Total: <b>R$ ${(p.valor_total || 0).toFixed(2)}</b></span>
-                        <span>Pago: <b>R$ ${(p.valor_pago || 0).toFixed(2)}</b></span>
+                        <span style="color: var(--success)">Sinal Pago: <b>R$ ${(p.valor_pago || 0).toFixed(2)}</b></span>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-zap" onclick="window.open('https://wa.me/55${p.telefone?.replace(/\D/g,'')}')">ZAP</button>
-                        ${p.status !== 'Finalizado' ? `<button class="btn btn-done" onclick="concluirPedido('${p.id}', '${encodeURIComponent(p.itens)}')">CONCLUIR</button>` : ''}
+                        <a class="btn btn-zap" href="https://wa.me/55${p.telefone?.replace(/\D/g,'')}" target="_blank">WHATSAPP</a>
+                        ${!isFinalizado ? `<button class="btn btn-done" onclick="concluirPedido('${p.id}')">CONCLUIR</button>` : ''}
                     </div>
                 </div>`;
         }).join('');
-        container.innerHTML = html || "<p style='text-align:center; opacity:0.5; padding:20px;'>Sem pedidos.</p>";
+        
+        container.innerHTML = html || "<p style='text-align:center; opacity:0.5; padding:20px; font-size:0.8rem;'>Nenhum pedido aqui.</p>";
     }
 
-    async function concluirPedido(id, itensCodificados) {
-        if(!confirm("Concluir e baixar estoque?")) return;
-        const itensTexto = decodeURIComponent(itensCodificados);
+    async function concluirPedido(id) {
+        if(!confirm("Deseja marcar como concluído?")) return;
         await _supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id);
-        
-        const linhas = itensTexto.split('\n');
-        const { data: est } = await _supa.from('estoque').select('*');
-        for (const linha of linhas) {
-            const match = linha.match(/(\d+)x\s+(.*?)\s+\[/);
-            if (match) {
-                const qtdVendida = parseInt(match[1]);
-                const sabor = match[2].trim();
-                const item = est.find(i => i.nome.trim() === sabor);
-                if (item) await _supa.from('estoque').update({ quantidade: item.quantidade - qtdVendida }).eq('id', item.id);
-            }
-        }
         carregarTudo();
     }
 
     function renderEstoque(estoque) {
         document.getElementById('corpo-estoque').innerHTML = estoque.map(i => `
             <tr class="linha-estoque" data-id="${i.id}">
-                <td style="font-weight:600;">${i.nome}</td>
-                <td style="text-align:right;"><input type="number" class="val-qtd" value="${i.quantidade}" style="width:60px; padding:8px; border-radius:8px; border:1px solid #ddd; text-align:center;"></td>
+                <td style="font-weight:600; color: var(--secondary);">${i.nome}</td>
+                <td style="text-align:center;">
+                    <input type="number" class="val-qtd input-mini" value="${i.quantidade}">
+                </td>
+                <td style="text-align:center;">
+                    <input type="text" class="val-data input-mini" style="width: 100px;" value="${i.dados_proximidade || ''}" placeholder="Ex: Terça">
+                </td>
             </tr>
         `).join('');
     }
@@ -170,9 +206,10 @@
         for (let linha of linhas) {
             const id = linha.getAttribute('data-id');
             const quantidade = linha.querySelector('.val-qtd').value;
-            await _supa.from('estoque').update({ quantidade }).eq('id', id);
+            const dados_proximidade = linha.querySelector('.val-data').value;
+            await _supa.from('estoque').update({ quantidade, dados_proximidade }).eq('id', id);
         }
-        alert("Estoque atualizado!");
+        alert("Salvo com sucesso!");
         carregarTudo();
     }
 
@@ -191,7 +228,7 @@
             festival_hora: document.getElementById('f-hora').value
         };
         await _supa.from('config').update(dados).eq('id', 1);
-        alert("Festival Atualizado!");
+        alert("Vitrine atualizada!");
     }
 
     function mudarAba(abaId, btn) {
