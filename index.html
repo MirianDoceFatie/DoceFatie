@@ -46,7 +46,7 @@
 
         .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; border: 1px solid var(--cinza-borda); }
-        .img-container { width: 90%; height: 180px; margin: 10px auto; border-radius: 10px; overflow: hidden; position: relative; }
+        .img-container { width: 90%; height: 180px; margin: 10px auto; border-radius: 10px; overflow: hidden; position: relative; background: #f9f9f9; }
         .img-container img { width: 100%; height: 100%; object-fit: cover; }
         .badge-reserva { position: absolute; top: 8px; left: 8px; color: white; padding: 4px 10px; border-radius: 10px; font-size: 0.55rem; font-weight: 600; text-transform: uppercase; z-index: 10; }
 
@@ -157,7 +157,9 @@
 
 <script>
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
-    const RAW_URL = `https://raw.githubusercontent.com/pedroatila123/Estoque-de-Fatias/main/`;
+    
+    // Link do seu GitHub (Ajustado para o seu repositório de fotos)
+    const RAW_URL = `https://raw.githubusercontent.com/MirianDoceFatie/DoceFatie/main/`;
     
     let listaBolos = [];
     let meuCarrinho = {};
@@ -198,13 +200,17 @@
         vitrineDiv.innerHTML = listaBolos.map((b, i) => {
             const estoque = b.quantidade || 0; 
             const temEstoque = estoque > 0;
+            
+            // LOGICA DA FOTO: Se tiver nome no banco, usa GitHub. Se não, usa placeholder.
+            const urlFoto = b.imagem_nome ? RAW_URL + b.imagem_nome : 'https://via.placeholder.com/300x300?text=Mii+Cakes';
+
             return `
             <div class="card-bolo">
                 <div class="img-container">
                     <div class="badge-reserva" style="background: ${temEstoque ? '#4CAF50' : '#FF9800'}">
                         ${temEstoque ? 'Pronta Entrega' : 'Reservar'}
                     </div>
-                    <img src="${b.foto || ''}" onerror="this.src='https://via.placeholder.com/150'">
+                    <img src="${urlFoto}" onerror="this.src='https://via.placeholder.com/300x300?text=Doce+Fatie'">
                 </div>
                 <div class="nome-produto">${b.nome}</div>
                 <div class="info-fornada">
@@ -268,10 +274,8 @@
                 const qReserva = Math.max(0, qtd - estoque);
 
                 totalProdutos += (qtd * 18);
-                
-                // Cálculo para o display de "Pagar Agora"
-                totalPagarAgora += (qPronta * 18); // Pronta entrega paga 100%
-                totalPagarAgora += (qReserva * 18 * garantiaPorcentagem); // Reserva paga conforme escolha
+                totalPagarAgora += (qPronta * 18); 
+                totalPagarAgora += (qReserva * 18 * garantiaPorcentagem); 
 
                 if(qReserva > 0) temReservaNoCarrinho = true;
                 listaHtml += `• ${qtd}x ${b.nome} (${calda})<br>`;
@@ -333,14 +337,12 @@
 
         try {
             const inserts = [];
-            // Inserção Pronta Entrega
             if(pEntregaBanco) {
                 inserts.push(_supa.from('pedidos').insert([{ 
                     nome, telefone: zap, itens: pEntregaBanco, status: 'Novo', 
                     valor_total: vProntaTotal, valor_pago: vProntaTotal 
                 }]));
             }
-            // Inserção Reserva
             if(pReservaBanco) {
                 inserts.push(_supa.from('pedidos').insert([{ 
                     nome, telefone: zap, itens: pReservaBanco, status: 'Reserva', 
@@ -350,7 +352,6 @@
 
             await Promise.all(inserts);
             
-            // Mensagem WhatsApp
             let msg = `*NOVO PEDIDO - MII CAKES*\n\n*Cliente:* ${nome}\n`;
             if(pEntregaZap) msg += `\n*PRONTA ENTREGA:*\n${pEntregaZap}`;
             if(pReservaZap) msg += `\n*RESERVAS:*\n${pReservaZap}`;
@@ -369,6 +370,7 @@
     function carregarGaleria() {
         const galeria = document.getElementById('galeria-bastidores');
         let html = "";
+        // Usando as fotos de bastidores do seu GitHub também
         for(let i=1; i<=6; i++) {
             html += `<div class="item-bastidor"><video loop muted playsinline onclick="this.paused ? this.play() : this.pause()"><source src="${RAW_URL}Video${i}.mp4" type="video/mp4"></video></div>`;
         }
