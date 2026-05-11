@@ -66,9 +66,19 @@
         .aviso-taxa { display: block; color: var(--rosa-botao); font-size: 0.75rem; font-weight: normal; margin-top: 8px; font-style: italic; }
         .btn-finalizar { background: var(--marrom); color: white; border: none; padding: 18px; border-radius: 12px; width: 100%; font-weight: bold; text-transform: uppercase; cursor: pointer; font-size: 1rem; }
 
-        .grid-bastidores { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-        .item-bastidor { background: #eee; border-radius: 15px; overflow: hidden; height: 300px; position: relative; }
+        /* Bastidores */
+        .grid-bastidores { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+        .item-bastidor { background: #ddd; border-radius: 12px; overflow: hidden; height: 250px; cursor: pointer; transition: 0.3s; }
+        .item-bastidor:hover { opacity: 0.8; }
         .item-bastidor img, .item-bastidor video { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Estilo do Modal (Foto Inteira) */
+        #modal-foto {
+            display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center;
+        }
+        #modal-foto img, #modal-foto video { max-width: 90%; max-height: 90%; border-radius: 10px; }
+        .fechar-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -131,6 +141,11 @@
 
 </div>
 
+<div id="modal-foto" onclick="fecharFoto()">
+    <span class="fechar-modal">&times;</span>
+    <div id="conteudo-modal" onclick="event.stopPropagation()"></div>
+</div>
+
 <script>
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
     const RAW_URL = `https://raw.githubusercontent.com/pedroatila123/Estoque-de-Fatias/main/`;
@@ -161,7 +176,7 @@
     }
 
     async function carregarDados() {
-        const { data } = await _supa.from('estoque').select('*').order('nome');
+        const { data, error } = await _supa.from('estoque').select('*').order('nome');
         if (data) {
             listaBolos = data;
             renderizarVitrine();
@@ -171,6 +186,10 @@
 
     function renderizarVitrine() {
         const vitrineDiv = document.getElementById('vitrine');
+        if(listaBolos.length === 0) {
+            vitrineDiv.innerHTML = "<p>Nenhuma fatia disponível no momento.</p>";
+            return;
+        }
         vitrineDiv.innerHTML = listaBolos.map((b, i) => {
             const estoque = b.quantidade || 0; 
             const temEstoque = estoque > 0;
@@ -211,6 +230,58 @@
         }
     }
 
+    function atualizarInterface() {
+        let soma = 0; 
+        let listaHtml = "";
+        listaBolos.forEach((b, i) => {
+            if(meuCarrinho[i] > 0) {
+                const caldaSelect = document.getElementById(`calda-${i}`);
+                const calda = caldaSelect ? caldaSelect.value || "Sem calda" : "Sem calda";
+                soma += meuCarrinho[i] * 18;
+                listaHtml += `• ${meuCarrinho[i]}x ${b.nome} (${calda})<br>`;
+            }
+        });
+        document.getElementById('resumo-lista').innerHTML = listaHtml || "Escolha suas delícias acima.";
+        document.getElementById('total-val').innerText = `R$ ${soma.toFixed(2).replace('.', ',')}`;
+    }
+
+    // Funções do Modal de Bastidores
+    function verFoto(src, tipo) {
+        const modal = document.getElementById('modal-foto');
+        const conteudo = document.getElementById('conteudo-modal');
+        if(tipo === 'video') {
+            conteudo.innerHTML = `<video controls autoplay><source src="${src}" type="video/mp4"></video>`;
+        } else {
+            conteudo.innerHTML = `<img src="${src}">`;
+        }
+        modal.style.display = 'flex';
+    }
+
+    function fecharFoto() {
+        document.getElementById('modal-foto').style.display = 'none';
+        document.getElementById('conteudo-modal').innerHTML = '';
+    }
+
+    function carregarGaleria() {
+        const galeria = document.getElementById('galeria-bastidores');
+        let html = "";
+        // Vídeos 1 a 6
+        for(let i=1; i<=6; i++) {
+            const videoSrc = `${RAW_URL}Video${i}.mp4`;
+            html += `<div class="item-bastidor" onclick="verFoto('${videoSrc}', 'video')">
+                        <video muted playsinline><source src="${videoSrc}" type="video/mp4"></video>
+                     </div>`;
+        }
+        // Fotos 1 a 6
+        for(let i=1; i<=6; i++) {
+            const imgSrc = `${RAW_URL}Bastidor${i}.jpg`;
+            html += `<div class="item-bastidor" onclick="verFoto('${imgSrc}', 'foto')">
+                        <img src="${imgSrc}" onerror="this.parentElement.style.display='none'">
+                     </div>`;
+        }
+        galeria.innerHTML = html;
+    }
+
     function setMetodo(tipo) {
         metodoEscolhido = tipo;
         document.getElementById('btn-entrega').classList.toggle('ativo', tipo === 'Entrega');
@@ -225,20 +296,6 @@
         document.getElementById('btn-pix').classList.toggle('ativo', tipo === 'Pix');
         document.getElementById('btn-cartao').classList.toggle('ativo', tipo === 'Cartão');
         document.getElementById('btn-link').classList.toggle('ativo', tipo === 'Link de Pagamento');
-    }
-
-    function atualizarInterface() {
-        let soma = 0; 
-        let listaHtml = "";
-        listaBolos.forEach((b, i) => {
-            if(meuCarrinho[i] > 0) {
-                const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
-                soma += meuCarrinho[i] * 18;
-                listaHtml += `• ${meuCarrinho[i]}x ${b.nome} (${calda})<br>`;
-            }
-        });
-        document.getElementById('resumo-lista').innerHTML = listaHtml || "Escolha suas delícias acima.";
-        document.getElementById('total-val').innerText = `R$ ${soma.toFixed(2).replace('.', ',')}`;
     }
 
     async function gerarWhatsApp() {
@@ -256,9 +313,7 @@
                 const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
                 const estoque = b.quantidade || 0;
                 const status = estoque > 0 ? "[PRONTA]" : "[RESERVA]";
-                
-                if(estoque <= 0) possuiReserva = true; 
-
+                if(estoque <= 0) possuiReserva = true;
                 itensZap += `${meuCarrinho[i]}x ${b.nome} ${status} (${calda})\n`;
             }
         });
@@ -284,48 +339,6 @@
         } catch (e) { console.error("Erro ao salvar pedido"); }
 
         window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msgFinal)}`);
-    }
-
-    // NOVA FUNÇÃO DE GALERIA INTELIGENTE
-    async function carregarGaleria() {
-        const galeria = document.getElementById('galeria-bastidores');
-        galeria.innerHTML = ""; 
-
-        // Função interna para checar se o arquivo existe no GitHub
-        const verificarArquivo = async (url) => {
-            try {
-                const response = await fetch(url, { method: 'HEAD' });
-                return response.ok;
-            } catch (e) {
-                return false;
-            }
-        };
-
-        // Testar e carregar Vídeos (de 1 a 10)
-        for (let i = 1; i <= 10; i++) {
-            const urlVideo = `${RAW_URL}Video${i}.mp4`;
-            const existe = await verificarArquivo(urlVideo);
-            if (existe) {
-                galeria.innerHTML += `
-                    <div class="item-bastidor">
-                        <video loop muted playsinline onclick="this.paused ? this.play() : this.pause()">
-                            <source src="${urlVideo}" type="video/mp4">
-                        </video>
-                    </div>`;
-            }
-        }
-
-        // Testar e carregar Fotos (de 1 a 10)
-        for (let i = 1; i <= 10; i++) {
-            const urlFoto = `${RAW_URL}Bastidor${i}.jpg`;
-            const existe = await verificarArquivo(urlFoto);
-            if (existe) {
-                galeria.innerHTML += `
-                    <div class="item-bastidor">
-                        <img src="${urlFoto}">
-                    </div>`;
-            }
-        }
     }
 
     window.onload = carregarDados;
