@@ -42,9 +42,9 @@
         .container { max-width: 1000px; margin: auto; padding: 20px; }
         .tela { display: none; }
         .tela.ativa { display: block; animation: fadeIn 0.4s ease-in-out; }
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Vitrine */
         .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; border: 1px solid var(--cinza-borda); }
         .img-container { width: 90%; height: 180px; margin: 10px auto; border-radius: 10px; overflow: hidden; position: relative; background: #f9f9f9; }
@@ -56,4 +56,337 @@
         
         .controles { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; }
         .btn-circular { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; }
-        .select-calda { width: 85%; padding: 6px; border-radius: 8px; border: 1px solid #eee; font-size: 0.7rem; color: #666;
+        .select-calda { width: 85%; padding: 6px; border-radius: 8px; border: 1px solid #eee; font-size: 0.7rem; color: #666; background: #fafafa; }
+
+        .checkout-box { background: white; border-radius: 15px; padding: 25px; max-width: 700px; margin: 20px auto; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .resumo-lista { font-size: 0.85rem; margin-bottom: 20px; border-left: 3px solid var(--rosa-topo); padding-left: 15px; color: #666; text-align: left; }
+        
+        .input-padrao { width: 100%; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 12px; font-family: 'Montserrat'; box-sizing: border-box; background: #fafafa; font-size: 0.85rem; }
+        .btn-seletor { flex: 1; padding: 12px; border: 2px solid var(--cinza-borda); border-radius: 12px; background: white; color: #888; font-weight: 600; font-size: 0.75rem; cursor: pointer; }
+        .btn-seletor.ativa { border-color: var(--rosa-topo); color: var(--rosa-topo); background: #fff0f5; }
+
+        #secao-garantia { background: #fff4f4; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #ffcccc; display: none; }
+        .opcao-garantia { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer; text-align: left; }
+        .risco-aviso { color: var(--rosa-botao); font-size: 0.7rem; font-weight: bold; display: block; margin-top: 3px; }
+        
+        .total-display { text-align: center; font-weight: bold; font-size: 1.4rem; margin: 20px 0; border-top: 1px dashed #eee; padding-top: 15px; }
+        .aviso-taxa { display: block; color: var(--rosa-botao); font-size: 0.75rem; font-weight: normal; margin-top: 8px; font-style: italic; }
+        .btn-finalizar { background: var(--marrom); color: white; border: none; padding: 18px; border-radius: 12px; width: 100%; font-weight: bold; text-transform: uppercase; cursor: pointer; font-size: 1rem; }
+
+        .grid-bastidores { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .item-bastidor { background: #eee; border-radius: 15px; overflow: hidden; height: 300px; position: relative; }
+        .item-bastidor img, .item-bastidor video { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Mii Cakes</h1>
+    <div class="subtitulo">Fatias Premium</div>
+    <span class="preco-tag">R$ 18,00</span>
+    <div style="margin-top: 15px;">
+        <button id="nav-btn" class="btn-nav" onclick="alternarTela()">✨ Ver Bastidores</button>
+    </div>
+</header>
+
+<div class="container">
+    <div id="tela-venda" class="tela ativa">
+        <div id="vitrine" class="grid-fatias">
+            <p style="text-align:center; grid-column: 1/-1;">Carregando delícias...</p>
+        </div>
+
+        <div class="checkout-box">
+            <h3 style="text-align: center; text-transform: uppercase; font-size: 1.1rem;">Resumo do Pedido</h3>
+            <div id="resumo-lista" class="resumo-lista">Escolha suas delícias acima.</div>
+            
+            <input type="text" id="nome-cliente" class="input-padrao" placeholder="Seu Nome Completo">
+            <input type="tel" id="whatsapp-input" class="input-padrao" placeholder="Seu WhatsApp (Somente números)" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                <button class="btn-seletor ativa" id="btn-entrega" onclick="setMetodo('Entrega')">Entrega</button>
+                <button class="btn-seletor" id="btn-retirar" onclick="setMetodo('Retirada')">Retirar</button>
+            </div>
+            
+            <div id="campos-endereco" style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+                <input type="text" id="rua-numero" class="input-padrao" placeholder="Rua e número">
+                <input type="text" id="bairro" class="input-padrao" placeholder="Bairro">
+            </div>
+
+            <div id="info-retirada" style="display:none; background: #fff9c4; padding: 15px; border-radius: 12px; font-size: 0.8rem; margin-bottom: 12px; border: 1px solid #fbc02d;">
+                <strong>📍 Retirada:</strong> Rua Maria Rodrigues Munis, nº 50, Bairro Rebourgeon.
+            </div>
+
+            <div id="secao-garantia">
+                <p style="font-size: 0.8rem; font-weight: bold; margin-bottom: 10px;">🛡️ Garantia de Reserva:</p>
+                
+                <label class="opcao-garantia">
+                    <input type="radio" name="garantia" value="0.5" checked onchange="atualizarInterface()">
+                    <span style="font-size: 0.75rem;"><strong>Pagar 50% agora</strong><br>Garantia TOTAL de ter a sua fatia.</span>
+                </label>
+
+                <label class="opcao-garantia">
+                    <input type="radio" name="garantia" value="1" onchange="atualizarInterface()">
+                    <span style="font-size: 0.75rem;"><strong>Pagar 100% (Total)</strong><br>Reserva garantida e agilidade na entrega.</span>
+                </label>
+
+                <label class="opcao-garantia">
+                    <input type="radio" name="garantia" value="0" onchange="atualizarInterface()">
+                    <span style="font-size: 0.75rem;"><strong>Não pagar agora</strong><br>
+                        <span class="risco-aviso">⚠️ Você corre o risco de ficar sem a Fatia se o estoque acabar.</span>
+                    </span>
+                </label>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 12px; margin-top: 15px;">
+                <button class="btn-seletor ativa" id="btn-pix" onclick="setPagamento('Pix')">Pix</button>
+                <button class="btn-seletor" id="btn-cartao" onclick="setPagamento('Cartão')">Cartão</button>
+                <button class="btn-seletor" id="btn-link" onclick="setPagamento('Link')">Link</button>
+            </div>
+
+            <div class="total-display">
+                <div id="total-val">R$ 0,00</div>
+                <span id="label-taxa" class="aviso-taxa">Envie o pedido para consultar taxa de entrega</span>
+            </div>
+            <button class="btn-finalizar" id="btn-fazer-pedido" onclick="gerarWhatsApp()">Fazer Pedido / Reservar</button>
+        </div>
+    </div>
+
+    <div id="tela-bastidores" class="tela">
+        <h2 style="text-align:center; font-family:'Great Vibes'; font-size: 3rem; color: var(--rosa-topo);">Nossos Bastidores ✨</h2>
+        <div id="galeria-bastidores" class="grid-bastidores"></div>
+    </div>
+</div>
+
+<script>
+    // CONFIGURAÇÃO SUPABASE
+    const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
+    const RAW_URL = `https://raw.githubusercontent.com/MirianDoceFatie/DoceFatie/main/`;
+    
+    let listaBolos = [];
+    let meuCarrinho = {};
+    let metodoEscolhido = 'Entrega';
+    let pagamentoEscolhido = 'Pix';
+    let telaAtual = 'venda';
+
+    function alternarTela() {
+        const btn = document.getElementById('nav-btn');
+        const tVenda = document.getElementById('tela-venda');
+        const tBastidores = document.getElementById('tela-bastidores');
+        
+        if(telaAtual === 'venda') {
+            tVenda.classList.remove('ativa');
+            tBastidores.classList.add('ativa');
+            btn.innerHTML = "🍰 Voltar para a Loja";
+            telaAtual = 'bastidores';
+        } else {
+            tBastidores.classList.remove('ativa');
+            tVenda.classList.add('ativa');
+            btn.innerHTML = "✨ Ver Bastidores";
+            telaAtual = 'venda';
+        }
+        window.scrollTo(0,0);
+    }
+
+    async function carregarDados() {
+        try {
+            const { data, error } = await _supa.from('estoque').select('*').order('nome');
+            if (error) throw error;
+            if (data) {
+                listaBolos = data;
+                renderizarVitrine();
+            }
+        } catch (e) {
+            console.error("Erro Supabase:", e);
+            document.getElementById('vitrine').innerHTML = "<p>Erro ao carregar produtos. Verifique a conexão.</p>";
+        }
+        carregarGaleria();
+    }
+
+    function renderizarVitrine() {
+        const vitrineDiv = document.getElementById('vitrine');
+        if (listaBolos.length === 0) {
+            vitrineDiv.innerHTML = "<p>Nenhum produto disponível no momento.</p>";
+            return;
+        }
+
+        vitrineDiv.innerHTML = listaBolos.map((b, i) => {
+            const estoque = b.quantidade || 0; 
+            const temEstoque = estoque > 0;
+            const urlFoto = b.imagem_nome ? RAW_URL + b.imagem_nome : 'https://via.placeholder.com/300x300?text=Mii+Cakes';
+
+            return `
+            <div class="card-bolo">
+                <div class="img-container">
+                    <div class="badge-reserva" style="background: ${temEstoque ? '#4CAF50' : '#FF9800'}">
+                        ${temEstoque ? 'Pronta Entrega' : 'Reservar'}
+                    </div>
+                    <img src="${urlFoto}" onerror="this.src='https://via.placeholder.com/300x300?text=Doce+Fatie'">
+                </div>
+                <div class="nome-produto">${b.nome}</div>
+                <div class="info-fornada">
+                    ${temEstoque ? `🧁 Disponível: <b>${estoque} unid.</b>` : `🕒 Reservar para: <b>${b.dados_proximidade || 'Em breve'}</b>`}
+                </div>
+                <div class="controles">
+                    <button class="btn-circular" onclick="ajustar(${i},-1)">-</button>
+                    <span id="qtd-${i}" style="font-weight:bold;">${meuCarrinho[i] || 0}</span>
+                    <button class="btn-circular" onclick="ajustar(${i},1)">+</button>
+                </div>
+                <select id="calda-${i}" class="select-calda" onchange="atualizarInterface()">
+                    <option value="" disabled selected>Selecionar Calda</option>
+                    <option value="Sem calda">Sem calda</option>
+                    <option value="Chocolate">Chocolate</option>
+                    <option value="Ninho">Ninho</option>
+                </select>
+            </div>
+        `}).join('');
+    }
+
+    function ajustar(i, v) {
+        if(!meuCarrinho[i]) meuCarrinho[i] = 0;
+        let novo = meuCarrinho[i] + v;
+        if(novo >= 0) {
+            meuCarrinho[i] = novo;
+            document.getElementById(`qtd-${i}`).innerText = novo;
+            atualizarInterface();
+        }
+    }
+
+    function setMetodo(tipo) {
+        metodoEscolhido = tipo;
+        document.getElementById('btn-entrega').classList.toggle('ativa', tipo === 'Entrega');
+        document.getElementById('btn-retirar').classList.toggle('ativa', tipo === 'Retirada');
+        document.getElementById('campos-endereco').style.display = tipo === 'Entrega' ? 'grid' : 'none';
+        document.getElementById('info-retirada').style.display = tipo === 'Retirada' ? 'block' : 'none';
+        document.getElementById('label-taxa').style.display = tipo === 'Entrega' ? 'block' : 'none';
+    }
+
+    function setPagamento(tipo) {
+        pagamentoEscolhido = tipo;
+        document.getElementById('btn-pix').classList.toggle('ativa', tipo === 'Pix');
+        document.getElementById('btn-cartao').classList.toggle('ativa', tipo === 'Cartão');
+        document.getElementById('btn-link').classList.toggle('ativa', tipo === 'Link');
+    }
+
+    function atualizarInterface() {
+        let totalProdutos = 0; 
+        let totalPagarAgora = 0;
+        let listaHtml = "";
+        let temReservaNoCarrinho = false;
+        const garantiaPorcentagem = parseFloat(document.querySelector('input[name="garantia"]:checked')?.value || 0.5);
+
+        listaBolos.forEach((b, i) => {
+            if(meuCarrinho[i] > 0) {
+                const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
+                const estoque = b.quantidade || 0;
+                const qtd = meuCarrinho[i];
+                
+                const qPronta = Math.min(qtd, estoque);
+                const qReserva = Math.max(0, qtd - estoque);
+
+                totalProdutos += (qtd * 18);
+                totalPagarAgora += (qPronta * 18); 
+                totalPagarAgora += (qReserva * 18 * garantiaPorcentagem); 
+
+                if(qReserva > 0) temReservaNoCarrinho = true;
+                listaHtml += `• ${qtd}x ${b.nome} (${calda})<br>`;
+            }
+        });
+
+        document.getElementById('secao-garantia').style.display = temReservaNoCarrinho ? 'block' : 'none';
+        document.getElementById('resumo-lista').innerHTML = listaHtml || "Escolha suas delícias acima.";
+
+        const totalExibicao = document.getElementById('total-val');
+        if (temReservaNoCarrinho) {
+            totalExibicao.innerHTML = `
+                <div style="font-size: 0.8rem; color: #666; font-weight: normal;">Total do Pedido: R$ ${totalProdutos.toFixed(2).replace('.', ',')}</div>
+                <div style="color: var(--rosa-botao)">PAGAR AGORA: R$ ${totalPagarAgora.toFixed(2).replace('.', ',')}</div>
+            `;
+        } else {
+            totalExibicao.innerHTML = `<span style="color:var(--rosa-botao)">R$ ${totalProdutos.toFixed(2).replace('.', ',')}</span>`;
+        }
+    }
+
+    async function gerarWhatsApp() {
+        const btn = document.getElementById('btn-fazer-pedido');
+        const nome = document.getElementById('nome-cliente').value;
+        const zap = document.getElementById('whatsapp-input').value;
+        const endereco = document.getElementById('rua-numero').value;
+        const bairro = document.getElementById('bairro').value;
+        const garantiaPorcentagem = parseFloat(document.querySelector('input[name="garantia"]:checked')?.value || 0.5);
+        
+        if(!nome || !zap) return alert("Por favor, preencha nome e WhatsApp.");
+        if(metodoEscolhido === 'Entrega' && (!endereco || !bairro)) return alert("Preencha o endereço para entrega.");
+
+        let pEntregaZap = "", pReservaZap = "";
+        let vProntaTotal = 0, vReservaTotal = 0;
+
+        listaBolos.forEach((b, i) => {
+            if(meuCarrinho[i] > 0) {
+                const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
+                const estoque = b.quantidade || 0;
+                const qtd = meuCarrinho[i];
+                const qPronta = Math.min(qtd, estoque);
+                const qReserva = Math.max(0, qtd - estoque);
+
+                if(qPronta > 0) {
+                    pEntregaZap += `✅ ${qPronta}x ${b.nome} (${calda}) [PRONTA]\n`;
+                    vProntaTotal += (qPronta * 18);
+                }
+                if(qReserva > 0) {
+                    pReservaZap += `🕒 ${qReserva}x ${b.nome} (${calda}) [RESERVA]\n`;
+                    vReservaTotal += (qReserva * 18);
+                }
+            }
+        });
+
+        if(vProntaTotal + vReservaTotal === 0) return alert("Adicione pelo menos uma fatia!");
+
+        btn.innerText = "Processando...";
+        btn.disabled = true;
+
+        try {
+            // Montagem da Mensagem
+            let msg = `*NOVO PEDIDO - MII CAKES*\n\n`;
+            msg += `*Cliente:* ${nome}\n`;
+            if(pEntregaZap) msg += `\n*ITENS DISPONÍVEIS:*\n${pEntregaZap}`;
+            if(pReservaZap) msg += `\n*ITENS RESERVADOS:*\n${pReservaZap}`;
+            
+            msg += `\n*FORMA:* ${metodoEscolhido}`;
+            if(metodoEscolhido === 'Entrega') msg += `\n*ENDEREÇO:* ${endereco}, ${bairro}`;
+            
+            msg += `\n*PAGAMENTO:* ${pagamentoEscolhido}`;
+            
+            let totalGeral = vProntaTotal + vReservaTotal;
+            let totalPagarAgora = vProntaTotal + (vReservaTotal * garantiaPorcentagem);
+
+            msg += `\n\n*TOTAL GERAL:* R$ ${totalGeral.toFixed(2)}`;
+            msg += `\n*PAGAR AGORA:* R$ ${totalPagarAgora.toFixed(2)}`;
+
+            // Link do WhatsApp (Ajuste o número se necessário)
+            window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msg)}`, '_blank');
+        } catch (e) {
+            alert("Erro ao processar pedido.");
+        } finally {
+            btn.innerText = "Fazer Pedido / Reservar";
+            btn.disabled = false;
+        }
+    }
+
+    function carregarGaleria() {
+        const galeria = document.getElementById('galeria-bastidores');
+        let html = "";
+        // Vídeos de 1 a 3 (GitHub)
+        for(let i=1; i<=3; i++) {
+            html += `<div class="item-bastidor"><video loop muted playsinline onclick="this.paused ? this.play() : this.pause()"><source src="${RAW_URL}Video${i}.mp4" type="video/mp4"></video></div>`;
+        }
+        // Fotos de 1 a 6 (GitHub)
+        for(let i=1; i<=6; i++) {
+            html += `<div class="item-bastidor"><img src="${RAW_URL}Bastidor${i}.jpg" onerror="this.parentElement.style.display='none'"></div>`;
+        }
+        galeria.innerHTML = html;
+    }
+
+    window.onload = carregarDados;
+</script>
+</body>
+</html>
