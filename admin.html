@@ -13,40 +13,40 @@
         header { text-align: center; padding: 10px; }
         header h1 { color: var(--rosa-topo); text-transform: uppercase; font-size: 1.2rem; letter-spacing: 2px; }
         
-        /* Abas Estilizadas */
         .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; scrollbar-width: none; }
-        .tab-btn { padding: 12px 20px; border: none; background: white; border-radius: 50px; font-weight: bold; color: var(--rosa-topo); cursor: pointer; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .tab-btn { padding: 12px 20px; border: none; background: white; border-radius: 50px; font-weight: bold; color: var(--rosa-topo); cursor: pointer; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
         .tab-btn.active { background: var(--rosa-topo); color: white; }
 
         .section { display: none; }
         .section.active { display: block; }
 
-        /* Cards de Pedidos */
-        .card-pedido { background: white; border-radius: 15px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 8px solid #2ecc71; position: relative; }
+        .card-pedido { background: white; border-radius: 15px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 8px solid #2ecc71; position: relative; animation: slideIn 0.3s ease; }
         .card-pedido.is-reserva { border-left-color: #FF9800; }
-        .card-pedido.Finalizado { opacity: 0.6; filter: grayscale(0.8); }
+        
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 
         .badge { position: absolute; top: 15px; right: 15px; padding: 4px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 900; color: white; }
         .bg-reserva { background: #FF9800; }
         .bg-pronta { background: #2ecc71; }
 
-        .itens-box { background: #fffafb; border: 1px solid #ffebf2; border-radius: 10px; padding: 10px; font-size: 0.85rem; margin: 10px 0; white-space: pre-wrap; line-height: 1.4; }
-        
+        .itens-box { background: #fffafb; border: 1px solid #ffebf2; border-radius: 10px; padding: 10px; font-size: 0.85rem; margin: 10px 0; white-space: pre-wrap; }
         .btn-group { display: flex; gap: 8px; margin-top: 15px; }
         .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.7rem; text-transform: uppercase; }
         .btn-zap { background: #e8faf0; color: #27ae60; text-decoration: none; text-align: center; }
         .btn-concluir { background: var(--marrom); color: white; }
 
-        /* Tabela de Estoque */
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
-        th { font-size: 0.7rem; color: #888; padding: 10px; text-align: left; background: #fafafa; }
-        td { padding: 12px 10px; border-top: 1px solid #eee; font-size: 0.85rem; }
-        .input-mini { width: 55px; padding: 6px; border-radius: 5px; border: 1px solid #ddd; text-align: center; }
+        td, th { padding: 12px 10px; border-top: 1px solid #eee; font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
-<header><h1>Mii Cakes Admin</h1></header>
+<audio id="blip-som" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
+<header>
+    <h1>Mii Cakes Admin</h1>
+    <p id="status-update" style="font-size: 0.6rem; opacity: 0.5;">Atualizado agora</p>
+</header>
 
 <div class="tabs">
     <button class="tab-btn active" onclick="mudarAba('novos', this)">Novos 🍰</button>
@@ -61,9 +61,9 @@
 
 <div id="aba-estoque" class="section">
     <div style="background:white; padding:15px; border-radius:15px;">
-        <button class="btn" style="background:#2ecc71; color:white; width:100%; margin-bottom:15px; padding: 15px;" onclick="salvarEstoque()">💾 ATUALIZAR ESTOQUE</button>
+        <button class="btn" style="background:#2ecc71; color:white; width:100%; margin-bottom:15px;" onclick="salvarEstoque()">💾 Atualizar Estoque</button>
         <table>
-            <thead><tr><th>Sabor</th><th>Qtd</th><th>Próx. Fornada</th></tr></thead>
+            <thead><tr><th>Sabor</th><th>Qtd</th><th>Fornada</th></tr></thead>
             <tbody id="corpo-estoque"></tbody>
         </table>
     </div>
@@ -71,13 +71,33 @@
 
 <script>
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
+    let totalPedidosAntigo = 0;
 
     async function carregarTudo() {
         const { data: pedidos } = await _supa.from('pedidos').select('*').order('created_at', { ascending: false });
         const { data: estoque } = await _supa.from('estoque').select('*').order('nome');
 
-        renderizarPedidos(pedidos || []);
-        renderizarEstoque(estoque || []);
+        if (pedidos) {
+            // Se o número de pedidos aumentou, toca o blip
+            const pedidosAtivos = pedidos.filter(p => p.status !== 'Finalizado').length;
+            if (pedidosAtivos > totalPedidosAntigo && totalPedidosAntigo !== 0) {
+                document.getElementById('blip-som').play();
+            }
+            totalPedidosAntigo = pedidosAtivos;
+            renderizarPedidos(pedidos);
+        }
+        
+        if (estoque) renderizarEstoque(estoque);
+        document.getElementById('status-update').innerText = "Última atualização: " + new Date().toLocaleTimeString();
+    }
+
+    function filtrarItens(textoCompleto, tipo) {
+        const linhas = textoCompleto.split('\n');
+        if (tipo === 'PRONTA') {
+            return linhas.filter(l => l.includes('✅')).join('\n').trim();
+        } else {
+            return linhas.filter(l => l.includes('[RESERVA]')).join('\n').trim();
+        }
     }
 
     function renderizarPedidos(lista) {
@@ -85,52 +105,70 @@
         const cReservas = document.getElementById('lista-reservas');
         const cHist = document.getElementById('lista-historico');
         
-        let htmls = { novos: "", reservas: "", hist: "" };
+        let htmlNovos = "", htmlReservas = "", htmlHist = "";
 
         lista.forEach(p => {
-            const textoItens = (p.itens || '').toUpperCase();
-            const statusBanco = (p.status || '').toUpperCase();
-            
-            // Lógica: É reserva se tiver [RESERVA] no texto ou se o status for RESERVA
-            const ehReserva = textoItens.includes('RESERVA') || statusBanco === 'RESERVA';
-            const status = p.status || 'Novo';
-            
-            const card = `
-                <div class="card-pedido ${ehReserva ? 'is-reserva' : ''} ${status}">
-                    <span class="badge ${ehReserva ? 'bg-reserva' : 'bg-pronta'}">
-                        ${ehReserva ? '🕒 RESERVA' : '✅ PRONTA'}
-                    </span>
-                    <strong>${p.nome}</strong><br>
-                    <small>📍 ${p.tipo_entrega || 'Entrega'}: ${p.endereco || 'Retirada'}</small>
-                    <div class="itens-box">${p.itens}</div>
-                    <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
-                        <span>Total: <b>R$ ${Number(p.valor_total || 0).toFixed(2)}</b></span>
-                        <span style="color:#888">Pagto: ${p.metodo_pagamento || 'Pix'}</span>
-                    </div>
-                    <div class="btn-group">
-                        <a href="https://wa.me/55${p.telefone?.replace(/\D/g,'')}" target="_blank" class="btn btn-zap">WhatsApp</a>
-                        ${status !== 'Finalizado' ? `<button class="btn btn-concluir" onclick="finalizar(${p.id})">Concluir</button>` : ''}
-                    </div>
-                </div>`;
+            const textoOriginal = p.itens || "";
+            const status = p.status || "Novo";
 
-            if (status === 'Finalizado') htmls.hist += card;
-            else if (ehReserva) htmls.reservas += card;
-            else htmls.novos += card;
+            if (status === 'Finalizado') {
+                htmlHist += gerarCard(p, textoOriginal, false);
+                return;
+            }
+
+            const itensPronta = filtrarItens(textoOriginal, 'PRONTA');
+            const itensReserva = filtrarItens(textoOriginal, 'RESERVA');
+
+            // Se tiver itens de pronta entrega, vai pra aba "Novos"
+            if (itensPronta.length > 0) {
+                htmlNovos += gerarCard(p, itensPronta, false);
+            }
+
+            // Se tiver itens de reserva, vai pra aba "Reservas"
+            if (itensReserva.length > 0) {
+                htmlReservas += gerarCard(p, itensReserva, true);
+            }
         });
 
-        cNovos.innerHTML = htmls.novos || "<p style='text-align:center; padding:20px; opacity:0.5;'>Nenhum novo pedido pronta entrega.</p>";
-        cReservas.innerHTML = htmls.reservas || "<p style='text-align:center; padding:20px; opacity:0.5;'>Nenhuma reserva pendente.</p>";
-        cHist.innerHTML = htmls.hist || "<p style='text-align:center; padding:20px; opacity:0.5;'>Nenhum histórico.</p>";
+        cNovos.innerHTML = htmlNovos || "<p style='text-align:center; opacity:0.5;'>Sem pedidos para hoje.</p>";
+        cReservas.innerHTML = htmlReservas || "<p style='text-align:center; opacity:0.5;'>Sem reservas pendentes.</p>";
+        cHist.innerHTML = htmlHist || "<p style='text-align:center; opacity:0.5;'>Histórico vazio.</p>";
+    }
+
+    function gerarCard(p, itensFiltrados, ehReserva) {
+        return `
+            <div class="card-pedido ${ehReserva ? 'is-reserva' : ''}">
+                <span class="badge ${ehReserva ? 'bg-reserva' : 'bg-pronta'}">
+                    ${ehReserva ? '🕒 RESERVA' : '✅ PRONTA'}
+                </span>
+                <strong>${p.nome}</strong><br>
+                <small>📍 ${p.endereco || 'Retirada'}</small>
+                <div class="itens-box">${itensFiltrados}</div>
+                <div style="font-size:0.8rem; margin-bottom:10px;">
+                    Total: <b>R$ ${Number(p.valor_total).toFixed(2)}</b> | ${p.metodo_pagamento || 'Pix'}
+                </div>
+                <div class="btn-group">
+                    <a href="https://wa.me/55${p.telefone?.replace(/\D/g,'')}" target="_blank" class="btn btn-zap">WhatsApp</a>
+                    <button class="btn btn-concluir" onclick="finalizar(${p.id})">OK</button>
+                </div>
+            </div>`;
     }
 
     function renderizarEstoque(estoque) {
         document.getElementById('corpo-estoque').innerHTML = estoque.map(i => `
             <tr class="linha-est" data-id="${i.id}">
-                <td><strong>${i.nome}</strong></td>
-                <td><input type="number" class="input-mini qtd" value="${i.quantidade || 0}"></td>
-                <td><input type="text" class="input-mini data" style="width:100px" value="${i.dados_proximidade || ''}"></td>
+                <td>${i.nome}</td>
+                <td><input type="number" class="qtd" value="${i.quantidade || 0}" style="width:40px"></td>
+                <td><input type="text" class="data" value="${i.dados_proximidade || ''}" style="width:80px"></td>
             </tr>
         `).join('');
+    }
+
+    async function finalizar(id) {
+        if(confirm("Pedido entregue/finalizado?")) {
+            await _supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id);
+            carregarTudo();
+        }
     }
 
     async function salvarEstoque() {
@@ -141,15 +179,7 @@
             const dados_proximidade = l.querySelector('.data').value;
             await _supa.from('estoque').update({ quantidade, dados_proximidade }).eq('id', id);
         }
-        alert("Estoque atualizado com sucesso!");
-        carregarTudo();
-    }
-
-    async function finalizar(id) {
-        if(confirm("Deseja concluir este pedido? ele irá para o histórico.")) {
-            await _supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id);
-            carregarTudo();
-        }
+        alert("Estoque atualizado!");
     }
 
     function mudarAba(id, btn) {
@@ -159,8 +189,8 @@
         btn.classList.add('active');
     }
 
-    // Recarrega a cada 30 segundos automaticamente
-    setInterval(carregarTudo, 30000);
+    // Atualiza a cada 15 segundos para garantir que você veja os pedidos novos rápido
+    setInterval(carregarTudo, 15000);
     window.onload = carregarTudo;
 </script>
 </body>
