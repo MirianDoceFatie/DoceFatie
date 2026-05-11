@@ -42,10 +42,9 @@
         .container { max-width: 1000px; margin: auto; padding: 20px; }
         .tela { display: none; }
         .tela.ativa { display: block; animation: fadeIn 0.4s ease-in-out; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* GRID VITRINE */
+        /* VITRINE */
         .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; border: 1px solid var(--cinza-borda); }
         .img-container { width: 90%; height: 180px; margin: 10px auto; border-radius: 10px; overflow: hidden; position: relative; background: #f9f9f9; }
@@ -54,86 +53,10 @@
 
         .nome-produto { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 10px 5px; height: 30px; display: flex; align-items: center; justify-content: center; }
         .info-fornada { font-size: 0.6rem; color: #888; margin-bottom: 10px; min-height: 15px; }
-        
         .controles { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; }
         .btn-circular { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; }
         .select-calda { width: 85%; padding: 6px; border-radius: 8px; border: 1px solid #eee; font-size: 0.7rem; color: #666; background: #fafafa; }
 
         /* CHECKOUT */
         .checkout-box { background: white; border-radius: 15px; padding: 25px; max-width: 700px; margin: 20px auto; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        .resumo-lista { font-size: 0.85rem; margin-bottom: 20px; border-left: 3px solid var(--rosa-topo); padding-left: 15px; color: #666; text-align: left; }
-        
-        .input-padrao { width: 100%; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 12px; font-family: 'Montserrat'; box-sizing: border-box; background: #fafafa; font-size: 0.85rem; }
-        .btn-seletor { flex: 1; padding: 12px; border: 2px solid var(--cinza-borda); border-radius: 12px; background: white; color: #888; font-weight: 600; font-size: 0.75rem; cursor: pointer; }
-        .btn-seletor.ativa { border-color: var(--rosa-topo); color: var(--rosa-topo); background: #fff0f5; }
-
-        #secao-garantia { background: #fff4f4; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #ffcccc; display: none; }
-        .opcao-garantia { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer; text-align: left; }
-        
-        .total-display { text-align: center; font-weight: bold; font-size: 1.4rem; margin: 20px 0; border-top: 1px dashed #eee; padding-top: 15px; }
-        .btn-finalizar { background: var(--marrom); color: white; border: none; padding: 18px; border-radius: 12px; width: 100%; font-weight: bold; text-transform: uppercase; cursor: pointer; font-size: 1rem; }
-
-        /* BASTIDORES */
-        .grid-bastidores { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-        .item-bastidor { display: none; background: #eee; border-radius: 15px; overflow: hidden; height: 300px; position: relative; }
-        .item-bastidor img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
-    </style>
-</head>
-<body>
-
-<header>
-    <h1>Mii Cakes</h1>
-    <div class="subtitulo">Fatias Premium</div>
-    <span class="preco-tag">R$ 18,00</span>
-    <div style="margin-top: 15px;">
-        <button id="nav-btn" class="btn-nav" onclick="alternarTela()">✨ Ver Bastidores</button>
-    </div>
-</header>
-
-<div class="container">
-    <div id="tela-venda" class="tela ativa">
-        <div id="vitrine" class="grid-fatias">
-            <p style="text-align:center; grid-column: 1/-1;">Carregando delícias...</p>
-        </div>
-
-        <div class="checkout-box">
-            <h3 style="text-align: center; text-transform: uppercase; font-size: 1.1rem;">Resumo do Pedido</h3>
-            <div id="resumo-lista" class="resumo-lista">Escolha suas delícias acima.</div>
-            
-            <input type="text" id="nome-cliente" class="input-padrao" placeholder="Seu Nome Completo">
-            <input type="tel" id="whatsapp-input" class="input-padrao" placeholder="Seu WhatsApp (Somente números)" maxlength="11">
-            
-            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-                <button class="btn-seletor ativa" id="btn-entrega" onclick="setMetodo('Entrega')">Entrega</button>
-                <button class="btn-seletor" id="btn-retirar" onclick="setMetodo('Retirada')">Retirar</button>
-            </div>
-            
-            <div id="campos-endereco" style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
-                <input type="text" id="rua-numero" class="input-padrao" placeholder="Rua e número">
-                <input type="text" id="bairro" class="input-padrao" placeholder="Bairro">
-            </div>
-
-            <div id="info-retirada" style="display:none; background: #fff9c4; padding: 15px; border-radius: 12px; font-size: 0.8rem; margin-bottom: 12px; border: 1px solid #fbc02d;">
-                <strong>📍 Retirada:</strong> Rua Maria Rodrigues Munis, nº 50, Bairro Rebourgeon.
-            </div>
-
-            <div id="secao-garantia">
-                <p style="font-size: 0.8rem; font-weight: bold; margin-bottom: 10px;">🛡️ Garantia de Reserva:</p>
-                <label class="opcao-garantia">
-                    <input type="radio" name="garantia" value="0.5" checked onchange="atualizarInterface()">
-                    <span style="font-size: 0.75rem;"><strong>Pagar 50% agora</strong><br>Garantia TOTAL de ter a sua fatia.</span>
-                </label>
-                <label class="opcao-garantia">
-                    <input type="radio" name="garantia" value="1" onchange="atualizarInterface()">
-                    <span style="font-size: 0.75rem;"><strong>Pagar 100% (Total)</strong><br>Reserva garantida e agilidade na entrega.</span>
-                </label>
-                <label class="opcao-garantia">
-                    <input type="radio" name="garantia" value="0" onchange="atualizarInterface()">
-                    <span style="font-size: 0.75rem;"><strong>Não pagar agora</strong><br><span style="color:var(--rosa-botao)">⚠️ Risco de ficar sem a Fatia.</span></span>
-                </label>
-            </div>
-
-            <div style="display: flex; gap: 10px; margin-bottom: 12px; margin-top: 15px;">
-                <button class="btn-seletor ativa" id="btn-pix" onclick="setPagamento('Pix')">Pix</button>
-                <button class="btn-seletor" id="btn-cartao" onclick="setPagamento('Cartão')">Cartão</button>
-                <button class="btn-seletor" id="btn-link" onclick="setPagamento('Link')">Link</
+        .resumo-lista { font-
