@@ -14,6 +14,7 @@
             --rosa-botao: #ff4081; 
             --marrom: #5d4037; 
             --cinza-borda: #eee;
+            --verde-sucesso: #2ecc71;
         }
 
         body { 
@@ -28,37 +29,54 @@
         header { background-color: var(--rosa-topo); color: white; text-align: center; padding: 30px 10px; position: relative; }
         header h1 { margin: 0; font-family: 'Great Vibes', cursive; font-size: 3.5rem; font-weight: normal; }
         .subtitulo { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 3px; margin-top: 5px; opacity: 0.9; }
+        .preco-tag { font-weight: 600; font-size: 1rem; display: block; margin: 10px auto; background: rgba(0,0,0,0.1); padding: 5px 20px; border-radius: 20px; width: fit-content; }
         
         .btn-nav { 
             background: white; color: var(--rosa-topo); border: none; 
             padding: 10px 20px; border-radius: 20px; font-weight: 600; 
             font-size: 0.7rem; text-transform: uppercase; cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-top: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: 0.3s;
+            display: inline-flex; align-items: center; gap: 8px;
         }
 
         .container { max-width: 1000px; margin: auto; padding: 20px; }
         .tela { display: none; }
         .tela.ativa { display: block; animation: fadeIn 0.4s ease-in-out; }
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ESTILO DA VITRINE */
-        .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; border: 1px solid var(--cinza-borda); margin-bottom: 15px; }
-        .img-container { width: 90%; height: 180px; margin: 10px auto; border-radius: 10px; overflow: hidden; background: #f9f9f9; }
+        /* GRID VITRINE */
+        .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; border: 1px solid var(--cinza-borda); }
+        .img-container { width: 90%; height: 180px; margin: 10px auto; border-radius: 10px; overflow: hidden; position: relative; background: #f9f9f9; }
         .img-container img { width: 100%; height: 100%; object-fit: cover; }
-        .nome-produto { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 10px 5px; }
-        
-        /* ESTILO DOS BASTIDORES (SÓ APARECE SE A FOTO EXISTIR) */
-        .grid-bastidores { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-        .item-bastidor { 
-            display: none; /* Escondido por padrão */
-            background: #eee; border-radius: 15px; overflow: hidden; height: 300px; 
-        }
-        .item-bastidor img { width: 100%; height: 100%; object-fit: cover; }
+        .badge-reserva { position: absolute; top: 8px; left: 8px; color: white; padding: 4px 10px; border-radius: 10px; font-size: 0.55rem; font-weight: 600; text-transform: uppercase; z-index: 10; }
 
-        .checkout-box { background: white; border-radius: 15px; padding: 25px; max-width: 700px; margin: 30px auto; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        .input-padrao { width: 100%; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 12px; box-sizing: border-box; }
-        .btn-finalizar { background: var(--marrom); color: white; border: none; padding: 18px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; }
+        .nome-produto { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 10px 5px; height: 30px; display: flex; align-items: center; justify-content: center; }
+        .info-fornada { font-size: 0.6rem; color: #888; margin-bottom: 10px; min-height: 15px; }
+        
+        .controles { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .btn-circular { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; }
+        .select-calda { width: 85%; padding: 6px; border-radius: 8px; border: 1px solid #eee; font-size: 0.7rem; color: #666; background: #fafafa; }
+
+        /* CHECKOUT */
+        .checkout-box { background: white; border-radius: 15px; padding: 25px; max-width: 700px; margin: 20px auto; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .resumo-lista { font-size: 0.85rem; margin-bottom: 20px; border-left: 3px solid var(--rosa-topo); padding-left: 15px; color: #666; text-align: left; }
+        
+        .input-padrao { width: 100%; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 12px; font-family: 'Montserrat'; box-sizing: border-box; background: #fafafa; font-size: 0.85rem; }
+        .btn-seletor { flex: 1; padding: 12px; border: 2px solid var(--cinza-borda); border-radius: 12px; background: white; color: #888; font-weight: 600; font-size: 0.75rem; cursor: pointer; }
+        .btn-seletor.ativa { border-color: var(--rosa-topo); color: var(--rosa-topo); background: #fff0f5; }
+
+        #secao-garantia { background: #fff4f4; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #ffcccc; display: none; }
+        .opcao-garantia { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer; text-align: left; }
+        
+        .total-display { text-align: center; font-weight: bold; font-size: 1.4rem; margin: 20px 0; border-top: 1px dashed #eee; padding-top: 15px; }
+        .btn-finalizar { background: var(--marrom); color: white; border: none; padding: 18px; border-radius: 12px; width: 100%; font-weight: bold; text-transform: uppercase; cursor: pointer; font-size: 1rem; }
+
+        /* BASTIDORES */
+        .grid-bastidores { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .item-bastidor { display: none; background: #eee; border-radius: 15px; overflow: hidden; height: 300px; position: relative; }
+        .item-bastidor img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -66,144 +84,56 @@
 <header>
     <h1>Mii Cakes</h1>
     <div class="subtitulo">Fatias Premium</div>
-    <button id="nav-btn" class="btn-nav" onclick="alternarTela()">✨ Ver Bastidores</button>
+    <span class="preco-tag">R$ 18,00</span>
+    <div style="margin-top: 15px;">
+        <button id="nav-btn" class="btn-nav" onclick="alternarTela()">✨ Ver Bastidores</button>
+    </div>
 </header>
 
 <div class="container">
     <div id="tela-venda" class="tela ativa">
         <div id="vitrine" class="grid-fatias">
-            <p style="text-align:center; grid-column: 1/-1;">Carregando vitrine...</p>
+            <p style="text-align:center; grid-column: 1/-1;">Carregando delícias...</p>
         </div>
 
         <div class="checkout-box">
-            <h3 style="text-align: center;">Finalizar Pedido</h3>
-            <input type="text" id="nome-cliente" class="input-padrao" placeholder="Seu Nome">
-            <input type="tel" id="whatsapp-input" class="input-padrao" placeholder="Seu WhatsApp">
-            <div id="resumo-lista" style="font-size: 0.8rem; margin: 15px 0; color: #666;"></div>
-            <div id="total-val" style="font-size: 1.5rem; font-weight: bold; text-align: center; margin-bottom: 15px; color: var(--rosa-botao);">R$ 0,00</div>
-            <button class="btn-finalizar" onclick="gerarWhatsApp()">Enviar Pedido no WhatsApp</button>
-        </div>
-    </div>
-
-    <div id="tela-bastidores" class="tela">
-        <h2 style="text-align:center; font-family:'Great Vibes'; font-size: 3rem; color: var(--rosa-topo);">Bastidores</h2>
-        <div id="galeria-bastidores" class="grid-bastidores">
+            <h3 style="text-align: center; text-transform: uppercase; font-size: 1.1rem;">Resumo do Pedido</h3>
+            <div id="resumo-lista" class="resumo-lista">Escolha suas delícias acima.</div>
+            
+            <input type="text" id="nome-cliente" class="input-padrao" placeholder="Seu Nome Completo">
+            <input type="tel" id="whatsapp-input" class="input-padrao" placeholder="Seu WhatsApp (Somente números)" maxlength="11">
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                <button class="btn-seletor ativa" id="btn-entrega" onclick="setMetodo('Entrega')">Entrega</button>
+                <button class="btn-seletor" id="btn-retirar" onclick="setMetodo('Retirada')">Retirar</button>
             </div>
-    </div>
-</div>
-
-<script>
-    const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
-    const RAW_URL = `https://raw.githubusercontent.com/MirianDoceFatie/DoceFatie/main/`;
-    
-    let listaBolos = [];
-    let meuCarrinho = {};
-    let telaAtual = 'venda';
-
-    // 1. CARREGA PRODUTOS DO SUPABASE
-    async function carregarDados() {
-        const { data } = await _supa.from('estoque').select('*').order('nome');
-        if (data) {
-            listaBolos = data;
-            renderizarVitrine();
-        }
-        carregarGaleriaBastidores();
-    }
-
-    function renderizarVitrine() {
-        const vitrineDiv = document.getElementById('vitrine');
-        vitrineDiv.innerHTML = listaBolos.map((b, i) => `
-            <div class="card-bolo">
-                <div class="img-container">
-                    <img src="${RAW_URL}${b.imagem_nome || 'placeholder.jpg'}" onerror="this.src='https://via.placeholder.com/200'">
-                </div>
-                <div class="nome-produto">${b.nome}</div>
-                <div style="display:flex; justify-content:center; align-items:center; gap:10px;">
-                    <button style="border:none; background:var(--rosa-botao); color:white; border-radius:50%; width:25px; height:25px;" onclick="ajustar(${i},-1)">-</button>
-                    <span id="qtd-${i}">${meuCarrinho[i] || 0}</span>
-                    <button style="border:none; background:var(--rosa-botao); color:white; border-radius:50%; width:25px; height:25px;" onclick="ajustar(${i},1)">+</button>
-                </div>
+            
+            <div id="campos-endereco" style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+                <input type="text" id="rua-numero" class="input-padrao" placeholder="Rua e número">
+                <input type="text" id="bairro" class="input-padrao" placeholder="Bairro">
             </div>
-        `).join('');
-    }
 
-    function ajustar(i, v) {
-        if(!meuCarrinho[i]) meuCarrinho[i] = 0;
-        let novo = meuCarrinho[i] + v;
-        if(novo >= 0) {
-            meuCarrinho[i] = novo;
-            document.getElementById(`qtd-${i}`).innerText = novo;
-            atualizarResumo();
-        }
-    }
+            <div id="info-retirada" style="display:none; background: #fff9c4; padding: 15px; border-radius: 12px; font-size: 0.8rem; margin-bottom: 12px; border: 1px solid #fbc02d;">
+                <strong>📍 Retirada:</strong> Rua Maria Rodrigues Munis, nº 50, Bairro Rebourgeon.
+            </div>
 
-    function atualizarResumo() {
-        let total = 0;
-        let html = "";
-        listaBolos.forEach((b, i) => {
-            if(meuCarrinho[i] > 0) {
-                total += (meuCarrinho[i] * 18);
-                html += `• ${meuCarrinho[i]}x ${b.nome}<br>`;
-            }
-        });
-        document.getElementById('resumo-lista').innerHTML = html;
-        document.getElementById('total-val').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
-    }
+            <div id="secao-garantia">
+                <p style="font-size: 0.8rem; font-weight: bold; margin-bottom: 10px;">🛡️ Garantia de Reserva:</p>
+                <label class="opcao-garantia">
+                    <input type="radio" name="garantia" value="0.5" checked onchange="atualizarInterface()">
+                    <span style="font-size: 0.75rem;"><strong>Pagar 50% agora</strong><br>Garantia TOTAL de ter a sua fatia.</span>
+                </label>
+                <label class="opcao-garantia">
+                    <input type="radio" name="garantia" value="1" onchange="atualizarInterface()">
+                    <span style="font-size: 0.75rem;"><strong>Pagar 100% (Total)</strong><br>Reserva garantida e agilidade na entrega.</span>
+                </label>
+                <label class="opcao-garantia">
+                    <input type="radio" name="garantia" value="0" onchange="atualizarInterface()">
+                    <span style="font-size: 0.75rem;"><strong>Não pagar agora</strong><br><span style="color:var(--rosa-botao)">⚠️ Risco de ficar sem a Fatia.</span></span>
+                </label>
+            </div>
 
-    // 2. REGRA DOS BASTIDORES (PADRÃO ESPECÍFICO)
-    function carregarGaleriaBastidores() {
-        const galeria = document.getElementById('galeria-bastidores');
-        let html = "";
-
-        // Gerar 30 slots seguindo o padrão Bastidor1.jpg até Bastidor30.jpg
-        for (let i = 1; i <= 30; i++) {
-            const nomeFoto = `Bastidor${i}.jpg`;
-            html += `
-                <div class="item-bastidor" id="container-bastidor-${i}">
-                    <img src="${RAW_URL}${nomeFoto}" 
-                         onload="document.getElementById('container-bastidor-${i}').style.display='block'"
-                         onerror="document.getElementById('container-bastidor-${i}').style.display='none'">
-                </div>
-            `;
-        }
-        galeria.innerHTML = html;
-    }
-
-    function alternarTela() {
-        const btn = document.getElementById('nav-btn');
-        const tVenda = document.getElementById('tela-venda');
-        const tBastidores = document.getElementById('tela-bastidores');
-        
-        if(telaAtual === 'venda') {
-            tVenda.style.display = 'none';
-            tBastidores.style.display = 'block';
-            btn.innerHTML = "🍰 Voltar para Loja";
-            telaAtual = 'bastidores';
-        } else {
-            tBastidores.style.display = 'none';
-            tVenda.style.display = 'block';
-            btn.innerHTML = "✨ Ver Bastidores";
-            telaAtual = 'venda';
-        }
-    }
-
-    function gerarWhatsApp() {
-        const nome = document.getElementById('nome-cliente').value;
-        if(!nome) return alert("Por favor, digite seu nome.");
-        
-        let msg = `*PEDIDO MII CAKES*\nCliente: ${nome}\n\n`;
-        let total = 0;
-        listaBolos.forEach((b, i) => {
-            if(meuCarrinho[i] > 0) {
-                msg += `${meuCarrinho[i]}x ${b.nome}\n`;
-                total += (meuCarrinho[i] * 18);
-            }
-        });
-        msg += `\n*TOTAL: R$ ${total.toFixed(2)}*`;
-        window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msg)}`);
-    }
-
-    window.onload = carregarDados;
-</script>
-</body>
-</html>
+            <div style="display: flex; gap: 10px; margin-bottom: 12px; margin-top: 15px;">
+                <button class="btn-seletor ativa" id="btn-pix" onclick="setPagamento('Pix')">Pix</button>
+                <button class="btn-seletor" id="btn-cartao" onclick="setPagamento('Cartão')">Cartão</button>
+                <button class="btn-seletor" id="btn-link" onclick="setPagamento('Link')">Link</
