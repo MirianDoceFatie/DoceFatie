@@ -364,32 +364,44 @@
         finally { btn.innerText = "Fazer Pedido / Reservar"; btn.disabled = false; }
     }
 
-    function carregarGaleria() {
+    async function carregarGaleria() {
         const galeria = document.getElementById('galeria-bastidores');
-        let html = "";
-        
-        // Loop para vídeos (1 a 10 para garantir cobertura)
-        for(let i=1; i<=10; i++) {
-            html += `
-            <div class="item-bastidor">
-                <video loop muted playsinline 
-                    onclick="this.paused ? this.play() : this.pause()" 
-                    onerror="this.parentElement.remove()">
-                    <source src="${RAW_URL}Video${i}.mp4" type="video/mp4">
-                </video>
-            </div>`;
+        galeria.innerHTML = ""; 
+
+        const verificarArquivo = async (url) => {
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                return response.ok;
+            } catch (e) {
+                return false;
+            }
+        };
+
+        // Vídeos
+        for (let i = 1; i <= 10; i++) {
+            const urlVideo = `${RAW_URL}Video${i}.mp4`;
+            const existe = await verificarArquivo(urlVideo);
+            if (existe) {
+                galeria.innerHTML += `
+                    <div class="item-bastidor">
+                        <video loop muted playsinline onclick="this.paused ? this.play() : this.pause()">
+                            <source src="${urlVideo}" type="video/mp4">
+                        </video>
+                    </div>`;
+            }
         }
-        
-        // Loop para fotos (1 a 10)
-        for(let i=1; i<=10; i++) {
-            html += `
-            <div class="item-bastidor">
-                <img src="${RAW_URL}Bastidor${i}.jpg" 
-                    onerror="this.parentElement.remove()">
-            </div>`;
+
+        // Fotos
+        for (let i = 1; i <= 10; i++) {
+            const urlFoto = `${RAW_URL}Bastidor${i}.jpg`;
+            const existe = await verificarArquivo(urlFoto);
+            if (existe) {
+                galeria.innerHTML += `
+                    <div class="item-bastidor">
+                        <img src="${urlFoto}">
+                    </div>`;
+            }
         }
-        
-        galeria.innerHTML = html;
     }
 
     window.onload = carregarDados;
