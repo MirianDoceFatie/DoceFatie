@@ -156,9 +156,10 @@
 </div>
 
 <script>
+    // Configuração Supabase
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
     
-    // Link do seu GitHub (Ajustado para o seu repositório de fotos)
+    // Caminho direto para as suas fotos no GitHub
     const RAW_URL = `https://raw.githubusercontent.com/MirianDoceFatie/DoceFatie/main/`;
     
     let listaBolos = [];
@@ -187,12 +188,16 @@
     }
 
     async function carregarDados() {
-        const { data } = await _supa.from('estoque').select('*').order('nome');
-        if (data) {
-            listaBolos = data;
-            renderizarVitrine();
+        try {
+            const { data } = await _supa.from('estoque').select('*').order('nome');
+            if (data) {
+                listaBolos = data;
+                renderizarVitrine();
+            }
+            carregarGaleria();
+        } catch (e) {
+            console.error("Erro ao carregar dados:", e);
         }
-        carregarGaleria();
     }
 
     function renderizarVitrine() {
@@ -201,8 +206,8 @@
             const estoque = b.quantidade || 0; 
             const temEstoque = estoque > 0;
             
-            // LOGICA DA FOTO: Se tiver nome no banco, usa GitHub. Se não, usa placeholder.
-            const urlFoto = b.imagem_nome ? RAW_URL + b.imagem_nome : 'https://via.placeholder.com/300x300?text=Mii+Cakes';
+            // Se imagem_nome estiver preenchido no Supabase, usa o GitHub.
+            const urlFoto = b.imagem_nome ? RAW_URL + b.imagem_nome : 'https://placehold.co/400x400/ff69b4/white?text=Mii+Cakes';
 
             return `
             <div class="card-bolo">
@@ -210,7 +215,7 @@
                     <div class="badge-reserva" style="background: ${temEstoque ? '#4CAF50' : '#FF9800'}">
                         ${temEstoque ? 'Pronta Entrega' : 'Reservar'}
                     </div>
-                    <img src="${urlFoto}" onerror="this.src='https://via.placeholder.com/300x300?text=Doce+Fatie'">
+                    <img src="${urlFoto}" onerror="this.src='https://placehold.co/400x400/ff69b4/white?text=Mii+Cakes'">
                 </div>
                 <div class="nome-produto">${b.nome}</div>
                 <div class="info-fornada">
@@ -358,9 +363,12 @@
             
             let totalAgora = vProntaTotal + (vReservaTotal * garantiaPorcentagem);
             msg += `\n*FORMA:* ${metodoEscolhido}\n*PAGAMENTO:* ${pagamentoEscolhido}`;
+            if(metodoEscolhido === 'Entrega') {
+                msg += `\n*ENDEREÇO:* ${document.getElementById('rua-numero').value}, ${document.getElementById('bairro').value}`;
+            }
             msg += `\n*GARANTIA RESERVA:* ${garantiaPorcentagem * 100}%`;
-            msg += `\n\n*TOTAL GERAL:* R$ ${(vProntaTotal + vReservaTotal).toFixed(2)}`;
-            msg += `\n*VALOR A PAGAR AGORA:* R$ ${totalAgora.toFixed(2)}`;
+            msg += `\n\n*TOTAL GERAL:* R$ ${(vProntaTotal + vReservaTotal).toFixed(2).replace('.', ',')}`;
+            msg += `\n*VALOR A PAGAR AGORA:* R$ ${totalAgora.toFixed(2).replace('.', ',')}`;
 
             window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msg)}`, '_blank');
         } catch (e) { alert("Erro ao salvar."); }
@@ -370,12 +378,21 @@
     function carregarGaleria() {
         const galeria = document.getElementById('galeria-bastidores');
         let html = "";
-        // Usando as fotos de bastidores do seu GitHub também
+        
+        // Tenta carregar até 6 vídeos e 6 fotos do GitHub
         for(let i=1; i<=6; i++) {
-            html += `<div class="item-bastidor"><video loop muted playsinline onclick="this.paused ? this.play() : this.pause()"><source src="${RAW_URL}Video${i}.mp4" type="video/mp4"></video></div>`;
+            html += `
+                <div class="item-bastidor">
+                    <video loop muted playsinline onclick="this.paused ? this.play() : this.pause()" onerror="this.parentElement.style.display='none'">
+                        <source src="${RAW_URL}Video${i}.mp4" type="video/mp4">
+                    </video>
+                </div>`;
         }
         for(let i=1; i<=6; i++) {
-            html += `<div class="item-bastidor"><img src="${RAW_URL}Bastidor${i}.jpg" onerror="this.parentElement.style.display='none'"></div>`;
+            html += `
+                <div class="item-bastidor">
+                    <img src="${RAW_URL}Bastidor${i}.jpg" onerror="this.parentElement.style.display='none'">
+                </div>`;
         }
         galeria.innerHTML = html;
     }
