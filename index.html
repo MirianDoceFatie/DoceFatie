@@ -42,7 +42,6 @@
         .container { max-width: 1000px; margin: auto; padding: 20px; }
         .tela { display: none; }
         .tela.ativa { display: block; animation: fadeIn 0.4s ease-in-out; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
@@ -60,7 +59,6 @@
 
         .checkout-box { background: white; border-radius: 15px; padding: 25px; max-width: 700px; margin: 20px auto; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .resumo-lista { font-size: 0.85rem; margin-bottom: 20px; border-left: 3px solid var(--rosa-topo); padding-left: 15px; color: #666; text-align: left; }
-        
         .input-padrao { width: 100%; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 12px; font-family: 'Montserrat'; box-sizing: border-box; background: #fafafa; font-size: 0.85rem; }
         .btn-seletor { flex: 1; padding: 12px; border: 2px solid var(--cinza-borda); border-radius: 12px; background: white; color: #888; font-weight: 600; font-size: 0.75rem; cursor: pointer; }
         .btn-seletor.ativa { border-color: var(--rosa-topo); color: var(--rosa-topo); background: #fff0f5; }
@@ -140,7 +138,7 @@
             <div style="display: flex; gap: 10px; margin-bottom: 12px; margin-top: 15px;">
                 <button class="btn-seletor ativa" id="btn-pix" onclick="setPagamento('Pix')">Pix</button>
                 <button class="btn-seletor" id="btn-cartao" onclick="setPagamento('Cartão')">Cartão</button>
-                <button class="btn-seletor" id="btn-link" onclick="setPagamento('Link')">Link</button>
+                <button class="btn-seletor" id="btn-link" onclick="setPagamento('Link de Pagamento')">Link de Pagamento</button>
             </div>
 
             <div class="total-display">
@@ -158,7 +156,6 @@
 </div>
 
 <script>
-    // CONFIGURAÇÃO SUPABASE
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
     const RAW_URL = `https://raw.githubusercontent.com/MirianDoceFatie/DoceFatie/main/`;
     
@@ -188,27 +185,16 @@
     }
 
     async function carregarDados() {
-        try {
-            const { data, error } = await _supa.from('estoque').select('*').order('nome');
-            if (error) throw error;
-            if (data) {
-                listaBolos = data;
-                renderizarVitrine();
-            }
-        } catch (e) {
-            console.error("Erro Supabase:", e);
-            document.getElementById('vitrine').innerHTML = "<p>Erro ao carregar produtos. Verifique a conexão.</p>";
+        const { data } = await _supa.from('estoque').select('*').order('nome');
+        if (data) {
+            listaBolos = data;
+            renderizarVitrine();
         }
         carregarGaleria();
     }
 
     function renderizarVitrine() {
         const vitrineDiv = document.getElementById('vitrine');
-        if (listaBolos.length === 0) {
-            vitrineDiv.innerHTML = "<p>Nenhum produto disponível no momento.</p>";
-            return;
-        }
-
         vitrineDiv.innerHTML = listaBolos.map((b, i) => {
             const estoque = b.quantidade || 0; 
             const temEstoque = estoque > 0;
@@ -264,7 +250,7 @@
         pagamentoEscolhido = tipo;
         document.getElementById('btn-pix').classList.toggle('ativa', tipo === 'Pix');
         document.getElementById('btn-cartao').classList.toggle('ativa', tipo === 'Cartão');
-        document.getElementById('btn-link').classList.toggle('ativa', tipo === 'Link');
+        document.getElementById('btn-link').classList.toggle('ativa', tipo === 'Link de Pagamento');
     }
 
     function atualizarInterface() {
@@ -310,13 +296,11 @@
         const btn = document.getElementById('btn-fazer-pedido');
         const nome = document.getElementById('nome-cliente').value;
         const zap = document.getElementById('whatsapp-input').value;
-        const endereco = document.getElementById('rua-numero').value;
-        const bairro = document.getElementById('bairro').value;
         const garantiaPorcentagem = parseFloat(document.querySelector('input[name="garantia"]:checked')?.value || 0.5);
         
-        if(!nome || !zap) return alert("Por favor, preencha nome e WhatsApp.");
-        if(metodoEscolhido === 'Entrega' && (!endereco || !bairro)) return alert("Preencha o endereço para entrega.");
+        if(!nome || !zap) return alert("Preencha seu nome e WhatsApp.");
 
+        let pEntregaBanco = "", pReservaBanco = "";
         let pEntregaZap = "", pReservaZap = "";
         let vProntaTotal = 0, vReservaTotal = 0;
 
@@ -325,62 +309,71 @@
                 const calda = document.getElementById(`calda-${i}`).value || "Sem calda";
                 const estoque = b.quantidade || 0;
                 const qtd = meuCarrinho[i];
+                
                 const qPronta = Math.min(qtd, estoque);
                 const qReserva = Math.max(0, qtd - estoque);
 
                 if(qPronta > 0) {
-                    pEntregaZap += `✅ ${qPronta}x ${b.nome} (${calda}) [PRONTA]\n`;
+                    pEntregaBanco += `${qPronta}x ${b.nome} (${calda}); `;
+                    pEntregaZap += `✅ ${qPronta}x ${b.nome} [PRONTA]\n`;
                     vProntaTotal += (qPronta * 18);
                 }
                 if(qReserva > 0) {
-                    pReservaZap += `🕒 ${qReserva}x ${b.nome} (${calda}) [RESERVA]\n`;
+                    pReservaBanco += `${qReserva}x ${b.nome} (${calda}); `;
+                    pReservaZap += `🕒 ${qReserva}x ${b.nome} [RESERVA]\n`;
                     vReservaTotal += (qReserva * 18);
                 }
             }
         });
 
-        if(vProntaTotal + vReservaTotal === 0) return alert("Adicione pelo menos uma fatia!");
+        if(vProntaTotal + vReservaTotal === 0) return alert("Carrinho vazio!");
 
         btn.innerText = "Processando...";
         btn.disabled = true;
 
         try {
-            // Montagem da Mensagem
-            let msg = `*NOVO PEDIDO - MII CAKES*\n\n`;
-            msg += `*Cliente:* ${nome}\n`;
-            if(pEntregaZap) msg += `\n*ITENS DISPONÍVEIS:*\n${pEntregaZap}`;
-            if(pReservaZap) msg += `\n*ITENS RESERVADOS:*\n${pReservaZap}`;
-            
-            msg += `\n*FORMA:* ${metodoEscolhido}`;
-            if(metodoEscolhido === 'Entrega') msg += `\n*ENDEREÇO:* ${endereco}, ${bairro}`;
-            
-            msg += `\n*PAGAMENTO:* ${pagamentoEscolhido}`;
-            
-            let totalGeral = vProntaTotal + vReservaTotal;
-            let totalPagarAgora = vProntaTotal + (vReservaTotal * garantiaPorcentagem);
+            const inserts = [];
+            if(pEntregaBanco) {
+                inserts.push(_supa.from('pedidos').insert([{ 
+                    nome, telefone: zap, itens: pEntregaBanco, status: 'Novo', 
+                    valor_total: vProntaTotal, valor_pago: vProntaTotal 
+                }]));
+            }
+            if(pReservaBanco) {
+                inserts.push(_supa.from('pedidos').insert([{ 
+                    nome, telefone: zap, itens: pReservaBanco, status: 'Reserva', 
+                    valor_total: vReservaTotal, valor_pago: (vReservaTotal * garantiaPorcentagem) 
+                }]));
+            }
 
-            msg += `\n\n*TOTAL GERAL:* R$ ${totalGeral.toFixed(2)}`;
-            msg += `\n*PAGAR AGORA:* R$ ${totalPagarAgora.toFixed(2)}`;
+            await Promise.all(inserts);
+            
+            let msg = `*NOVO PEDIDO - MII CAKES*\n\n*Cliente:* ${nome}\n`;
+            if(pEntregaZap) msg += `\n*PRONTA ENTREGA:*\n${pEntregaZap}`;
+            if(pReservaZap) msg += `\n*RESERVAS:*\n${pReservaZap}`;
+            
+            let totalAgora = vProntaTotal + (vReservaTotal * garantiaPorcentagem);
+            msg += `\n*FORMA:* ${metodoEscolhido}\n*PAGAMENTO:* ${pagamentoEscolhido}`;
+            msg += `\n*GARANTIA RESERVA:* ${garantiaPorcentagem * 100}%`;
+            msg += `\n\n*TOTAL GERAL:* R$ ${(vProntaTotal + vReservaTotal).toFixed(2)}`;
+            msg += `\n*VALOR A PAGAR AGORA:* R$ ${totalAgora.toFixed(2)}`;
 
-            // Link do WhatsApp (Ajuste o número se necessário)
             window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msg)}`, '_blank');
-        } catch (e) {
-            alert("Erro ao processar pedido.");
-        } finally {
-            btn.innerText = "Fazer Pedido / Reservar";
-            btn.disabled = false;
-        }
+        } catch (e) { alert("Erro ao salvar."); }
+        finally { btn.innerText = "Fazer Pedido / Reservar"; btn.disabled = false; }
     }
 
     function carregarGaleria() {
         const galeria = document.getElementById('galeria-bastidores');
         let html = "";
-        // Vídeos de 1 a 3 (GitHub)
-        for(let i=1; i<=3; i++) {
+        
+        // Loop ajustado para até 30 itens conforme solicitado
+        // Vídeos (Tenta carregar até Video30.mp4)
+        for(let i=1; i<=30; i++) {
             html += `<div class="item-bastidor"><video loop muted playsinline onclick="this.paused ? this.play() : this.pause()"><source src="${RAW_URL}Video${i}.mp4" type="video/mp4"></video></div>`;
         }
-        // Fotos de 1 a 6 (GitHub)
-        for(let i=1; i<=6; i++) {
+        // Fotos (Tenta carregar até Bastidor30.jpg)
+        for(let i=1; i<=30; i++) {
             html += `<div class="item-bastidor"><img src="${RAW_URL}Bastidor${i}.jpg" onerror="this.parentElement.style.display='none'"></div>`;
         }
         galeria.innerHTML = html;
