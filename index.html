@@ -56,6 +56,12 @@
         .btn-circular { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; }
         .select-calda { width: 85%; padding: 6px; border-radius: 8px; border: 1px solid #eee; font-size: 0.7rem; color: #666; background: #fafafa; }
 
+        /* GRID BASTIDORES */
+        .grid-bastidores { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .item-bastidor { background: #eee; border-radius: 15px; overflow: hidden; height: 300px; border: 1px solid #ddd; cursor: pointer; display: none; }
+        .item-bastidor img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+        .item-bastidor:hover img { transform: scale(1.05); }
+
         .checkout-box { background: white; border-radius: 15px; padding: 25px; max-width: 700px; margin: 20px auto; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .resumo-lista { font-size: 0.85rem; margin-bottom: 20px; border-left: 3px solid var(--rosa-topo); padding-left: 15px; color: #666; text-align: left; }
         .input-padrao { width: 100%; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 12px; font-family: 'Montserrat'; box-sizing: border-box; background: #fafafa; font-size: 0.85rem; }
@@ -259,12 +265,12 @@
         listaBolos.forEach((b, i) => {
             if(meuCarrinho[i] > 0) {
                 const calda = document.getElementById(`calda-${i}`).value;
-                const qPronta = Math.min(meuCarrinho[i], b.quantidade || 0);
-                const qReserva = Math.max(0, meuCarrinho[i] - (b.quantidade || 0));
+                const ehReserva = (b.quantidade || 0) <= 0;
                 
-                if(qPronta > 0) pEntregaZap += `✅ ${qPronta}x ${b.nome} (${calda})\n`;
-                if(qReserva > 0) {
-                    pReservaZap += `🕒 [RESERVA] ${qReserva}x ${b.nome} (${calda})\n`;
+                if(!ehReserva) {
+                    pEntregaZap += `✅ ${meuCarrinho[i]}x ${b.nome} (${calda})\n`;
+                } else {
+                    pReservaZap += `🕒 [RESERVA] ${meuCarrinho[i]}x ${b.nome} (${calda})\n`;
                     statusPedido = "Reserva";
                 }
                 vTotal += meuCarrinho[i] * 18;
@@ -274,7 +280,6 @@
         const endereco = metodoEscolhido === 'Entrega' ? 
             `${document.getElementById('rua-numero').value}, ${document.getElementById('bairro').value}` : 'Retirada';
 
-        // SALVA NO SUPABASE
         const { error } = await _supa.from('pedidos').insert([{
             nome, telefone: zap, itens: pEntregaZap + pReservaZap,
             valor_total: vTotal, tipo_entrega: metodoEscolhido,
@@ -290,9 +295,30 @@
         }
     }
 
-    function carregarGaleria() { /* Mesma lógica do seu código */ }
-    function abrirZoom(url) { /* Mesma lógica do seu código */ }
-    function fecharZoom() { /* Mesma lógica do seu código */ }
+    // LÓGICA DE BASTIDORES DO 1 AO 30
+    function carregarGaleria() {
+        const galeria = document.getElementById('galeria-bastidores');
+        let html = "";
+        for(let i=1; i<=30; i++) {
+            const nomeFoto = `Bastidor${i}.jpg`;
+            const urlImg = RAW_URL + nomeFoto;
+            html += `
+            <div class="item-bastidor" id="box-b-${i}" onclick="abrirZoom('${urlImg}')">
+                <img src="${urlImg}" onload="document.getElementById('box-b-${i}').style.display='block'" onerror="this.parentElement.remove()">
+            </div>`;
+        }
+        galeria.innerHTML = html;
+    }
+
+    function abrirZoom(url) {
+        document.getElementById('render-zoom').innerHTML = `<img src="${url}">`;
+        document.getElementById('modal-zoom').style.display = 'flex';
+    }
+
+    function fecharZoom() { 
+        document.getElementById('modal-zoom').style.display = 'none'; 
+    }
+
     window.onload = carregarDados;
 </script>
 </body>
