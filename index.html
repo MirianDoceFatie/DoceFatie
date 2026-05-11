@@ -14,6 +14,7 @@
             --rosa-botao: #ff4081; 
             --marrom: #5d4037; 
             --cinza-borda: #eee;
+            --verde-sucesso: #2ecc71;
         }
 
         body { 
@@ -43,190 +44,16 @@
         .tela.ativa { display: block; animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Estilo da Vitrine de Produtos */
+        /* Vitrine */
         .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; border: 1px solid var(--cinza-borda); }
         .img-container { width: 90%; height: 180px; margin: 10px auto; border-radius: 10px; overflow: hidden; position: relative; background: #f9f9f9; }
         .img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .badge-reserva { position: absolute; top: 8px; left: 8px; color: white; padding: 4px 10px; border-radius: 10px; font-size: 0.55rem; font-weight: 600; text-transform: uppercase; z-index: 10; }
 
-        /* Estilo da Galeria de Bastidores (Sequencial) */
-        .grid-bastidores { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-        .item-bastidor { background: #fff; border-radius: 15px; overflow: hidden; height: 320px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .item-bastidor img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
-        .item-bastidor img:hover { transform: scale(1.05); }
-
-        /* Checkout */
-        .checkout-box { background: white; border-radius: 15px; padding: 25px; max-width: 700px; margin: 20px auto; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        .input-padrao { width: 100%; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 12px; font-family: 'Montserrat'; box-sizing: border-box; background: #fafafa; font-size: 0.85rem; }
-        .btn-finalizar { background: var(--marrom); color: white; border: none; padding: 18px; border-radius: 12px; width: 100%; font-weight: bold; text-transform: uppercase; cursor: pointer; font-size: 1rem; }
-    </style>
-</head>
-<body>
-
-<header>
-    <h1>Mii Cakes</h1>
-    <div class="subtitulo">Fatias Premium</div>
-    <span class="preco-tag">R$ 18,00</span>
-    <div style="margin-top: 15px;">
-        <button id="nav-btn" class="btn-nav" onclick="alternarTela()">✨ Ver Bastidores</button>
-    </div>
-</header>
-
-<div class="container">
-    <div id="tela-venda" class="tela ativa">
-        <div id="vitrine" class="grid-fatias">
-            <p style="text-align:center; grid-column: 1/-1;">Carregando vitrine...</p>
-        </div>
-
-        <div class="checkout-box">
-            <h3 style="text-align: center; text-transform: uppercase; font-size: 1.1rem;">Resumo do Pedido</h3>
-            <div id="resumo-lista" style="margin-bottom:15px; font-size:0.9rem; border-left: 3px solid var(--rosa-topo); padding-left: 10px;">
-                Escolha suas delícias acima.
-            </div>
-            
-            <input type="text" id="nome-cliente" class="input-padrao" placeholder="Seu Nome Completo">
-            <input type="tel" id="whatsapp-input" class="input-padrao" placeholder="Seu WhatsApp (Somente números)">
-            
-            <div style="text-align:center; margin: 20px 0; border-top: 1px dashed #eee; padding-top: 15px;">
-                <div id="total-val" style="font-size: 1.5rem; font-weight: bold; color: var(--rosa-botao);">R$ 0,00</div>
-            </div>
-            <button class="btn-finalizar" onclick="gerarWhatsApp()">Fazer Pedido / Reservar</button>
-        </div>
-    </div>
-
-    <div id="tela-bastidores" class="tela">
-        <h2 style="text-align:center; font-family:'Great Vibes'; font-size: 3rem; color: var(--rosa-topo);">Nossos Bastidores ✨</h2>
-        <div id="galeria-bastidores" class="grid-bastidores">
-            </div>
-    </div>
-</div>
-
-<script>
-    // Configuração Supabase
-    const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
-    
-    // Link base do seu repositório GitHub
-    const RAW_URL = `https://raw.githubusercontent.com/MirianDoceFatie/DoceFatie/main/`;
-    
-    let listaBolos = [];
-    let meuCarrinho = {};
-    let telaAtual = 'venda';
-
-    // Alternar telas
-    function alternarTela() {
-        const btn = document.getElementById('nav-btn');
-        const tVenda = document.getElementById('tela-venda');
-        const tBastidores = document.getElementById('tela-bastidores');
+        .nome-produto { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 10px 5px; height: 30px; display: flex; align-items: center; justify-content: center; }
+        .info-fornada { font-size: 0.6rem; color: #888; margin-bottom: 10px; min-height: 15px; }
         
-        if(telaAtual === 'venda') {
-            tVenda.classList.remove('ativa');
-            tBastidores.classList.add('ativa');
-            btn.innerHTML = "🍰 Voltar para a Loja";
-            telaAtual = 'bastidores';
-        } else {
-            tBastidores.classList.remove('ativa');
-            tVenda.classList.add('ativa');
-            btn.innerHTML = "✨ Ver Bastidores";
-            telaAtual = 'venda';
-        }
-        window.scrollTo(0,0);
-    }
-
-    // Carregar produtos do Supabase
-    async function carregarDados() {
-        const { data } = await _supa.from('estoque').select('*').order('nome');
-        if (data) {
-            listaBolos = data;
-            renderizarVitrine();
-        }
-        renderizarBastidores(); 
-    }
-
-    // Renderizar Vitrine
-    function renderizarVitrine() {
-        const vitrineDiv = document.getElementById('vitrine');
-        vitrineDiv.innerHTML = listaBolos.map((b, i) => {
-            const urlFoto = b.imagem_nome ? RAW_URL + b.imagem_nome : 'https://placehold.co/400x400/ff69b4/white?text=Mii+Cakes';
-            return `
-            <div class="card-bolo">
-                <div class="img-container">
-                    <img src="${urlFoto}" onerror="this.src='https://placehold.co/400x400/ff69b4/white?text=Doce+Fatie'">
-                </div>
-                <div class="nome-produto">${b.nome}</div>
-                <div style="margin-bottom:10px; font-size:0.8rem; font-weight:bold;">R$ 18,00</div>
-                <div style="display:flex; justify-content:center; gap:10px; align-items:center;">
-                    <button onclick="ajustar(${i}, -1)" style="border:none; background:var(--rosa-botao); color:white; border-radius:50%; width:25px; height:25px; cursor:pointer;">-</button>
-                    <span id="qtd-${i}">${meuCarrinho[i] || 0}</span>
-                    <button onclick="ajustar(${i}, 1)" style="border:none; background:var(--rosa-botao); color:white; border-radius:50%; width:25px; height:25px; cursor:pointer;">+</button>
-                </div>
-            </div>`;
-        }).join('');
-    }
-
-    // Lógica para Bastidor1.jpg até Bastidor30.jpg
-    function renderizarBastidores() {
-        const galeria = document.getElementById('galeria-bastidores');
-        let html = "";
-        
-        for(let i = 1; i <= 30; i++) {
-            const nomeFoto = `Bastidor${i}.jpg`;
-            html += `
-                <div class="item-bastidor">
-                    <img src="${RAW_URL}${nomeFoto}" 
-                         alt="Mii Cakes Bastidores ${i}" 
-                         onerror="this.parentElement.style.display='none'">
-                </div>`;
-        }
-        galeria.innerHTML = html;
-    }
-
-    function ajustar(i, v) {
-        if(!meuCarrinho[i]) meuCarrinho[i] = 0;
-        let novo = meuCarrinho[i] + v;
-        if(novo >= 0) {
-            meuCarrinho[i] = novo;
-            document.getElementById(`qtd-${i}`).innerText = novo;
-            atualizarResumo();
-        }
-    }
-
-    function atualizarResumo() {
-        let total = 0;
-        let lista = "";
-        listaBolos.forEach((b, i) => {
-            if(meuCarrinho[i] > 0) {
-                total += meuCarrinho[i] * 18;
-                lista += `• ${meuCarrinho[i]}x ${b.nome}<br>`;
-            }
-        });
-        document.getElementById('resumo-lista').innerHTML = lista || "Escolha suas delícias acima.";
-        document.getElementById('total-val').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
-    }
-
-    function gerarWhatsApp() {
-        const nome = document.getElementById('nome-cliente').value;
-        const tel = document.getElementById('whatsapp-input').value;
-        if(!nome || !tel) return alert("Por favor, preencha nome e WhatsApp.");
-        
-        let msg = `*NOVO PEDIDO - MII CAKES*\n*Cliente:* ${nome}\n*WhatsApp:* ${tel}\n\n`;
-        let total = 0;
-        let temItens = false;
-        
-        listaBolos.forEach((b, i) => {
-            if(meuCarrinho[i] > 0) {
-                msg += `✅ ${meuCarrinho[i]}x ${b.nome}\n`;
-                total += meuCarrinho[i] * 18;
-                temItens = true;
-            }
-        });
-        
-        if(!temItens) return alert("Seu carrinho está vazio!");
-        
-        msg += `\n*TOTAL:* R$ ${total.toFixed(2).replace('.', ',')}`;
-        window.open(`https://wa.me/5535991441589?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-
-    window.onload = carregarDados;
-</script>
-</body>
-</html>
+        .controles { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .btn-circular { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; }
+        .select-calda { width: 85%; padding: 6px; border-radius: 8px; border: 1px solid #eee; font-size: 0.7rem; color: #666;
