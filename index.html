@@ -158,7 +158,6 @@
 <script>
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
     
-    // Link do seu GitHub (Ajustado para o seu repositório de fotos)
     const RAW_URL = `https://raw.githubusercontent.com/MirianDoceFatie/DoceFatie/main/`;
     
     let listaBolos = [];
@@ -200,8 +199,6 @@
         vitrineDiv.innerHTML = listaBolos.map((b, i) => {
             const estoque = b.quantidade || 0; 
             const temEstoque = estoque > 0;
-            
-            // LOGICA DA FOTO: Se tiver nome no banco, usa GitHub. Se não, usa placeholder.
             const urlFoto = b.imagem_nome ? RAW_URL + b.imagem_nome : 'https://via.placeholder.com/300x300?text=Mii+Cakes';
 
             return `
@@ -370,13 +367,28 @@
     function carregarGaleria() {
         const galeria = document.getElementById('galeria-bastidores');
         let html = "";
-        // Usando as fotos de bastidores do seu GitHub também
-        for(let i=1; i<=6; i++) {
-            html += `<div class="item-bastidor"><video loop muted playsinline onclick="this.paused ? this.play() : this.pause()"><source src="${RAW_URL}Video${i}.mp4" type="video/mp4"></video></div>`;
+        
+        // Loop para vídeos (1 a 10 para garantir cobertura)
+        for(let i=1; i<=10; i++) {
+            html += `
+            <div class="item-bastidor">
+                <video loop muted playsinline 
+                    onclick="this.paused ? this.play() : this.pause()" 
+                    onerror="this.parentElement.remove()">
+                    <source src="${RAW_URL}Video${i}.mp4" type="video/mp4">
+                </video>
+            </div>`;
         }
-        for(let i=1; i<=6; i++) {
-            html += `<div class="item-bastidor"><img src="${RAW_URL}Bastidor${i}.jpg" onerror="this.parentElement.style.display='none'"></div>`;
+        
+        // Loop para fotos (1 a 10)
+        for(let i=1; i<=10; i++) {
+            html += `
+            <div class="item-bastidor">
+                <img src="${RAW_URL}Bastidor${i}.jpg" 
+                    onerror="this.parentElement.remove()">
+            </div>`;
         }
+        
         galeria.innerHTML = html;
     }
 
