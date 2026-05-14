@@ -74,11 +74,11 @@
 </header>
 
 <div class="tabs">
-    <button class="tab-btn active" onclick="mudarAba('novos', this)">Novos 🍰</button>
-    <button class="tab-btn" onclick="mudarAba('reservas', this)">Reservas 🕒</button>
-    <button class="tab-btn" onclick="mudarAba('estoque', this)">Estoque 📦</button>
-    <button class="tab-btn" onclick="mudarAba('concluidos', this)">Vendas ✅</button>
-    <button class="tab-btn" onclick="mudarAba('desistencias', this)">Desistências ❌</button>
+    <button class="tab-btn active" id="btn-novos" onclick="mudarAba('novos', this)">Novos 🍰</button>
+    <button class="tab-btn" id="btn-reservas" onclick="mudarAba('reservas', this)">Reservas 🕒</button>
+    <button class="tab-btn" id="btn-estoque" onclick="mudarAba('estoque', this)">Estoque 📦</button>
+    <button class="tab-btn" id="btn-concluidos" onclick="mudarAba('concluidos', this)">Vendas ✅</button>
+    <button class="tab-btn" id="btn-desistencias" onclick="mudarAba('desistencias', this)">Desistências ❌</button>
 </div>
 
 <div id="aba-novos" class="section active"><div id="lista-novos"></div></div>
@@ -96,39 +96,52 @@
 </div>
 
 <script>
+    // Conexão Supabase
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
     let totalPedidosAntigo = 0;
     let editandoEstoque = false;
 
-    // Funções Globais para os botões funcionarem sempre
-    window.finalizar = async function(id) { 
-        if(confirm("Deseja concluir esta venda?")) { 
-            const { error } = await _supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id); 
-            if (!error) {
-                await carregarTudo(); 
-                mudarAba('concluidos', document.querySelector('button[onclick*="concluidos"]'));
-            }
-        } 
-    };
+    // --- FUNÇÕES DE AÇÃO (Conectar e Mover) ---
+    async function finalizar(id) {
+        if (!confirm("Confirmar venda concluída?")) return;
+        try {
+            const { error } = await _supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id);
+            if (error) throw error;
+            await carregarTudo();
+            mudarAba('concluidos', document.getElementById('btn-concluidos'));
+        } catch (err) {
+            alert("Erro ao finalizar: " + err.message);
+        }
+    }
 
-    window.marcarDesistencia = async function(id) { 
-        const m = prompt("Qual o motivo da desistência?"); 
-        if (m !== null) { 
-            const { error } = await _supa.from('pedidos').update({ status: 'Desistencia', motivo_cancelamento: m || "Sem motivo informado" }).eq('id', id); 
-            if (!error) {
-                await carregarTudo(); 
-                mudarAba('desistencias', document.querySelector('button[onclick*="desistencias"]'));
-            }
-        } 
-    };
+    async function marcarDesistencia(id) {
+        const m = prompt("Motivo da desistência?");
+        if (m === null) return;
+        try {
+            const { error } = await _supa.from('pedidos').update({ 
+                status: 'Desistencia', 
+                motivo_cancelamento: m || "Não informado" 
+            }).eq('id', id);
+            if (error) throw error;
+            await carregarTudo();
+            mudarAba('desistencias', document.getElementById('btn-desistencias'));
+        } catch (err) {
+            alert("Erro ao marcar desistência: " + err.message);
+        }
+    }
 
-    window.excluirPedido = async function(id) { 
-        if(confirm("Deseja apagar este registro do histórico?")) { 
-            await _supa.from('pedidos').delete().eq('id', id); 
-            carregarTudo(); 
-        } 
-    };
+    async function excluirPedido(id) {
+        if (!confirm("Excluir permanentemente?")) return;
+        try {
+            const { error } = await _supa.from('pedidos').delete().eq('id', id);
+            if (error) throw error;
+            carregarTudo();
+        } catch (err) {
+            alert("Erro ao excluir: " + err.message);
+        }
+    }
 
+    // --- LÓGICA DO SISTEMA ---
     async function carregarTudo() {
         const { data: pedidos } = await _supa.from('pedidos').select('*').order('created_at', { ascending: true });
         const { data: estoque } = await _supa.from('estoque').select('*').order('nome');
@@ -157,9 +170,7 @@
     }
 
     function renderizarPedidos(lista) {
-        const containers = { novos: document.getElementById('lista-novos'), reservas: document.getElementById('lista-reservas'), concluidos: document.getElementById('lista-concluidos'), desistencias: document.getElementById('lista-desistencias') };
-        let html = { novos: "", reservas: "", concluidos: "", desistencias: "" };
-
+        const html = { novos: "", reservas: "", concluidos: "", desistencias: "" };
         lista.forEach(p => {
             const dataPedido = new Date(p.created_at).toLocaleString('pt-BR');
             const status = p.status || "Novo";
@@ -172,7 +183,10 @@
                 if (itensReserva.length > 0) html.reservas += gerarCard(p, itensReserva, true, dataPedido);
             }
         });
-        Object.keys(containers).forEach(key => { containers[key].innerHTML = html[key] || "<p style='text-align:center; opacity:0.3; padding:20px;'>Vazio.</p>"; });
+        document.getElementById('lista-novos').innerHTML = html.novos || "<p style='text-align:center; opacity:0.3; padding:20px;'>Sem novos pedidos.</p>";
+        document.getElementById('lista-reservas').innerHTML = html.reservas || "<p style='text-align:center; opacity:0.3; padding:20px;'>Sem reservas.</p>";
+        document.getElementById('lista-concluidos').innerHTML = html.concluidos || "<p style='text-align:center; opacity:0.3; padding:20px;'>Sem vendas.</p>";
+        document.getElementById('lista-desistencias').innerHTML = html.desistencias || "<p style='text-align:center; opacity:0.3; padding:20px;'>Sem desistências.</p>";
     }
 
     function gerarCard(p, itens, ehReserva, dataHora, ehDesistencia = false) {
@@ -182,7 +196,6 @@
                 <button class="btn-mini btn-mini-concluir" onclick="finalizar(${p.id})">Venda Concluída</button>
                 <button class="btn-mini btn-mini-desistir" onclick="marcarDesistencia(${p.id})">Desistência</button>
             </div>`;
-
         const btnExcluir = ehDesistencia ? `<button class="btn-excluir" onclick="excluirPedido(${p.id})">🗑️</button>` : '';
         const motivo = p.motivo_cancelamento ? `<div style="color:var(--vermelho); font-size:0.7rem; margin-top:5px; background:#fff5f5; padding:5px; border-radius:5px;">${p.motivo_cancelamento}</div>` : '';
 
@@ -191,9 +204,7 @@
                 <small style="display:block; color:#aaa; font-size: 0.6rem;">${dataHora}</small>
                 <strong style="font-size:0.9rem;">${p.nome}</strong>
                 <div style="font-size:0.8rem; margin:5px 0; display: flex; align-items: center; flex-wrap: wrap; gap: 5px;">
-                    📱 ${p.telefone} 
-                    <a href="${linkZap}" target="_blank" class="btn-zap-small">ZAP</a>
-                    ${acoesMini}
+                    📱 ${p.telefone} <a href="${linkZap}" target="_blank" class="btn-zap-small">ZAP</a> ${acoesMini}
                 </div>
                 <div class="itens-box">${itens}</div>
                 <div style="font-size:0.75rem;">Total: <b>R$ ${Number(p.valor_total).toFixed(2)}</b></div>
@@ -201,9 +212,12 @@
             </div>`;
     }
 
-    function filtrarItens(t, tipo) { const l = (t || "").split('\n'); return tipo === 'PRONTA' ? l.filter(i => i.includes('✅')).join('\n').trim() : l.filter(i => i.includes('[RESERVA]')).join('\n').trim(); }
-    
-    window.mudarAba = function(id, btn) {
+    function filtrarItens(t, tipo) { 
+        const l = (t || "").split('\n'); 
+        return tipo === 'PRONTA' ? l.filter(i => i.includes('✅')).join('\n').trim() : l.filter(i => i.includes('[RESERVA]')).join('\n').trim(); 
+    }
+
+    function mudarAba(id, btn) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('aba-' + id).classList.add('active');
@@ -212,7 +226,7 @@
         if (id === 'concluidos') cv.classList.add('stats-visible');
         else if (id === 'desistencias') cc.classList.add('stats-visible');
         else { cv.classList.remove('stats-visible'); cc.classList.remove('stats-visible'); }
-    };
+    }
 
     function renderizarEstoque(e) {
         document.getElementById('corpo-estoque').innerHTML = e.map(i => `
@@ -223,12 +237,17 @@
             </tr>`).join('');
     }
 
-    window.salvarEstoque = async function() {
-        for (let l of document.querySelectorAll('.linha-est')) {
-            await _supa.from('estoque').update({ quantidade: l.querySelector('.qtd').value, dados_proximidade: l.querySelector('.data').value }).eq('id', l.dataset.id);
-        }
-        alert("Estoque atualizado com sucesso!"); carregarTudo();
-    };
+    async function salvarEstoque() {
+        try {
+            for (let l of document.querySelectorAll('.linha-est')) {
+                await _supa.from('estoque').update({ 
+                    quantidade: l.querySelector('.qtd').value, 
+                    dados_proximidade: l.querySelector('.data').value 
+                }).eq('id', l.dataset.id);
+            }
+            alert("Estoque atualizado!"); carregarTudo();
+        } catch (err) { alert("Erro estoque: " + err.message); }
+    }
 
     setInterval(carregarTudo, 60000);
     window.onload = carregarTudo;
