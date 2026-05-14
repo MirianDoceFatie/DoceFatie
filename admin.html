@@ -45,13 +45,10 @@
         .btn-excluir { position: absolute; bottom: 15px; right: 15px; background: none; border: none; font-size: 1.1rem; cursor: pointer; opacity: 0.5; }
         .itens-box { background: #fffafb; border: 1px solid #ffebf2; border-radius: 10px; padding: 10px; font-size: 0.85rem; margin: 10px 0; white-space: pre-wrap; }
         
-        /* Botões Delicados Ajustados */
         .btn-mini-group { display: inline-flex; gap: 5px; margin-left: 10px; vertical-align: middle; }
         .btn-mini { border: none; padding: 3px 10px; border-radius: 4px; font-size: 0.6rem; font-weight: bold; cursor: pointer; text-transform: uppercase; color: white; }
         
-        /* Botão Venda Concluída com Cor de Sucesso */
         .btn-mini-concluir { background: var(--verde); }
-        /* Botão Desistência Discreto */
         .btn-mini-desistir { background: #ccc; color: #666; }
         .btn-mini-desistir:hover { background: var(--vermelho); color: white; }
         
@@ -176,9 +173,30 @@
             </div>`;
     }
 
-    async function finalizar(id) { if(confirm("Venda concluída?")) { await _supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id); carregarTudo(); } }
-    async function marcarDesistencia(id) { const m = prompt("Motivo da desistência?"); if (m !== null) { await _supa.from('pedidos').update({ status: 'Desistencia', motivo_cancelamento: m || "Sem motivo" }).eq('id', id); carregarTudo(); } }
-    async function excluirPedido(id) { if(confirm("Excluir histórico?")) { await _supa.from('pedidos').delete().eq('id', id); carregarTudo(); } }
+    async function finalizar(id) { 
+        if(confirm("Deseja concluir esta venda?")) { 
+            const { error } = await _supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id); 
+            if (!error) {
+                carregarTudo(); 
+                // Troca visual para a aba de vendas após concluir
+                mudarAba('concluidos', document.querySelector('button[onclick*="concluidos"]'));
+            }
+        } 
+    }
+
+    async function marcarDesistencia(id) { 
+        const m = prompt("Qual o motivo da desistência?"); 
+        if (m !== null) { 
+            const { error } = await _supa.from('pedidos').update({ status: 'Desistencia', motivo_cancelamento: m || "Sem motivo informado" }).eq('id', id); 
+            if (!error) {
+                carregarTudo(); 
+                // Troca visual para a aba de desistências após marcar
+                mudarAba('desistencias', document.querySelector('button[onclick*="desistencias"]'));
+            }
+        } 
+    }
+
+    async function excluirPedido(id) { if(confirm("Deseja apagar este registro do histórico?")) { await _supa.from('pedidos').delete().eq('id', id); carregarTudo(); } }
     
     function filtrarItens(t, tipo) { const l = (t || "").split('\n'); return tipo === 'PRONTA' ? l.filter(i => i.includes('✅')).join('\n').trim() : l.filter(i => i.includes('[RESERVA]')).join('\n').trim(); }
     
@@ -186,7 +204,7 @@
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('aba-' + id).classList.add('active');
-        btn.classList.add('active');
+        if(btn) btn.classList.add('active');
         const cv = document.getElementById('card-vendas'), cc = document.getElementById('card-cancel');
         if (id === 'concluidos') cv.classList.add('stats-visible');
         else if (id === 'desistencias') cc.classList.add('stats-visible');
@@ -206,7 +224,7 @@
         for (let l of document.querySelectorAll('.linha-est')) {
             await _supa.from('estoque').update({ quantidade: l.querySelector('.qtd').value, dados_proximidade: l.querySelector('.data').value }).eq('id', l.dataset.id);
         }
-        alert("Estoque OK!"); carregarTudo();
+        alert("Estoque atualizado com sucesso!"); carregarTudo();
     }
 
     setInterval(carregarTudo, 60000);
