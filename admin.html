@@ -9,22 +9,18 @@
     <style>
         :root { 
             --rosa-topo: #ff69b4; --rosa-fundo: #fff0f5; --marrom: #5d4037; 
-            --verde: #2ecc71; --laranja: #FF9800; --vermelho: #e74c3c; 
+            --verde: #2ecc71; --laranja: #FF9800; --vermelho: #e74c3c; --azul: #3498db; --cinza: #95a5a6;
         }
         body { font-family: 'Montserrat', sans-serif; background-color: var(--rosa-fundo); color: var(--marrom); margin: 0; padding: 10px; }
         header { text-align: center; padding: 5px; }
         header h1 { color: var(--rosa-topo); text-transform: uppercase; font-size: 1.1rem; letter-spacing: 2px; margin-bottom: 10px; }
         
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 15px; }
-        .stats-card { background: white; padding: 10px; border-radius: 12px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-bottom: 3px solid #eee; transition: opacity 0.3s ease; }
-        .stats-hidden { visibility: hidden; opacity: 0; }
-        .stats-visible { visibility: visible !important; opacity: 1 !important; }
+        .stats-card { background: white; padding: 10px; border-radius: 12px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-bottom: 3px solid #eee; }
         .stats-label { display: block; font-size: 0.6rem; font-weight: 700; color: #888; text-transform: uppercase; }
         .stats-num { display: block; font-size: 1.1rem; font-weight: 900; color: var(--marrom); }
         .border-novos { border-color: var(--verde); }
         .border-reservas { border-color: var(--laranja); }
-        .border-vendas { border-color: var(--rosa-topo); }
-        .border-cancel { border-color: var(--vermelho); }
 
         .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; scrollbar-width: none; }
         .tab-btn { padding: 10px 18px; border: none; background: white; border-radius: 50px; font-weight: bold; color: var(--rosa-topo); cursor: pointer; white-space: nowrap; font-size: 0.8rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
@@ -42,17 +38,17 @@
         .bg-pronta { background: var(--verde); }
         .bg-cancel { background: var(--vermelho); }
 
-        .btn-excluir { position: absolute; bottom: 15px; right: 15px; background: none; border: none; font-size: 1.1rem; cursor: pointer; opacity: 0.5; }
         .itens-box { background: #fffafb; border: 1px solid #ffebf2; border-radius: 10px; padding: 10px; font-size: 0.85rem; margin: 10px 0; white-space: pre-wrap; }
         
         .btn-mini-group { display: inline-flex; gap: 5px; margin-left: 10px; vertical-align: middle; }
-        .btn-mini { border: none; padding: 3px 10px; border-radius: 4px; font-size: 0.6rem; font-weight: bold; cursor: pointer; text-transform: uppercase; color: white; }
+        .btn-mini { border: none; padding: 5px 12px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; cursor: pointer; text-transform: uppercase; color: white; }
         
         .btn-mini-concluir { background: var(--verde); }
-        .btn-mini-desistir { background: #ccc; color: #666; }
-        .btn-mini-desistir:hover { background: var(--vermelho); color: white; }
+        .btn-mini-desistir { background: var(--cinza); }
+        .btn-mini-restaurar { background: var(--azul); }
+        .btn-mini-apagar { background: var(--vermelho); }
         
-        .btn-zap-small { text-decoration: none; background: #25d366; color: white; padding: 3px 10px; border-radius: 4px; font-size: 0.6rem; font-weight: bold; text-transform: uppercase; }
+        .btn-zap-small { text-decoration: none; background: #25d366; color: white; padding: 5px 12px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; }
 
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
         td, th { padding: 12px 10px; border-top: 1px solid #eee; font-size: 0.8rem; text-align: left; }
@@ -60,25 +56,21 @@
 </head>
 <body>
 
-<audio id="blip-som" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
-
 <header>
     <h1>Mii Cakes Admin</h1>
     <div class="stats-grid">
         <div class="stats-card border-novos"><span class="stats-label">Novos</span><span class="stats-num" id="count-novos">0</span></div>
         <div class="stats-card border-reservas"><span class="stats-label">Reservas</span><span class="stats-num" id="count-reservas">0</span></div>
-        <div id="card-vendas" class="stats-card border-vendas stats-hidden"><span class="stats-label">Vendas</span><span class="stats-num" id="count-concluidos">0</span></div>
-        <div id="card-cancel" class="stats-card border-cancel stats-hidden"><span class="stats-label">Desistências</span><span class="stats-num" id="count-cancelados">0</span></div>
     </div>
-    <p id="status-update" style="font-size: 0.6rem; opacity: 0.5;">Carregando...</p>
+    <p id="status-update" style="font-size: 0.6rem; opacity: 0.5;">Sincronizando...</p>
 </header>
 
 <div class="tabs">
-    <button class="tab-btn active" id="btn-novos" onclick="mudarAba('novos', this)">Novos 🍰</button>
-    <button class="tab-btn" id="btn-reservas" onclick="mudarAba('reservas', this)">Reservas 🕒</button>
-    <button class="tab-btn" id="btn-estoque" onclick="mudarAba('estoque', this)">Estoque 📦</button>
-    <button class="tab-btn" id="btn-concluidos" onclick="mudarAba('concluidos', this)">Vendas ✅</button>
-    <button class="tab-btn" id="btn-desistencias" onclick="mudarAba('desistencias', this)">Desistências ❌</button>
+    <button class="tab-btn active" id="tab-novos" onclick="mudarAba('novos', this)">Novos 🍰</button>
+    <button class="tab-btn" id="tab-reservas" onclick="mudarAba('reservas', this)">Reservas 🕒</button>
+    <button class="tab-btn" id="tab-concluidos" onclick="mudarAba('concluidos', this)">Vendas ✅</button>
+    <button class="tab-btn" id="tab-desistencias" onclick="mudarAba('desistencias', this)">Desistências ❌</button>
+    <button class="tab-btn" id="tab-estoque" onclick="mudarAba('estoque', this)">Estoque 📦</button>
 </div>
 
 <div id="aba-novos" class="section active"><div id="lista-novos"></div></div>
@@ -96,119 +88,123 @@
 </div>
 
 <script>
-    // Conexão Supabase
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
-    let totalPedidosAntigo = 0;
     let editandoEstoque = false;
 
-    // --- FUNÇÕES DE AÇÃO (Conectar e Mover) ---
-    async function finalizar(id) {
-        if (!confirm("Confirmar venda concluída?")) return;
-        try {
+    document.addEventListener('click', async function(e) {
+        const target = e.target;
+        const id = target.getAttribute('data-id');
+        if (!id) return;
+
+        // Ação: CONCLUIR VENDA
+        if (target.classList.contains('btn-mini-concluir')) {
             const { error } = await _supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id);
-            if (error) throw error;
-            await carregarTudo();
-            mudarAba('concluidos', document.getElementById('btn-concluidos'));
-        } catch (err) {
-            alert("Erro ao finalizar: " + err.message);
+            if (!error) await carregarTudo();
         }
-    }
 
-    async function marcarDesistencia(id) {
-        const m = prompt("Motivo da desistência?");
-        if (m === null) return;
-        try {
-            const { error } = await _supa.from('pedidos').update({ 
-                status: 'Desistencia', 
-                motivo_cancelamento: m || "Não informado" 
-            }).eq('id', id);
-            if (error) throw error;
-            await carregarTudo();
-            mudarAba('desistencias', document.getElementById('btn-desistencias'));
-        } catch (err) {
-            alert("Erro ao marcar desistência: " + err.message);
+        // Ação: DESISTÊNCIA
+        if (target.classList.contains('btn-mini-desistir')) {
+            const { error } = await _supa.from('pedidos').update({ status: 'Desistencia' }).eq('id', id);
+            if (!error) await carregarTudo();
         }
-    }
 
-    async function excluirPedido(id) {
-        if (!confirm("Excluir permanentemente?")) return;
-        try {
-            const { error } = await _supa.from('pedidos').delete().eq('id', id);
-            if (error) throw error;
-            carregarTudo();
-        } catch (err) {
-            alert("Erro ao excluir: " + err.message);
+        // Ação: RESTAURAR
+        if (target.classList.contains('btn-mini-restaurar')) {
+            const { error } = await _supa.from('pedidos').update({ status: 'Novo' }).eq('id', id);
+            if (!error) await carregarTudo();
         }
-    }
 
-    // --- LÓGICA DO SISTEMA ---
+        // Ação: APAGAR (Com Confirmação)
+        if (target.classList.contains('btn-mini-apagar')) {
+            const confirmar = confirm("Tem certeza que deseja excluir permanentemente este pedido da Mii Cakes?");
+            if (confirmar) {
+                const { error } = await _supa.from('pedidos').delete().eq('id', id);
+                if (!error) await carregarTudo();
+            }
+        }
+    });
+
     async function carregarTudo() {
-        const { data: pedidos } = await _supa.from('pedidos').select('*').order('created_at', { ascending: true });
+        const { data: pedidos } = await _supa.from('pedidos').select('*').order('created_at', { ascending: false });
         const { data: estoque } = await _supa.from('estoque').select('*').order('nome');
-        if (pedidos) { renderizarPedidos(pedidos); atualizarContadores(pedidos); }
+        
+        if (pedidos) { 
+            renderizarPedidos(pedidos); 
+            atualizarContadores(pedidos); 
+        }
         if (estoque && !editandoEstoque) renderizarEstoque(estoque);
-        document.getElementById('status-update').innerText = "Última atualização: " + new Date().toLocaleTimeString();
+        
+        document.getElementById('status-update').innerText = "Sincronizado: " + new Date().toLocaleTimeString();
     }
 
     function atualizarContadores(lista) {
-        let n = 0, r = 0, v = 0, d = 0;
+        let n = 0, r = 0;
         lista.forEach(p => {
-            const status = p.status || "Novo";
-            if (status === 'Finalizado') v++;
-            else if (status === 'Desistencia') d++;
-            else {
+            const status = (p.status || "Novo").trim();
+            if (status !== 'Finalizado' && status !== 'Desistencia') {
                 if (p.itens?.includes('✅')) n++;
                 if (p.itens?.includes('[RESERVA]')) r++;
             }
         });
         document.getElementById('count-novos').innerText = n;
         document.getElementById('count-reservas').innerText = r;
-        document.getElementById('count-concluidos').innerText = v;
-        document.getElementById('count-cancelados').innerText = d;
-        if ((n + r) > totalPedidosAntigo && totalPedidosAntigo !== 0) document.getElementById('blip-som').play();
-        totalPedidosAntigo = (n + r);
     }
 
     function renderizarPedidos(lista) {
         const html = { novos: "", reservas: "", concluidos: "", desistencias: "" };
+        
         lista.forEach(p => {
             const dataPedido = new Date(p.created_at).toLocaleString('pt-BR');
-            const status = p.status || "Novo";
-            if (status === 'Finalizado') html.concluidos += gerarCard(p, p.itens, false, dataPedido);
-            else if (status === 'Desistencia') html.desistencias += gerarCard(p, p.itens, false, dataPedido, true);
+            const status = (p.status || "Novo").trim();
+            
+            if (status === 'Finalizado') {
+                html.concluidos += gerarCard(p, p.itens, false, dataPedido, false);
+            } 
+            else if (status === 'Desistencia') {
+                html.desistencias += gerarCard(p, p.itens, false, dataPedido, true);
+            } 
             else {
                 const itensPronta = filtrarItens(p.itens, 'PRONTA');
                 const itensReserva = filtrarItens(p.itens, 'RESERVA');
-                if (itensPronta.length > 0) html.novos += gerarCard(p, itensPronta, false, dataPedido);
-                if (itensReserva.length > 0) html.reservas += gerarCard(p, itensReserva, true, dataPedido);
+                if (itensPronta.length > 0) html.novos += gerarCard(p, itensPronta, false, dataPedido, false);
+                if (itensReserva.length > 0) html.reservas += gerarCard(p, itensReserva, true, dataPedido, false);
             }
         });
-        document.getElementById('lista-novos').innerHTML = html.novos || "<p style='text-align:center; opacity:0.3; padding:20px;'>Sem novos pedidos.</p>";
-        document.getElementById('lista-reservas').innerHTML = html.reservas || "<p style='text-align:center; opacity:0.3; padding:20px;'>Sem reservas.</p>";
-        document.getElementById('lista-concluidos').innerHTML = html.concluidos || "<p style='text-align:center; opacity:0.3; padding:20px;'>Sem vendas.</p>";
-        document.getElementById('lista-desistencias').innerHTML = html.desistencias || "<p style='text-align:center; opacity:0.3; padding:20px;'>Sem desistências.</p>";
+
+        document.getElementById('lista-novos').innerHTML = html.novos || "<p style='text-align:center; padding:20px; opacity:0.5;'>Nenhum novo.</p>";
+        document.getElementById('lista-reservas').innerHTML = html.reservas || "<p style='text-align:center; padding:20px; opacity:0.5;'>Nenhuma reserva.</p>";
+        document.getElementById('lista-concluidos').innerHTML = html.concluidos || "<p style='text-align:center; padding:20px; opacity:0.5;'>Histórico vazio.</p>";
+        document.getElementById('lista-desistencias').innerHTML = html.desistencias || "<p style='text-align:center; padding:20px; opacity:0.5;'>Nenhuma desistência.</p>";
     }
 
-    function gerarCard(p, itens, ehReserva, dataHora, ehDesistencia = false) {
+    function gerarCard(p, itens, ehReserva, dataHora, ehDesistencia) {
         const linkZap = `https://wa.me/55${p.telefone?.replace(/\D/g,'')}`;
-        const acoesMini = ehDesistencia || p.status === 'Finalizado' ? '' : `
-            <div class="btn-mini-group">
-                <button class="btn-mini btn-mini-concluir" onclick="finalizar(${p.id})">Venda Concluída</button>
-                <button class="btn-mini btn-mini-desistir" onclick="marcarDesistencia(${p.id})">Desistência</button>
-            </div>`;
-        const btnExcluir = ehDesistencia ? `<button class="btn-excluir" onclick="excluirPedido(${p.id})">🗑️</button>` : '';
-        const motivo = p.motivo_cancelamento ? `<div style="color:var(--vermelho); font-size:0.7rem; margin-top:5px; background:#fff5f5; padding:5px; border-radius:5px;">${p.motivo_cancelamento}</div>` : '';
+        const statusReal = (p.status || "Novo").trim();
+        
+        let botoes = '';
+        if (statusReal === 'Desistencia') {
+            botoes = `
+                <div class="btn-mini-group">
+                    <button class="btn-mini btn-mini-restaurar" data-id="${p.id}">Restaurar</button>
+                    <button class="btn-mini btn-mini-apagar" data-id="${p.id}">Apagar</button>
+                </div>`;
+        } else if (statusReal !== 'Finalizado') {
+            botoes = `
+                <div class="btn-mini-group">
+                    <button class="btn-mini btn-mini-concluir" data-id="${p.id}">Venda Concluída</button>
+                    <button class="btn-mini btn-mini-desistir" data-id="${p.id}">Desistência</button>
+                </div>`;
+        }
 
         return `<div class="card-pedido ${ehReserva ? 'is-reserva' : ''} ${ehDesistencia ? 'is-desistencia' : ''}">
                 <span class="badge ${ehDesistencia ? 'bg-cancel' : (ehReserva ? 'bg-reserva' : 'bg-pronta')}">${ehDesistencia ? 'OFF' : (ehReserva ? '🕒 RES' : '✅ OK')}</span>
                 <small style="display:block; color:#aaa; font-size: 0.6rem;">${dataHora}</small>
                 <strong style="font-size:0.9rem;">${p.nome}</strong>
                 <div style="font-size:0.8rem; margin:5px 0; display: flex; align-items: center; flex-wrap: wrap; gap: 5px;">
-                    📱 ${p.telefone} <a href="${linkZap}" target="_blank" class="btn-zap-small">ZAP</a> ${acoesMini}
+                    📱 ${p.telefone} <a href="${linkZap}" target="_blank" class="btn-zap-small">ZAP</a> ${botoes}
                 </div>
                 <div class="itens-box">${itens}</div>
                 <div style="font-size:0.75rem;">Total: <b>R$ ${Number(p.valor_total).toFixed(2)}</b></div>
-                ${motivo} ${btnExcluir}
             </div>`;
     }
 
@@ -217,16 +213,12 @@
         return tipo === 'PRONTA' ? l.filter(i => i.includes('✅')).join('\n').trim() : l.filter(i => i.includes('[RESERVA]')).join('\n').trim(); 
     }
 
-    function mudarAba(id, btn) {
+    window.mudarAba = function(id, btn) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('aba-' + id).classList.add('active');
         if(btn) btn.classList.add('active');
-        const cv = document.getElementById('card-vendas'), cc = document.getElementById('card-cancel');
-        if (id === 'concluidos') cv.classList.add('stats-visible');
-        else if (id === 'desistencias') cc.classList.add('stats-visible');
-        else { cv.classList.remove('stats-visible'); cc.classList.remove('stats-visible'); }
-    }
+    };
 
     function renderizarEstoque(e) {
         document.getElementById('corpo-estoque').innerHTML = e.map(i => `
@@ -237,19 +229,17 @@
             </tr>`).join('');
     }
 
-    async function salvarEstoque() {
-        try {
-            for (let l of document.querySelectorAll('.linha-est')) {
-                await _supa.from('estoque').update({ 
-                    quantidade: l.querySelector('.qtd').value, 
-                    dados_proximidade: l.querySelector('.data').value 
-                }).eq('id', l.dataset.id);
-            }
-            alert("Estoque atualizado!"); carregarTudo();
-        } catch (err) { alert("Erro estoque: " + err.message); }
-    }
+    window.salvarEstoque = async function() {
+        for (let l of document.querySelectorAll('.linha-est')) {
+            await _supa.from('estoque').update({ 
+                quantidade: l.querySelector('.qtd').value, 
+                dados_proximidade: l.querySelector('.data').value 
+            }).eq('id', l.dataset.id);
+        }
+        alert("Estoque atualizado!"); carregarTudo();
+    };
 
-    setInterval(carregarTudo, 60000);
+    setInterval(carregarTudo, 30000);
     window.onload = carregarTudo;
 </script>
 </body>
