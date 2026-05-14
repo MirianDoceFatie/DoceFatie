@@ -32,6 +32,7 @@
         .card-pedido { background: white; border-radius: 15px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 8px solid var(--verde); position: relative; }
         .card-pedido.is-reserva { border-left-color: var(--laranja); }
         .card-pedido.is-desistencia { border-left-color: var(--vermelho); }
+        .card-pedido.is-finalizado { border-left-color: var(--verde); opacity: 0.9; }
         
         .badge { position: absolute; top: 15px; right: 15px; padding: 4px 8px; border-radius: 6px; font-size: 0.6rem; font-weight: 900; color: white; text-transform: uppercase; }
         .bg-reserva { background: var(--laranja); }
@@ -108,7 +109,7 @@
             if (!error) await carregarTudo();
         }
 
-        // Ação: RESTAURAR
+        // Ação: RESTAURAR (Agora funciona para Desistência e Vendas)
         if (target.classList.contains('btn-mini-restaurar')) {
             const { error } = await _supa.from('pedidos').update({ status: 'Novo' }).eq('id', id);
             if (!error) await carregarTudo();
@@ -116,7 +117,7 @@
 
         // Ação: APAGAR (Com Confirmação)
         if (target.classList.contains('btn-mini-apagar')) {
-            const confirmar = confirm("Tem certeza que deseja excluir permanentemente este pedido da Mii Cakes?");
+            const confirmar = confirm("Tem certeza que deseja excluir permanentemente este pedido?");
             if (confirmar) {
                 const { error } = await _supa.from('pedidos').delete().eq('id', id);
                 if (!error) await carregarTudo();
@@ -182,13 +183,20 @@
         const statusReal = (p.status || "Novo").trim();
         
         let botoes = '';
+        // Botões para Vendas e Desistências (Ambos agora têm Restaurar)
         if (statusReal === 'Desistencia') {
             botoes = `
                 <div class="btn-mini-group">
                     <button class="btn-mini btn-mini-restaurar" data-id="${p.id}">Restaurar</button>
                     <button class="btn-mini btn-mini-apagar" data-id="${p.id}">Apagar</button>
                 </div>`;
-        } else if (statusReal !== 'Finalizado') {
+        } else if (statusReal === 'Finalizado') {
+            botoes = `
+                <div class="btn-mini-group">
+                    <button class="btn-mini btn-mini-restaurar" data-id="${p.id}">Restaurar</button>
+                </div>`;
+        } else {
+            // Botões padrão para Novos e Reservas
             botoes = `
                 <div class="btn-mini-group">
                     <button class="btn-mini btn-mini-concluir" data-id="${p.id}">Venda Concluída</button>
@@ -196,7 +204,9 @@
                 </div>`;
         }
 
-        return `<div class="card-pedido ${ehReserva ? 'is-reserva' : ''} ${ehDesistencia ? 'is-desistencia' : ''}">
+        const classeFinalizado = statusReal === 'Finalizado' ? 'is-finalizado' : '';
+
+        return `<div class="card-pedido ${ehReserva ? 'is-reserva' : ''} ${ehDesistencia ? 'is-desistencia' : ''} ${classeFinalizado}">
                 <span class="badge ${ehDesistencia ? 'bg-cancel' : (ehReserva ? 'bg-reserva' : 'bg-pronta')}">${ehDesistencia ? 'OFF' : (ehReserva ? '🕒 RES' : '✅ OK')}</span>
                 <small style="display:block; color:#aaa; font-size: 0.6rem;">${dataHora}</small>
                 <strong style="font-size:0.9rem;">${p.nome}</strong>
