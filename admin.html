@@ -7,36 +7,58 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --rosa-topo: #ff69b4; --rosa-fundo: #fff0f5; --marrom: #5d4037; }
-        body { font-family: 'Montserrat', sans-serif; background-color: var(--rosa-fundo); color: var(--marrom); margin: 0; padding: 15px; }
+        :root { 
+            --rosa-topo: #ff69b4; --rosa-fundo: #fff0f5; --marrom: #5d4037; 
+            --verde: #2ecc71; --laranja: #FF9800; --vermelho: #e74c3c; 
+        }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--rosa-fundo); color: var(--marrom); margin: 0; padding: 10px; }
+        header { text-align: center; padding: 5px; }
+        header h1 { color: var(--rosa-topo); text-transform: uppercase; font-size: 1.1rem; letter-spacing: 2px; margin-bottom: 10px; }
         
-        header { text-align: center; padding: 10px; }
-        header h1 { color: var(--rosa-topo); text-transform: uppercase; font-size: 1.2rem; letter-spacing: 2px; }
-        
-        .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; scrollbar-width: none; }
-        .tab-btn { padding: 12px 20px; border: none; background: white; border-radius: 50px; font-weight: bold; color: var(--rosa-topo); cursor: pointer; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 15px; }
+        .stats-card { background: white; padding: 10px; border-radius: 12px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-bottom: 3px solid #eee; transition: opacity 0.3s ease; }
+        .stats-hidden { visibility: hidden; opacity: 0; }
+        .stats-visible { visibility: visible !important; opacity: 1 !important; }
+        .stats-label { display: block; font-size: 0.6rem; font-weight: 700; color: #888; text-transform: uppercase; }
+        .stats-num { display: block; font-size: 1.1rem; font-weight: 900; color: var(--marrom); }
+        .border-novos { border-color: var(--verde); }
+        .border-reservas { border-color: var(--laranja); }
+        .border-vendas { border-color: var(--rosa-topo); }
+        .border-cancel { border-color: var(--vermelho); }
+
+        .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; scrollbar-width: none; }
+        .tab-btn { padding: 10px 18px; border: none; background: white; border-radius: 50px; font-weight: bold; color: var(--rosa-topo); cursor: pointer; white-space: nowrap; font-size: 0.8rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .tab-btn.active { background: var(--rosa-topo); color: white; }
 
         .section { display: none; }
         .section.active { display: block; }
 
-        .card-pedido { background: white; border-radius: 15px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 8px solid #2ecc71; position: relative; animation: slideIn 0.3s ease; }
-        .card-pedido.is-reserva { border-left-color: #FF9800; }
+        .card-pedido { background: white; border-radius: 15px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 8px solid var(--verde); position: relative; }
+        .card-pedido.is-reserva { border-left-color: var(--laranja); }
+        .card-pedido.is-desistencia { border-left-color: var(--vermelho); }
         
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        .badge { position: absolute; top: 15px; right: 15px; padding: 4px 8px; border-radius: 6px; font-size: 0.6rem; font-weight: 900; color: white; text-transform: uppercase; }
+        .bg-reserva { background: var(--laranja); }
+        .bg-pronta { background: var(--verde); }
+        .bg-cancel { background: var(--vermelho); }
 
-        .badge { position: absolute; top: 15px; right: 15px; padding: 4px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 900; color: white; }
-        .bg-reserva { background: #FF9800; }
-        .bg-pronta { background: #2ecc71; }
-
+        .btn-excluir { position: absolute; bottom: 15px; right: 15px; background: none; border: none; font-size: 1.1rem; cursor: pointer; opacity: 0.5; }
         .itens-box { background: #fffafb; border: 1px solid #ffebf2; border-radius: 10px; padding: 10px; font-size: 0.85rem; margin: 10px 0; white-space: pre-wrap; }
-        .btn-group { display: flex; gap: 8px; margin-top: 15px; }
-        .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.7rem; text-transform: uppercase; }
-        .btn-zap { background: #e8faf0; color: #27ae60; text-decoration: none; text-align: center; }
-        .btn-concluir { background: var(--marrom); color: white; }
+        
+        /* Botões Delicados Ajustados */
+        .btn-mini-group { display: inline-flex; gap: 5px; margin-left: 10px; vertical-align: middle; }
+        .btn-mini { border: none; padding: 3px 10px; border-radius: 4px; font-size: 0.6rem; font-weight: bold; cursor: pointer; text-transform: uppercase; color: white; }
+        
+        /* Botão Venda Concluída com Cor de Sucesso */
+        .btn-mini-concluir { background: var(--verde); }
+        /* Botão Desistência Discreto */
+        .btn-mini-desistir { background: #ccc; color: #666; }
+        .btn-mini-desistir:hover { background: var(--vermelho); color: white; }
+        
+        .btn-zap-small { text-decoration: none; background: #25d366; color: white; padding: 3px 10px; border-radius: 4px; font-size: 0.6rem; font-weight: bold; text-transform: uppercase; }
 
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
-        td, th { padding: 12px 10px; border-top: 1px solid #eee; font-size: 0.85rem; }
+        td, th { padding: 12px 10px; border-top: 1px solid #eee; font-size: 0.8rem; text-align: left; }
     </style>
 </head>
 <body>
@@ -45,23 +67,30 @@
 
 <header>
     <h1>Mii Cakes Admin</h1>
-    <p id="status-update" style="font-size: 0.6rem; opacity: 0.5;">Atualizado agora</p>
+    <div class="stats-grid">
+        <div class="stats-card border-novos"><span class="stats-label">Novos</span><span class="stats-num" id="count-novos">0</span></div>
+        <div class="stats-card border-reservas"><span class="stats-label">Reservas</span><span class="stats-num" id="count-reservas">0</span></div>
+        <div id="card-vendas" class="stats-card border-vendas stats-hidden"><span class="stats-label">Vendas</span><span class="stats-num" id="count-concluidos">0</span></div>
+        <div id="card-cancel" class="stats-card border-cancel stats-hidden"><span class="stats-label">Desistências</span><span class="stats-num" id="count-cancelados">0</span></div>
+    </div>
+    <p id="status-update" style="font-size: 0.6rem; opacity: 0.5;">Carregando...</p>
 </header>
 
 <div class="tabs">
     <button class="tab-btn active" onclick="mudarAba('novos', this)">Novos 🍰</button>
     <button class="tab-btn" onclick="mudarAba('reservas', this)">Reservas 🕒</button>
     <button class="tab-btn" onclick="mudarAba('estoque', this)">Estoque 📦</button>
-    <button class="tab-btn" onclick="mudarAba('historico', this)">Histórico ✅</button>
+    <button class="tab-btn" onclick="mudarAba('concluidos', this)">Vendas ✅</button>
+    <button class="tab-btn" onclick="mudarAba('desistencias', this)">Desistências ❌</button>
 </div>
 
 <div id="aba-novos" class="section active"><div id="lista-novos"></div></div>
 <div id="aba-reservas" class="section"><div id="lista-reservas"></div></div>
-<div id="aba-historico" class="section"><div id="lista-historico"></div></div>
-
+<div id="aba-concluidos" class="section"><div id="lista-concluidos"></div></div>
+<div id="aba-desistencias" class="section"><div id="lista-desistencias"></div></div>
 <div id="aba-estoque" class="section">
     <div style="background:white; padding:15px; border-radius:15px;">
-        <button class="btn" style="background:#2ecc71; color:white; width:100%; margin-bottom:15px;" onclick="salvarEstoque()">💾 Atualizar Estoque</button>
+        <button onclick="salvarEstoque()" style="background:var(--verde); color:white; width:100%; padding:10px; border:none; border-radius:10px; font-weight:bold; margin-bottom:15px; cursor:pointer;">💾 Atualizar Estoque</button>
         <table>
             <thead><tr><th>Sabor</th><th>Qtd</th><th>Fornada</th></tr></thead>
             <tbody id="corpo-estoque"></tbody>
@@ -72,125 +101,115 @@
 <script>
     const _supa = supabase.createClient('https://byowrfsxtnqoumakbina.supabase.co', 'sb_publishable_BDZCNE4WgBWiFThCvCtdNQ_WYULTwBx');
     let totalPedidosAntigo = 0;
+    let editandoEstoque = false;
 
     async function carregarTudo() {
-        const { data: pedidos } = await _supa.from('pedidos').select('*').order('created_at', { ascending: false });
+        const { data: pedidos } = await _supa.from('pedidos').select('*').order('created_at', { ascending: true });
         const { data: estoque } = await _supa.from('estoque').select('*').order('nome');
-
-        if (pedidos) {
-            // Se o número de pedidos aumentou, toca o blip
-            const pedidosAtivos = pedidos.filter(p => p.status !== 'Finalizado').length;
-            if (pedidosAtivos > totalPedidosAntigo && totalPedidosAntigo !== 0) {
-                document.getElementById('blip-som').play();
-            }
-            totalPedidosAntigo = pedidosAtivos;
-            renderizarPedidos(pedidos);
-        }
-        
-        if (estoque) renderizarEstoque(estoque);
+        if (pedidos) { renderizarPedidos(pedidos); atualizarContadores(pedidos); }
+        if (estoque && !editandoEstoque) renderizarEstoque(estoque);
         document.getElementById('status-update').innerText = "Última atualização: " + new Date().toLocaleTimeString();
     }
 
-    function filtrarItens(textoCompleto, tipo) {
-        const linhas = textoCompleto.split('\n');
-        if (tipo === 'PRONTA') {
-            return linhas.filter(l => l.includes('✅')).join('\n').trim();
-        } else {
-            return linhas.filter(l => l.includes('[RESERVA]')).join('\n').trim();
-        }
+    function atualizarContadores(lista) {
+        let n = 0, r = 0, v = 0, d = 0;
+        lista.forEach(p => {
+            const status = p.status || "Novo";
+            if (status === 'Finalizado') v++;
+            else if (status === 'Desistencia') d++;
+            else {
+                if (p.itens?.includes('✅')) n++;
+                if (p.itens?.includes('[RESERVA]')) r++;
+            }
+        });
+        document.getElementById('count-novos').innerText = n;
+        document.getElementById('count-reservas').innerText = r;
+        document.getElementById('count-concluidos').innerText = v;
+        document.getElementById('count-cancelados').innerText = d;
+        if ((n + r) > totalPedidosAntigo && totalPedidosAntigo !== 0) document.getElementById('blip-som').play();
+        totalPedidosAntigo = (n + r);
     }
 
     function renderizarPedidos(lista) {
-        const cNovos = document.getElementById('lista-novos');
-        const cReservas = document.getElementById('lista-reservas');
-        const cHist = document.getElementById('lista-historico');
-        
-        let htmlNovos = "", htmlReservas = "", htmlHist = "";
+        const containers = { novos: document.getElementById('lista-novos'), reservas: document.getElementById('lista-reservas'), concluidos: document.getElementById('lista-concluidos'), desistencias: document.getElementById('lista-desistencias') };
+        let html = { novos: "", reservas: "", concluidos: "", desistencias: "" };
 
         lista.forEach(p => {
-            const textoOriginal = p.itens || "";
+            const dataPedido = new Date(p.created_at).toLocaleString('pt-BR');
             const status = p.status || "Novo";
-
-            if (status === 'Finalizado') {
-                htmlHist += gerarCard(p, textoOriginal, false);
-                return;
-            }
-
-            const itensPronta = filtrarItens(textoOriginal, 'PRONTA');
-            const itensReserva = filtrarItens(textoOriginal, 'RESERVA');
-
-            // Se tiver itens de pronta entrega, vai pra aba "Novos"
-            if (itensPronta.length > 0) {
-                htmlNovos += gerarCard(p, itensPronta, false);
-            }
-
-            // Se tiver itens de reserva, vai pra aba "Reservas"
-            if (itensReserva.length > 0) {
-                htmlReservas += gerarCard(p, itensReserva, true);
+            if (status === 'Finalizado') html.concluidos += gerarCard(p, p.itens, false, dataPedido);
+            else if (status === 'Desistencia') html.desistencias += gerarCard(p, p.itens, false, dataPedido, true);
+            else {
+                const itensPronta = filtrarItens(p.itens, 'PRONTA');
+                const itensReserva = filtrarItens(p.itens, 'RESERVA');
+                if (itensPronta.length > 0) html.novos += gerarCard(p, itensPronta, false, dataPedido);
+                if (itensReserva.length > 0) html.reservas += gerarCard(p, itensReserva, true, dataPedido);
             }
         });
-
-        cNovos.innerHTML = htmlNovos || "<p style='text-align:center; opacity:0.5;'>Sem pedidos para hoje.</p>";
-        cReservas.innerHTML = htmlReservas || "<p style='text-align:center; opacity:0.5;'>Sem reservas pendentes.</p>";
-        cHist.innerHTML = htmlHist || "<p style='text-align:center; opacity:0.5;'>Histórico vazio.</p>";
+        Object.keys(containers).forEach(key => { containers[key].innerHTML = html[key] || "<p style='text-align:center; opacity:0.3; padding:20px;'>Vazio.</p>"; });
     }
 
-    function gerarCard(p, itensFiltrados, ehReserva) {
-        return `
-            <div class="card-pedido ${ehReserva ? 'is-reserva' : ''}">
-                <span class="badge ${ehReserva ? 'bg-reserva' : 'bg-pronta'}">
-                    ${ehReserva ? '🕒 RESERVA' : '✅ PRONTA'}
-                </span>
-                <strong>${p.nome}</strong><br>
-                <small>📍 ${p.endereco || 'Retirada'}</small>
-                <div class="itens-box">${itensFiltrados}</div>
-                <div style="font-size:0.8rem; margin-bottom:10px;">
-                    Total: <b>R$ ${Number(p.valor_total).toFixed(2)}</b> | ${p.metodo_pagamento || 'Pix'}
+    function gerarCard(p, itens, ehReserva, dataHora, ehDesistencia = false) {
+        const linkZap = `https://wa.me/55${p.telefone?.replace(/\D/g,'')}`;
+        
+        const acoesMini = ehDesistencia || p.status === 'Finalizado' ? '' : `
+            <div class="btn-mini-group">
+                <button class="btn-mini btn-mini-concluir" onclick="finalizar(${p.id})">Venda Concluída</button>
+                <button class="btn-mini btn-mini-desistir" onclick="marcarDesistencia(${p.id})">Desistência</button>
+            </div>`;
+
+        const btnExcluir = ehDesistencia ? `<button class="btn-excluir" onclick="excluirPedido(${p.id})">🗑️</button>` : '';
+        const motivo = p.motivo_cancelamento ? `<div style="color:var(--vermelho); font-size:0.7rem; margin-top:5px; background:#fff5f5; padding:5px; border-radius:5px;">${p.motivo_cancelamento}</div>` : '';
+
+        return `<div class="card-pedido ${ehReserva ? 'is-reserva' : ''} ${ehDesistencia ? 'is-desistencia' : ''}">
+                <span class="badge ${ehDesistencia ? 'bg-cancel' : (ehReserva ? 'bg-reserva' : 'bg-pronta')}">${ehDesistencia ? 'OFF' : (ehReserva ? '🕒 RES' : '✅ OK')}</span>
+                <small style="display:block; color:#aaa; font-size: 0.6rem;">${dataHora}</small>
+                <strong style="font-size:0.9rem;">${p.nome}</strong>
+                <div style="font-size:0.8rem; margin:5px 0; display: flex; align-items: center; flex-wrap: wrap; gap: 5px;">
+                    📱 ${p.telefone} 
+                    <a href="${linkZap}" target="_blank" class="btn-zap-small">ZAP</a>
+                    ${acoesMini}
                 </div>
-                <div class="btn-group">
-                    <a href="https://wa.me/55${p.telefone?.replace(/\D/g,'')}" target="_blank" class="btn btn-zap">WhatsApp</a>
-                    <button class="btn btn-concluir" onclick="finalizar(${p.id})">OK</button>
-                </div>
+                <div class="itens-box">${itens}</div>
+                <div style="font-size:0.75rem;">Total: <b>R$ ${Number(p.valor_total).toFixed(2)}</b></div>
+                ${motivo} ${btnExcluir}
             </div>`;
     }
 
-    function renderizarEstoque(estoque) {
-        document.getElementById('corpo-estoque').innerHTML = estoque.map(i => `
-            <tr class="linha-est" data-id="${i.id}">
-                <td>${i.nome}</td>
-                <td><input type="number" class="qtd" value="${i.quantidade || 0}" style="width:40px"></td>
-                <td><input type="text" class="data" value="${i.dados_proximidade || ''}" style="width:80px"></td>
-            </tr>
-        `).join('');
-    }
-
-    async function finalizar(id) {
-        if(confirm("Pedido entregue/finalizado?")) {
-            await _supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id);
-            carregarTudo();
-        }
-    }
-
-    async function salvarEstoque() {
-        const linhas = document.querySelectorAll('.linha-est');
-        for (let l of linhas) {
-            const id = l.dataset.id;
-            const quantidade = l.querySelector('.qtd').value;
-            const dados_proximidade = l.querySelector('.data').value;
-            await _supa.from('estoque').update({ quantidade, dados_proximidade }).eq('id', id);
-        }
-        alert("Estoque atualizado!");
-    }
-
+    async function finalizar(id) { if(confirm("Venda concluída?")) { await _supa.from('pedidos').update({ status: 'Finalizado' }).eq('id', id); carregarTudo(); } }
+    async function marcarDesistencia(id) { const m = prompt("Motivo da desistência?"); if (m !== null) { await _supa.from('pedidos').update({ status: 'Desistencia', motivo_cancelamento: m || "Sem motivo" }).eq('id', id); carregarTudo(); } }
+    async function excluirPedido(id) { if(confirm("Excluir histórico?")) { await _supa.from('pedidos').delete().eq('id', id); carregarTudo(); } }
+    
+    function filtrarItens(t, tipo) { const l = (t || "").split('\n'); return tipo === 'PRONTA' ? l.filter(i => i.includes('✅')).join('\n').trim() : l.filter(i => i.includes('[RESERVA]')).join('\n').trim(); }
+    
     function mudarAba(id, btn) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('aba-' + id).classList.add('active');
         btn.classList.add('active');
+        const cv = document.getElementById('card-vendas'), cc = document.getElementById('card-cancel');
+        if (id === 'concluidos') cv.classList.add('stats-visible');
+        else if (id === 'desistencias') cc.classList.add('stats-visible');
+        else { cv.classList.remove('stats-visible'); cc.classList.remove('stats-visible'); }
     }
 
-    // Atualiza a cada 15 segundos para garantir que você veja os pedidos novos rápido
-    setInterval(carregarTudo, 15000);
+    function renderizarEstoque(e) {
+        document.getElementById('corpo-estoque').innerHTML = e.map(i => `
+            <tr class="linha-est" data-id="${i.id}">
+                <td>${i.nome}</td>
+                <td><input type="number" class="qtd" value="${i.quantidade || 0}" style="width:40px" onfocus="editandoEstoque=true" onblur="editandoEstoque=false"></td>
+                <td><input type="text" class="data" value="${i.dados_proximidade || ''}" style="width:80px" onfocus="editandoEstoque=true" onblur="editandoEstoque=false"></td>
+            </tr>`).join('');
+    }
+
+    async function salvarEstoque() {
+        for (let l of document.querySelectorAll('.linha-est')) {
+            await _supa.from('estoque').update({ quantidade: l.querySelector('.qtd').value, dados_proximidade: l.querySelector('.data').value }).eq('id', l.dataset.id);
+        }
+        alert("Estoque OK!"); carregarTudo();
+    }
+
+    setInterval(carregarTudo, 60000);
     window.onload = carregarTudo;
 </script>
 </body>
