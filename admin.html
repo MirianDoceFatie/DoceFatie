@@ -10,6 +10,7 @@
         :root { 
             --rosa-topo: #ff69b4; --rosa-fundo: #fff0f5; --marrom: #5d4037; 
             --verde: #2ecc71; --laranja: #FF9800; --vermelho: #e74c3c; --azul: #3498db; --cinza: #95a5a6;
+            --roxo: #9b59b6;
         }
         body { font-family: 'Montserrat', sans-serif; background-color: var(--rosa-fundo); color: var(--marrom); margin: 0; padding: 10px; }
         header { text-align: center; padding: 5px; }
@@ -31,23 +32,26 @@
 
         .card-pedido { background: white; border-radius: 15px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 8px solid var(--verde); position: relative; }
         .card-pedido.is-reserva { border-left-color: var(--laranja); }
-        .card-pedido.is-desistencia { border-left-color: var(--vermelho); }
+        .card-pedido.is-desistencia { border-left-color: var(--cinza); }
         .card-pedido.is-finalizado { border-left-color: var(--verde); opacity: 0.9; }
+        .card-pedido.is-rascunho { border-left-color: var(--roxo); }
         
         .badge { position: absolute; top: 15px; right: 15px; padding: 4px 8px; border-radius: 6px; font-size: 0.6rem; font-weight: 900; color: white; text-transform: uppercase; }
         .bg-reserva { background: var(--laranja); }
         .bg-pronta { background: var(--verde); }
-        .bg-cancel { background: var(--vermelho); }
+        .bg-cancel { background: var(--cinza); }
+        .bg-rascunho { background: var(--roxo); }
 
         .itens-box { background: #fffafb; border: 1px solid #ffebf2; border-radius: 10px; padding: 10px; font-size: 0.85rem; margin: 10px 0; white-space: pre-wrap; }
         
-        .btn-mini-group { display: inline-flex; gap: 5px; margin-left: 10px; vertical-align: middle; }
+        .btn-mini-group { display: inline-flex; gap: 5px; margin-left: 10px; vertical-align: middle; flex-wrap: wrap; }
         .btn-mini { border: none; padding: 5px 12px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; cursor: pointer; text-transform: uppercase; color: white; }
         
         .btn-mini-concluir { background: var(--verde); }
         .btn-mini-desistir { background: var(--cinza); }
         .btn-mini-restaurar { background: var(--azul); }
         .btn-mini-apagar { background: var(--vermelho); }
+        .btn-mini-restaurar-res { background: var(--laranja); }
         
         .btn-zap-small { text-decoration: none; background: #25d366; color: white; padding: 5px 12px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; }
 
@@ -69,6 +73,7 @@
 <div class="tabs">
     <button class="tab-btn active" id="tab-novos" onclick="mudarAba('novos', this)">Novos 🍰</button>
     <button class="tab-btn" id="tab-reservas" onclick="mudarAba('reservas', this)">Reservas 🕒</button>
+    <button class="tab-btn" id="tab-abandonados" onclick="mudarAba('abandonados', this)">Abandonados 🛒</button>
     <button class="tab-btn" id="tab-concluidos" onclick="mudarAba('concluidos', this)">Vendas ✅</button>
     <button class="tab-btn" id="tab-desistencias" onclick="mudarAba('desistencias', this)">Desistências ❌</button>
     <button class="tab-btn" id="tab-estoque" onclick="mudarAba('estoque', this)">Estoque 📦</button>
@@ -76,6 +81,7 @@
 
 <div id="aba-novos" class="section active"><div id="lista-novos"></div></div>
 <div id="aba-reservas" class="section"><div id="lista-reservas"></div></div>
+<div id="aba-abandonados" class="section"><div id="lista-abandonados"></div></div>
 <div id="aba-concluidos" class="section"><div id="lista-concluidos"></div></div>
 <div id="aba-desistencias" class="section"><div id="lista-desistencias"></div></div>
 <div id="aba-estoque" class="section">
@@ -109,9 +115,15 @@
             if (!error) await carregarTudo();
         }
 
-        // Ação: RESTAURAR (Agora funciona para Desistência e Vendas)
+        // Ação: RESTAURAR PARA NOVO
         if (target.classList.contains('btn-mini-restaurar')) {
             const { error } = await _supa.from('pedidos').update({ status: 'Novo' }).eq('id', id);
+            if (!error) await carregarTudo();
+        }
+
+        // Ação: RESTAURAR PARA RESERVA
+        if (target.classList.contains('btn-mini-restaurar-res')) {
+            const { error } = await _supa.from('pedidos').update({ status: 'Reserva' }).eq('id', id);
             if (!error) await carregarTudo();
         }
 
@@ -142,49 +154,59 @@
         let n = 0, r = 0;
         lista.forEach(p => {
             const status = (p.status || "Novo").trim();
-            if (status !== 'Finalizado' && status !== 'Desistencia') {
-                if (p.itens?.includes('✅')) n++;
-                if (p.itens?.includes('[RESERVA]')) r++;
-            }
+            if (status === 'Novo') n++;
+            if (status === 'Reserva') r++;
         });
         document.getElementById('count-novos').innerText = n;
         document.getElementById('count-reservas').innerText = r;
     }
 
     function renderizarPedidos(lista) {
-        const html = { novos: "", reservas: "", concluidos: "", desistencias: "" };
+        const html = { novos: "", reservas: "", abandonados: "", concluidos: "", desistencias: "" };
         
         lista.forEach(p => {
             const dataPedido = new Date(p.created_at).toLocaleString('pt-BR');
             const status = (p.status || "Novo").trim();
             
             if (status === 'Finalizado') {
-                html.concluidos += gerarCard(p, p.itens, false, dataPedido, false);
+                html.concluidos += gerarCard(p, p.itens, false, dataPedido, false, false);
             } 
             else if (status === 'Desistencia') {
-                html.desistencias += gerarCard(p, p.itens, false, dataPedido, true);
+                html.desistencias += gerarCard(p, p.itens, false, dataPedido, true, false);
             } 
-            else {
-                const itensPronta = filtrarItens(p.itens, 'PRONTA');
-                const itensReserva = filtrarItens(p.itens, 'RESERVA');
-                if (itensPronta.length > 0) html.novos += gerarCard(p, itensPronta, false, dataPedido, false);
-                if (itensReserva.length > 0) html.reservas += gerarCard(p, itensReserva, true, dataPedido, false);
+            else if (status === 'Rascunho') {
+                html.abandonados += gerarCard(p, p.itens, false, dataPedido, false, true);
+            }
+            else if (status === 'Reserva') {
+                html.reservas += gerarCard(p, p.itens, true, dataPedido, false, false);
+            }
+            else if (status === 'Novo') {
+                html.novos += gerarCard(p, p.itens, false, dataPedido, false, false);
             }
         });
 
         document.getElementById('lista-novos').innerHTML = html.novos || "<p style='text-align:center; padding:20px; opacity:0.5;'>Nenhum novo.</p>";
         document.getElementById('lista-reservas').innerHTML = html.reservas || "<p style='text-align:center; padding:20px; opacity:0.5;'>Nenhuma reserva.</p>";
+        document.getElementById('lista-abandonados').innerHTML = html.abandonados || "<p style='text-align:center; padding:20px; opacity:0.5;'>Nenhum carrinho abandonado.</p>";
         document.getElementById('lista-concluidos').innerHTML = html.concluidos || "<p style='text-align:center; padding:20px; opacity:0.5;'>Histórico vazio.</p>";
         document.getElementById('lista-desistencias').innerHTML = html.desistencias || "<p style='text-align:center; padding:20px; opacity:0.5;'>Nenhuma desistência.</p>";
     }
 
-    function gerarCard(p, itens, ehReserva, dataHora, ehDesistencia) {
+    function gerarCard(p, itens, ehReserva, dataHora, ehDesistencia, ehRascunho) {
         const linkZap = `https://wa.me/55${p.telefone?.replace(/\D/g,'')}`;
         const statusReal = (p.status || "Novo").trim();
         
         let botoes = '';
-        // Botões para Vendas e Desistências (Ambos agora têm Restaurar)
-        if (statusReal === 'Desistencia') {
+        
+        if (ehRascunho) {
+            // Botões específicos para a aba de Abandonados
+            botoes = `
+                <div class="btn-mini-group">
+                    <button class="btn-mini btn-mini-restaurar" data-id="${p.id}">Mudar para Novo</button>
+                    <button class="btn-mini btn-mini-restaurar-res" data-id="${p.id}">Mudar para Reserva</button>
+                    <button class="btn-mini btn-mini-apagar" data-id="${p.id}">Apagar</button>
+                </div>`;
+        } else if (statusReal === 'Desistencia') {
             botoes = `
                 <div class="btn-mini-group">
                     <button class="btn-mini btn-mini-restaurar" data-id="${p.id}">Restaurar</button>
@@ -205,9 +227,16 @@
         }
 
         const classeFinalizado = statusReal === 'Finalizado' ? 'is-finalizado' : '';
+        const classeRascunho = ehRascunho ? 'is-rascunho' : '';
 
-        return `<div class="card-pedido ${ehReserva ? 'is-reserva' : ''} ${ehDesistencia ? 'is-desistencia' : ''} ${classeFinalizado}">
-                <span class="badge ${ehDesistencia ? 'bg-cancel' : (ehReserva ? 'bg-reserva' : 'bg-pronta')}">${ehDesistencia ? 'OFF' : (ehReserva ? '🕒 RES' : '✅ OK')}</span>
+        let badgeTexto = '✅ OK';
+        let badgeClasse = 'bg-pronta';
+        if (ehDesistencia) { badgeTexto = 'OFF'; badgeClasse = 'bg-cancel'; }
+        else if (ehReserva) { badgeTexto = '🕒 RES'; badgeClasse = 'bg-reserva'; }
+        else if (ehRascunho) { badgeTexto = '🛒 CAR'; badgeClasse = 'bg-rascunho'; }
+
+        return `<div class="card-pedido ${ehReserva ? 'is-reserva' : ''} ${ehDesistencia ? 'is-desistencia' : ''} ${classeFinalizado} ${classeRascunho}">
+                <span class="badge ${badgeClasse}">${badgeTexto}</span>
                 <small style="display:block; color:#aaa; font-size: 0.6rem;">${dataHora}</small>
                 <strong style="font-size:0.9rem;">${p.nome}</strong>
                 <div style="font-size:0.8rem; margin:5px 0; display: flex; align-items: center; flex-wrap: wrap; gap: 5px;">
@@ -216,11 +245,6 @@
                 <div class="itens-box">${itens}</div>
                 <div style="font-size:0.75rem;">Total: <b>R$ ${Number(p.valor_total).toFixed(2)}</b></div>
             </div>`;
-    }
-
-    function filtrarItens(t, tipo) { 
-        const l = (t || "").split('\n'); 
-        return tipo === 'PRONTA' ? l.filter(i => i.includes('✅')).join('\n').trim() : l.filter(i => i.includes('[RESERVA]')).join('\n').trim(); 
     }
 
     window.mudarAba = function(id, btn) {
@@ -246,7 +270,7 @@
                 dados_proximidade: l.querySelector('.data').value 
             }).eq('id', l.dataset.id);
         }
-        alert("Estoque atualizado!"); carregarTudo();
+        alert("Estoque updated!"); carregarTudo();
     };
 
     setInterval(carregarTudo, 30000);
