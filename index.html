@@ -45,8 +45,27 @@
 
         .grid-fatias { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .card-bolo { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; padding-bottom: 15px; border: 1px solid var(--cinza-borda); }
+        
         .img-container { width: 90%; height: 180px; margin: 10px auto; border-radius: 10px; overflow: hidden; position: relative; background: #f9f9f9; }
         .img-container img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Ajustado: Apenas uma etiqueta com fundo transparente no canto superior direito */
+        .tarja-em-breve {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.6); /* Fundo escuro transparente apenas atrás do texto */
+            color: white;
+            padding: 4px 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 15;
+            pointer-events: none;
+        }
+
         .badge-reserva { position: absolute; top: 8px; left: 8px; color: white; padding: 4px 10px; border-radius: 10px; font-size: 0.55rem; font-weight: 600; text-transform: uppercase; z-index: 10; }
 
         .nome-produto { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 10px 5px; height: 30px; display: flex; align-items: center; justify-content: center; }
@@ -171,7 +190,7 @@
     
     let listaBolos = [];
     let meuCarrinho = {};
-    let frutasEscolhidas = {}; // Guarda a fruta de cada fatia indexada pelo ID
+    let frutasEscolhidas = {}; 
     let metodoEscolhido = 'Entrega';
     let pagamentoEscolhido = 'Pix';
     let telaAtual = 'venda';
@@ -221,16 +240,21 @@
         vitrineDiv.innerHTML = listaBolos.map((b, i) => {
             const temEstoque = (b.quantidade || 0) > 0;
             const urlFoto = b.imagem_nome ? RAW_URL + b.imagem_nome : 'https://via.placeholder.com/300x300?text=Mii+Cakes';
+            
+            const infoTexto = b.dados_proximidade || 'Em breve';
+            const ehEmBreve = !temEstoque && (infoTexto.toLowerCase().includes('breve') || infoTexto === '');
+
             return `
             <div class="card-bolo">
                 <div class="img-container">
                     <div class="badge-reserva" style="background: ${temEstoque ? '#4CAF50' : '#FF9800'}">
                         ${temEstoque ? 'Pronta Entrega' : 'Reservar'}
                     </div>
+                    ${ehEmBreve ? `<div class="tarja-em-breve">Em breve</div>` : ''}
                     <img src="${urlFoto}">
                 </div>
                 <div class="nome-produto">${b.nome}</div>
-                <div class="info-fornada">${temEstoque ? `🧁 Disponível: <b>${b.quantidade}</b>` : `🕒 Reservar para: <b>${b.dados_proximidade || 'Em breve'}</b>`}</div>
+                <div class="info-fornada">${temEstoque ? `🧁 Disponível: <b>${b.quantidade}</b>` : `🕒 Reservar para: <b>${infoTexto}</b>`}</div>
                 <div class="controles">
                     <button class="btn-circular" onclick="ajustar(${i},-1)">-</button>
                     <span id="qtd-${i}" style="font-weight:bold;">${meuCarrinho[i] || 0}</span>
@@ -286,7 +310,6 @@
                 temItens = true;
                 if((b.quantidade || 0) <= 0) temReserva = true;
                 
-                // Agora o padrão inicial indefinido herda uma string vazia para exibir o título correto
                 const frutaAtual = frutasEscolhidas[i] !== undefined ? frutasEscolhidas[i] : "";
 
                 listaHtml += `
