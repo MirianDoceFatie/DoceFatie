@@ -223,6 +223,7 @@
                     <button class="btn-circular" onclick="ajustar(${i},1)">+</button>
                 </div>
                 <select id="calda-${i}" class="select-calda" onchange="atualizarInterface()">
+                    <option value="Selecionar Calda">Selecionar Calda</option>
                     <option value="Sem calda">Sem calda</option>
                     <option value="Chocolate">Chocolate</option>
                     <option value="Ninho">Ninho</option>
@@ -281,6 +282,7 @@
                     <div>
                         <select class="select-fruta-resumo" onchange="salvarEscolhaFruta(${i}, this)">
                             <option value="Sem fruta" ${frutaAtual === 'Sem fruta' ? 'selected' : ''}>➕ Porção de Frutas</option>
+                            <option value="Sem fruta" ${frutaAtual === 'Sem fruta' && frutaAtual !== 'Sem fruta' ? 'selected' : ''}>❌ Sem Porção de Frutas</option>
                             <option value="Morango" ${frutaAtual === 'Morango' ? 'selected' : ''}>🍓 Morango (+R$ 2,50)</option>
                             <option value="Uva Verde" ${frutaAtual === 'Uva Verde' ? 'selected' : ''}>🍇 Uva Verde (+R$ 2,50)</option>
                             <option value="Uva Roxa" ${frutaAtual === 'Uva Roxa' ? 'selected' : ''}>🍇 Uva Roxa (+R$ 2,50)</option>
@@ -322,7 +324,9 @@
         listaBolos.forEach((b, i) => {
             if(meuCarrinho[i] > 0) {
                 temItens = true;
-                const calda = document.getElementById(`calda-${i}`).value;
+                let calda = document.getElementById(`calda-${i}`).value;
+                if (calda === "Selecionar Calda" || calda === "Sem calda") calda = "Sem calda";
+                
                 const fruta = frutasEscolhidas[i] || "Sem fruta";
                 
                 let valorItem = 18;
