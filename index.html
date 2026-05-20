@@ -49,12 +49,11 @@
         .img-container { width: 90%; height: 180px; margin: 10px auto; border-radius: 10px; overflow: hidden; position: relative; background: #f9f9f9; }
         .img-container img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Ajustado: Apenas uma etiqueta com fundo transparente no canto superior direito */
         .tarja-em-breve {
             position: absolute;
             top: 8px;
             right: 8px;
-            background: rgba(0, 0, 0, 0.6); /* Fundo escuro transparente apenas atrás do texto */
+            background: rgba(0, 0, 0, 0.6); 
             color: white;
             padding: 4px 12px;
             border-radius: 10px;
@@ -171,7 +170,7 @@
 
             <div class="total-display">
                 <div id="total-val">R$ 0,00</div>
-                <span id="label-taxa" style="font-size:0.7rem; font-weight:normal;">Taxa de entrega a consultar</span>
+                <span id="label-taxa" style="font-size:0.75rem; font-weight:600; color: #ff4081; display: block; margin-top: 5px;">Envie seu pedido para consultar taxa de entrega.</span>
             </div>
             <button class="btn-finalizar" id="btn-fazer-pedido" onclick="gerarWhatsApp()">Fazer Pedido / Reservar</button>
         </div>
@@ -261,7 +260,7 @@
                     <button class="btn-circular" onclick="ajustar(${i},1)">+</button>
                 </div>
                 <select id="calda-${i}" class="select-calda" onchange="atualizarInterface()">
-                    <option value="Selecionar Calda" disabled selected hidden>Selecionar Calda</option>
+                    <option value="Selecionar Calda" disabled selected hidden>Selecionar Calda ( Grátis )</option>
                     <option value="Sem calda">Sem calda</option>
                     <option value="Chocolate">Chocolate</option>
                     <option value="Ninho">Ninho</option>
@@ -286,6 +285,14 @@
         document.getElementById('btn-retirar').classList.toggle('ativa', tipo === 'Retirada');
         document.getElementById('campos-endereco').style.display = tipo === 'Entrega' ? 'grid' : 'none';
         document.getElementById('info-retirada').style.display = tipo === 'Retirada' ? 'block' : 'none';
+        
+        const labelTaxa = document.getElementById('label-taxa');
+        if (tipo === 'Entrega') {
+            labelTaxa.innerText = "Envie seu pedido para consultar taxa de entrega.";
+            labelTaxa.style.display = 'block';
+        } else {
+            labelTaxa.style.display = 'none';
+        }
     }
 
     function setPagamento(tipo) {
@@ -363,7 +370,7 @@
             if(meuCarrinho[i] > 0) {
                 temItens = true;
                 let calda = document.getElementById(`calda-${i}`).value;
-                if (calda === "Selecionar Calda" || calda === "Sem calda") calda = "Sem calda";
+                if (calda === "Selecionar Calda" || calda === "Selecionar Calda ( Grátis )" || calda === "Sem calda") calda = "Sem calda";
                 
                 const fruta = frutasEscolhidas[i];
                 
