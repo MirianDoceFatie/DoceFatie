@@ -54,7 +54,7 @@
         
         .controles { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; }
         .btn-circular { background: var(--rosa-botao); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; }
-        .select-calda { width: 85%; padding: 6px; border-radius: 8px; border: 1px solid #eee; font-size: 0.7rem; color: #666; background: #fafafa; }
+        .select-calda { width: 85%; padding: 6px; border-radius: 8px; border: 1px solid #eee; font-size: 0.7rem; color: #666; background: #fafafa; margin-bottom: 6px; }
 
         /* GRID BASTIDORES */
         .grid-bastidores { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
@@ -64,6 +64,12 @@
 
         .checkout-box { background: white; border-radius: 15px; padding: 25px; max-width: 700px; margin: 20px auto; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .resumo-lista { font-size: 0.85rem; margin-bottom: 20px; border-left: 3px solid var(--rosa-topo); padding-left: 15px; color: #666; text-align: left; }
+        
+        /* Layout dos Itens no Resumo */
+        .item-resumo-linha { border-bottom: 1px dashed #eee; padding: 10px 0; margin-bottom: 10px; }
+        .item-resumo-topo { display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: var(--marrom); }
+        .select-fruta-resumo { width: 100%; max-width: 250px; padding: 5px; border-radius: 6px; border: 1px solid var(--rosa-topo); font-size: 0.7rem; color: #555; background: #fff; margin-top: 5px; font-family: 'Montserrat'; }
+
         .input-padrao { width: 100%; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 12px; font-family: 'Montserrat'; box-sizing: border-box; background: #fafafa; font-size: 0.85rem; }
         .btn-seletor { flex: 1; padding: 12px; border: 2px solid var(--cinza-borda); border-radius: 12px; background: white; color: #888; font-weight: 600; font-size: 0.75rem; cursor: pointer; }
         .btn-seletor.ativa { border-color: var(--rosa-topo); color: var(--rosa-topo); background: #fff0f5; }
@@ -134,8 +140,8 @@
 
             <div id="secao-garantia">
                 <p style="font-size: 0.8rem; font-weight: bold; margin-bottom: 10px;">🛡️ Garantia de Reserva:</p>
-                <label><input type="radio" name="garantia" value="0.5" checked onchange="atualizarInterface()"> 50% Entrada</label>
-                <label><input type="radio" name="garantia" value="1.0" onchange="atualizarInterface()"> 100% Total</label>
+                <label><input type="radio" name="garantia" value="0.5" checked onchange="calcularTotalApenas()"> 50% Entrada</label>
+                <label><input type="radio" name="garantia" value="1.0" onchange="calcularTotalApenas()"> 100% Total</label>
             </div>
 
             <div style="display: flex; gap: 10px; margin-bottom: 12px; margin-top: 15px;">
@@ -165,6 +171,7 @@
     
     let listaBolos = [];
     let meuCarrinho = {};
+    let frutasEscolhidas = {}; // Guarda a fruta de cada fatia indexada pelo ID
     let metodoEscolhido = 'Entrega';
     let pagamentoEscolhido = 'Pix';
     let telaAtual = 'venda';
@@ -185,7 +192,6 @@
     async function carregarDados() {
         const { data } = await _supa.from('estoque').select('*').order('nome');
         if (data) { 
-            // Ordena colocando itens com quantidade > 0 no topo (Pronta Entrega antes de Reservas)
             listaBolos = data.sort((a, b) => {
                 const estoqueA = (a.quantidade || 0) > 0 ? 1 : 0;
                 const estoqueB = (b.quantidade || 0) > 0 ? 1 : 0;
@@ -250,17 +256,58 @@
         document.getElementById('btn-link').classList.toggle('ativa', tipo === 'Link de Pagamento');
     }
 
+    function salvarEscolhaFruta(i, selectEl) {
+        frutasEscolhidas[i] = selectEl.value;
+        calcularTotalApenas();
+    }
+
     function atualizarInterface() {
-        let totalProd = 0; let listaHtml = ""; let temReserva = false;
+        let listaHtml = ""; 
+        let temReserva = false;
+        let temItens = false;
+
         listaBolos.forEach((b, i) => {
             if(meuCarrinho[i] > 0) {
+                temItens = true;
                 if((b.quantidade || 0) <= 0) temReserva = true;
-                totalProd += (meuCarrinho[i] * 18);
-                listaHtml += `• ${meuCarrinho[i]}x ${b.nome}<br>`;
+                
+                const frutaAtual = frutasEscolhidas[i] || "Sem fruta";
+
+                listaHtml += `
+                <div class="item-resumo-linha">
+                    <div class="item-resumo-topo">
+                        <span>• ${meuCarrinho[i]}x ${b.nome}</span>
+                    </div>
+                    <div>
+                        <select class="select-fruta-resumo" onchange="salvarEscolhaFruta(${i}, this)">
+                            <option value="Sem fruta" ${frutaAtual === 'Sem fruta' ? 'selected' : ''}>➕ Porção de Frutas</option>
+                            <option value="Morango" ${frutaAtual === 'Morango' ? 'selected' : ''}>🍓 Morango (+R$ 2,50)</option>
+                            <option value="Uva Verde" ${frutaAtual === 'Uva Verde' ? 'selected' : ''}>🍇 Uva Verde (+R$ 2,50)</option>
+                            <option value="Uva Roxa" ${frutaAtual === 'Uva Roxa' ? 'selected' : ''}>🍇 Uva Roxa (+R$ 2,50)</option>
+                            <option value="Misto de Frutas" ${frutaAtual === 'Misto de Frutas' ? 'selected' : ''}>🍒 Misto de Frutas (+R$ 2,50)</option>
+                        </select>
+                    </div>
+                </div>`;
             }
         });
+
         document.getElementById('secao-garantia').style.display = temReserva ? 'block' : 'none';
-        document.getElementById('resumo-lista').innerHTML = listaHtml || "Nenhuma fatia selecionada.";
+        document.getElementById('resumo-lista').innerHTML = temItens ? listaHtml : "Nenhuma fatia selecionada.";
+        calcularTotalApenas();
+    }
+
+    function calcularTotalApenas() {
+        let totalProd = 0;
+        listaBolos.forEach((b, i) => {
+            if(meuCarrinho[i] > 0) {
+                let valorItem = 18;
+                const fruta = frutasEscolhidas[i] || "Sem fruta";
+                if(fruta !== "Sem fruta") {
+                    valorItem += 2.50;
+                }
+                totalProd += (meuCarrinho[i] * valorItem);
+            }
+        });
         document.getElementById('total-val').innerHTML = `R$ ${totalProd.toFixed(2)}`;
     }
 
@@ -270,28 +317,43 @@
         if(!nome || !zap) return alert("Por favor, preencha nome e WhatsApp.");
         
         let pEntregaZap = "", pReservaZap = "", vTotal = 0, statusPedido = "Novo";
+        let temItens = false;
+
         listaBolos.forEach((b, i) => {
             if(meuCarrinho[i] > 0) {
+                temItens = true;
                 const calda = document.getElementById(`calda-${i}`).value;
+                const fruta = frutasEscolhidas[i] || "Sem fruta";
+                
+                let valorItem = 18;
+                let adicionais = calda;
+                
+                if(fruta !== "Sem fruta") {
+                    adicionais += ` + Porção de Frutas: ${fruta}`;
+                    valorItem += 2.50;
+                }
+
                 const ehReserva = (b.quantidade || 0) <= 0;
                 
                 if(!ehReserva) {
-                    pEntregaZap += `✅ ${meuCarrinho[i]}x ${b.nome} (${calda})\n`;
+                    pEntregaZap += `✅ ${meuCarrinho[i]}x ${b.nome} (${adicionais})\n`;
                 } else {
-                    pReservaZap += `🕒 [RESERVA] ${meuCarrinho[i]}x ${b.nome} (${calda})\n`;
+                    pReservaZap += `🕒 [RESERVA] ${meuCarrinho[i]}x ${b.nome} (${adicionais})\n`;
                     statusPedido = "Reserva";
                 }
-                vTotal += meuCarrinho[i] * 18;
+                vTotal += meuCarrinho[i] * valorItem;
             }
         });
 
-        const endereco = metodoEscolhido === 'Entrega' ? 
+        if(!temItens) return alert("Selecione pelo menos uma fatia antes de finalizar.");
+
+        const address = metodoEscolhido === 'Entrega' ? 
             `${document.getElementById('rua-numero').value}, ${document.getElementById('bairro').value}` : 'Retirada';
 
         const { error } = await _supa.from('pedidos').insert([{
             nome, telefone: zap, itens: pEntregaZap + pReservaZap,
             valor_total: vTotal, tipo_entrega: metodoEscolhido,
-            endereco: endereco, status: statusPedido,
+            endereco: address, status: statusPedido,
             metodo_pagamento: pagamentoEscolhido
         }]);
 
