@@ -193,9 +193,23 @@
         const { data } = await _supa.from('estoque').select('*').order('nome');
         if (data) { 
             listaBolos = data.sort((a, b) => {
-                const estoqueA = (a.quantidade || 0) > 0 ? 1 : 0;
-                const estoqueB = (b.quantidade || 0) > 0 ? 1 : 0;
-                return estoqueB - estoqueA;
+                const estoqueA = (a.quantidade || 0) > 0;
+                const estoqueB = (b.quantidade || 0) > 0;
+                
+                if (estoqueA && !estoqueB) return -1;
+                if (!estoqueA && estoqueB) return 1;
+                
+                if (!estoqueA && !estoqueB) {
+                    const infoA = (a.dados_proximidade || '').toLowerCase();
+                    const infoB = (b.dados_proximidade || '').toLowerCase();
+                    
+                    const ehEmBreveA = infoA.includes('breve') || infoA === '';
+                    const ehEmBreveB = infoB.includes('breve') || infoB === '';
+                    
+                    if (!ehEmBreveA && ehEmBreveB) return -1;
+                    if (ehEmBreveA && !ehEmBreveB) return 1;
+                }
+                return 0;
             }); 
             renderizarVitrine(); 
         }
@@ -223,7 +237,7 @@
                     <button class="btn-circular" onclick="ajustar(${i},1)">+</button>
                 </div>
                 <select id="calda-${i}" class="select-calda" onchange="atualizarInterface()">
-                    <option value="Selecionar Calda">Selecionar Calda</option>
+                    <option value="Selecionar Calda" disabled selected hidden>Selecionar Calda</option>
                     <option value="Sem calda">Sem calda</option>
                     <option value="Chocolate">Chocolate</option>
                     <option value="Ninho">Ninho</option>
@@ -272,7 +286,8 @@
                 temItens = true;
                 if((b.quantidade || 0) <= 0) temReserva = true;
                 
-                const frutaAtual = frutasEscolhidas[i] || "Sem fruta";
+                // Agora o padrão inicial indefinido herda uma string vazia para exibir o título correto
+                const frutaAtual = frutasEscolhidas[i] !== undefined ? frutasEscolhidas[i] : "";
 
                 listaHtml += `
                 <div class="item-resumo-linha">
@@ -281,12 +296,12 @@
                     </div>
                     <div>
                         <select class="select-fruta-resumo" onchange="salvarEscolhaFruta(${i}, this)">
-                            <option value="Sem fruta" ${frutaAtual === 'Sem fruta' ? 'selected' : ''}>➕ Porção de Frutas</option>
-                            <option value="Sem fruta" ${frutaAtual === 'Sem fruta' && frutaAtual !== 'Sem fruta' ? 'selected' : ''}>❌ Sem Porção de Frutas</option>
-                            <option value="Morango" ${frutaAtual === 'Morango' ? 'selected' : ''}>🍓 Morango (+R$ 2,50)</option>
-                            <option value="Uva Verde" ${frutaAtual === 'Uva Verde' ? 'selected' : ''}>🍇 Uva Verde (+R$ 2,50)</option>
-                            <option value="Uva Roxa" ${frutaAtual === 'Uva Roxa' ? 'selected' : ''}>🍇 Uva Roxa (+R$ 2,50)</option>
-                            <option value="Misto de Frutas" ${frutaAtual === 'Misto de Frutas' ? 'selected' : ''}>🍒 Misto de Frutas (+R$ 2,50)</option>
+                            <option value="" disabled ${frutaAtual === "" ? "selected" : ""} hidden>➕ Porção de Frutas</option>
+                            <option value="Sem fruta" ${frutaAtual === "Sem fruta" ? "selected" : ""}>❌ Sem Porção de Frutas</option>
+                            <option value="Morango" ${frutaAtual === "Morango" ? "selected" : ""}>🍓 Morango (+R$ 2,50)</option>
+                            <option value="Uva Verde" ${frutaAtual === "Uva Verde" ? "selected" : ""}>🍇 Uva Verde (+R$ 2,50)</option>
+                            <option value="Uva Roxa" ${frutaAtual === "Uva Roxa" ? "selected" : ""}>🍇 Uva Roxa (+R$ 2,50)</option>
+                            <option value="Misto de Frutas" ${frutaAtual === "Misto de Frutas" ? "selected" : ""}>🍒 Misto de Frutas (+R$ 2,50)</option>
                         </select>
                     </div>
                 </div>`;
@@ -303,8 +318,8 @@
         listaBolos.forEach((b, i) => {
             if(meuCarrinho[i] > 0) {
                 let valorItem = 18;
-                const fruta = frutasEscolhidas[i] || "Sem fruta";
-                if(fruta !== "Sem fruta") {
+                const fruta = frutasEscolhidas[i];
+                if(fruta && fruta !== "Sem fruta") {
                     valorItem += 2.50;
                 }
                 totalProd += (meuCarrinho[i] * valorItem);
@@ -327,12 +342,12 @@
                 let calda = document.getElementById(`calda-${i}`).value;
                 if (calda === "Selecionar Calda" || calda === "Sem calda") calda = "Sem calda";
                 
-                const fruta = frutasEscolhidas[i] || "Sem fruta";
+                const fruta = frutasEscolhidas[i];
                 
                 let valorItem = 18;
                 let adicionais = calda;
                 
-                if(fruta !== "Sem fruta") {
+                if(fruta && fruta !== "Sem fruta") {
                     adicionais += ` + Porção de Frutas: ${fruta}`;
                     valorItem += 2.50;
                 }
@@ -369,7 +384,6 @@
         }
     }
 
-    // LÓGICA DE BASTIDORES DO 1 AO 30
     function carregarGaleria() {
         const galeria = document.getElementById('galeria-bastidores');
         let html = "";
