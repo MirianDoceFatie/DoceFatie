@@ -184,7 +184,15 @@
 
     async function carregarDados() {
         const { data } = await _supa.from('estoque').select('*').order('nome');
-        if (data) { listaBolos = data; renderizarVitrine(); }
+        if (data) { 
+            // Ordena colocando itens com quantidade > 0 no topo (Pronta Entrega antes de Reservas)
+            listaBolos = data.sort((a, b) => {
+                const estoqueA = (a.quantidade || 0) > 0 ? 1 : 0;
+                const estoqueB = (b.quantidade || 0) > 0 ? 1 : 0;
+                return estoqueB - estoqueA;
+            }); 
+            renderizarVitrine(); 
+        }
         carregarGaleria();
     }
 
